@@ -1,0 +1,34 @@
+# --- Build Artifacts ---
+target/
+*.class
+*.log
+
+# --- IDEs ---
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.settings/
+.classpath
+.project
+.factorypath
+
+# VS Code
+.vscode/
+bin/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+*.tmp
+
+# --- Secrets & Notes ---
+.env
+buffer.md
+temp_key.txt
+
+# --- Project Specific ---
+# Ignore the generated-sources folder if you use one
+src/main/generated/
