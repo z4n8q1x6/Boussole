@@ -12,11 +12,11 @@ public class App extends Application {
   @Override
   public void start(Stage stage) {
     String[] views = {
-      "/com/boussole/app/support/alerteIAs.fxml",
       "/com/boussole/app/support/reclamations.fxml",
+      "/com/boussole/app/support/alerteIAs.fxml",
       "/com/boussole/app/support/adminReclamations.fxml"
     };
-    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[2]));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[1]));
     Parent root = null;
     try {
       root = loader.load();
@@ -25,8 +25,8 @@ public class App extends Application {
       return;
     }
 
-    Scene scene = new Scene(root, 800, 600);
-    stage.setTitle("Hello JavaFX");
+    Scene scene = new Scene(root, 1236, 676);
+    stage.setTitle("Boussole");
     stage.setScene(scene);
     stage.show();
   }

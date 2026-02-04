@@ -6,17 +6,17 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.genai.Client;
-// import com.google.genai.errors.ServerException;
+import com.google.genai.errors.ClientException;
+import com.google.genai.errors.ServerException;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type.Known;
 
 public class Gemini {
-  // TODO: make request async
   public static AlerteIA generate_alerte() {
-    // Uses GOOGLE_API_KEY env var
-    Client client = new Client();
+    Client client = new Client(); // Uses GOOGLE_API_KEY env var
+    // For manuel api usage:
     // Client client = Client.builder().apiKey("API_KEY").build();
 
     Schema schema =
@@ -37,7 +37,7 @@ public class Gemini {
             .responseMimeType("application/json")
             .candidateCount(1)
             .responseSchema(schema)
-            .temperature(0.75f)
+            .temperature(1.75f)
             .build();
 
     String prompt =
@@ -47,29 +47,40 @@ public class Gemini {
         - message: Une description détaillée
         - score_gravite: Score de sévérité
         """;
-    String[] modelToUse = {"gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"};
 
-    GenerateContentResponse response = client.models.generateContent(modelToUse[0], prompt, config);
-
-    // DEBUG
-    System.out.println(response.text());
-
-    ObjectMapper mapper = new ObjectMapper();
     AlerteIA alerteIA = new AlerteIA();
-    try {
-      alerteIA = mapper.readValue(response.text(), AlerteIA.class);
-    } catch (JsonMappingException e) {
-      System.err.println("Error mapping json: " + e);
-    } catch (JsonProcessingException e) {
-      System.err.println("Error processing json: " + e);
-    }
+    String[] myModels = {"gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"};
+    int i = 0;
+    Boolean generated = false;
+    while (!generated && i < myModels.length) {
+      try {
+        GenerateContentResponse response =
+            client.models.generateContent(myModels[i], prompt, config);
+        generated = true;
+        // DEBUG
+        System.out.println(myModels[i]);
+        System.out.println(response.text());
 
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+          alerteIA = mapper.readValue(response.text(), AlerteIA.class);
+        } catch (JsonMappingException e) {
+          System.err.println("Error mapping json: " + e);
+        } catch (JsonProcessingException e) {
+          System.err.println("Error processing json: " + e);
+        }
+      } catch (ServerException | ClientException e) {
+        System.err.println("Failed to generate content: " + e);
+      } finally {
+        i++;
+      }
+    }
     client.close();
     return alerteIA;
   }
 }
 
-// FORMAT:
+// FORMAT (in json):
 // {
 // type_alerte : String;
 // message : string;
