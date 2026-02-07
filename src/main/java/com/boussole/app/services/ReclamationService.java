@@ -18,11 +18,12 @@ public class ReclamationService {
   }
 
   public boolean add(Reclamation reclamation) {
-    String sql = "INSERT INTO reclamations (sujet, description) VALUES (?, ?)";
+    String sql = "INSERT INTO reclamations (sujet, description, franchise_id) VALUES (?, ?, ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, reclamation.getSujet());
       preparedStatement.setString(2, reclamation.getDescription());
+      preparedStatement.setInt(3, reclamation.getFranchiseId());
       preparedStatement.executeUpdate();
       return true;
     } catch (SQLException e) {
@@ -58,6 +59,30 @@ public class ReclamationService {
     return false;
   }
 
+  public ObservableList<Reclamation> getByFranchise(int franchiseId) {
+    ObservableList<Reclamation> list = FXCollections.observableArrayList();
+    try {
+      String sql = "SELECT * FROM reclamations WHERE franchise_id = ?";
+      PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      preparedStatement.setInt(1, franchiseId);
+      ResultSet rs = preparedStatement.executeQuery();
+      while (rs.next()) {
+        Reclamation reclamation = new Reclamation();
+        reclamation.setId(rs.getInt("id"));
+        reclamation.setSujet(rs.getString("sujet"));
+        reclamation.setDescription(rs.getString("description"));
+        reclamation.setStatut(StatutReclamation.valueOf(rs.getString("statut").toUpperCase()));
+        reclamation.setDateCreation(rs.getDate("date_creation"));
+        reclamation.setFranchiseId(franchiseId);
+        list.add(reclamation);
+      }
+    } catch (SQLException e) {
+      System.err.println("Failed to display reclamations: " + e.getMessage());
+    }
+    return list;
+  }
+
+
   public ObservableList<Reclamation> getAll() {
     ObservableList<Reclamation> list = FXCollections.observableArrayList();
     try {
@@ -71,6 +96,7 @@ public class ReclamationService {
         reclamation.setDescription(rs.getString("description"));
         reclamation.setStatut(StatutReclamation.valueOf(rs.getString("statut").toUpperCase()));
         reclamation.setDateCreation(rs.getDate("date_creation"));
+        reclamation.setFranchiseId(rs.getInt("franchise_id"));
         list.add(reclamation);
       }
     } catch (SQLException e) {

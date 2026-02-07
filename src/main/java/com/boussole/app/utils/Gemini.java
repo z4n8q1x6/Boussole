@@ -51,12 +51,10 @@ public class Gemini {
     AlerteIA alerteIA = new AlerteIA();
     String[] myModels = {"gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"};
     int i = 0;
-    Boolean generated = false;
-    while (!generated && i < myModels.length) {
+    while (i < myModels.length) {
       try {
         GenerateContentResponse response =
             client.models.generateContent(myModels[i], prompt, config);
-        generated = true;
         // DEBUG
         System.out.println(myModels[i]);
         System.out.println(response.text());
@@ -69,10 +67,15 @@ public class Gemini {
         } catch (JsonProcessingException e) {
           System.err.println("Error processing json: " + e);
         }
-      } catch (ServerException | ClientException e) {
+        break;
+      } catch (ServerException e) {
+        // no more tokens for that model or model overloaded... -> try next model
         System.err.println("Failed to generate content: " + e);
-      } finally {
         i++;
+      } catch (ClientException e) {
+        // problem with client api/model_name... -> no retries
+        System.err.println("Failed to generate content: " + e);
+        break;
       }
     }
     client.close();

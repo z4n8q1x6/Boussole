@@ -2,6 +2,9 @@ package com.boussole.app.controllers;
 
 import com.boussole.app.models.Reclamation;
 import com.boussole.app.services.ReclamationService;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -15,6 +18,7 @@ public class AdminReclamationController {
   @FXML private TableColumn<Reclamation, String> colDescription;
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
+  @FXML private TableColumn<Reclamation, String> colFranchise; 
   @FXML private ComboBox<String> statusComboBox;
 
   public void initialize() {
@@ -24,6 +28,10 @@ public class AdminReclamationController {
     colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
     statusComboBox.setItems(FXCollections.observableArrayList("EN_ATTENTE", "EN_COURS", "RESOLU"));
+    colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
+    colFranchise.setCellValueFactory(cellData -> {
+      return new SimpleStringProperty("nom/ville#" + cellData.getValue().getFranchiseId());
+    });
     // makes description column scrollable
     colDescription.setCellFactory(
         column -> {

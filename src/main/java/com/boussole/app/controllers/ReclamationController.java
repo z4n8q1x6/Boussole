@@ -19,6 +19,9 @@ public class ReclamationController {
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
 
+  // temp
+  private int franchise_id = 1;
+
   public void initialize() {
     // connects the table columns to Reclamation model getters
     colSujet.setCellValueFactory(new PropertyValueFactory<>("sujet"));
@@ -97,6 +100,7 @@ public class ReclamationController {
 
     reclamation.setSujet(sujetField.getText());
     reclamation.setDescription(descriptionArea.getText());
+    reclamation.setFranchiseId(franchise_id);
     if (service.add(reclamation)) {
       display();
       UIUtils.clear(sujetField, descriptionArea);
@@ -107,7 +111,7 @@ public class ReclamationController {
   }
 
   public void display() {
-    table.setItems(service.getAll());
+    table.setItems(service.getByFranchise(franchise_id));
   }
 
   @FXML

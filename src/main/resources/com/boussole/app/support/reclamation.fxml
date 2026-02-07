@@ -29,7 +29,7 @@
                 <TableColumn fx:id="colSujet" text="Sujet" prefWidth="200" />
                 <TableColumn fx:id="colDescription" text="Description" prefWidth="400" />
                 <TableColumn fx:id="colStatut" text="Statut" prefWidth="120" />
-                <TableColumn fx:id="colDate" text="Date de Création" prefWidth="150" />
+                <TableColumn fx:id="colDate" text="Date" prefWidth="150" />
             </columns>
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

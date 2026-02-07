@@ -17,12 +17,13 @@ public class AlerteIAService {
   }
 
   public boolean add(AlerteIA alerteIA) {
-    String sql = "INSERT INTO alerteIAs (type_alerte, message, score_gravite) VALUES (?, ?, ?)";
+    String sql = "INSERT INTO alerteIAs (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?, ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, alerteIA.getType_alerte());
       preparedStatement.setString(2, alerteIA.getMessage());
       preparedStatement.setFloat(3, alerteIA.getScore_gravite());
+      preparedStatement.setFloat(4, alerteIA.getFranchiseId());
       preparedStatement.executeUpdate();
       return true;
     } catch (SQLException e) {
@@ -44,6 +45,29 @@ public class AlerteIAService {
     return false;
   }
 
+  public ObservableList<AlerteIA> getByFranchise(int franchiseId) {
+    ObservableList<AlerteIA> list = FXCollections.observableArrayList();
+    try {
+      String sql = "SELECT * FROM alerteIAs WHERE franchise_id = ?";
+      PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      preparedStatement.setInt(1, franchiseId);
+      ResultSet rs = preparedStatement.executeQuery();
+      while (rs.next()) {
+        AlerteIA alerteIA = new AlerteIA();
+        alerteIA.setId(rs.getInt("id"));
+        alerteIA.setType_alerte(rs.getString("type_alerte"));
+        alerteIA.setScore_gravite(rs.getFloat("score_gravite"));
+        alerteIA.setDate_detection(rs.getDate("date_detection"));
+        alerteIA.setMessage(rs.getString("message"));
+        alerteIA.setFranchiseId(franchiseId);
+        list.add(alerteIA);
+      }
+    } catch (SQLException e) {
+      System.err.println("Failed to display reclamations: " + e.getMessage());
+    }
+    return list;
+  }
+
   public ObservableList<AlerteIA> getAll() {
     ObservableList<AlerteIA> list = FXCollections.observableArrayList();
     try {
@@ -57,6 +81,7 @@ public class AlerteIAService {
         alerteIA.setScore_gravite(rs.getFloat("score_gravite"));
         alerteIA.setDate_detection(rs.getDate("date_detection"));
         alerteIA.setMessage(rs.getString("message"));
+        alerteIA.setFranchiseId(rs.getInt("franchise_id"));
         list.add(alerteIA);
       }
     } catch (SQLException e) {

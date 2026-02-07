@@ -8,16 +8,26 @@ public class AlerteIA {
   private String message;
   private float score_gravite;
   private Date date_detection;
+  private int franchiseId;
 
   public AlerteIA() {}
 
   public AlerteIA(
-      int id, String type_alerte, String message, float score_gravite, Date date_detection) {
+      int id, String type_alerte, String message, float score_gravite, Date date_detection, int franchiseId) {
     this.id = id;
     this.type_alerte = type_alerte;
     this.message = message;
     this.score_gravite = score_gravite;
     this.date_detection = date_detection;
+    this.franchiseId = franchiseId;
+  }
+
+  public int getFranchiseId() {
+	return franchiseId;
+}
+
+  public void setFranchiseId(int franchiseId) {
+	this.franchiseId = franchiseId;
   }
 
   public int getId() {

@@ -12,11 +12,12 @@ public class App extends Application {
   @Override
   public void start(Stage stage) {
     String[] views = {
-      "/com/boussole/app/support/reclamations.fxml",
-      "/com/boussole/app/support/alerteIAs.fxml",
-      "/com/boussole/app/support/adminReclamations.fxml"
+      "/com/boussole/app/support/reclamation.fxml",
+      "/com/boussole/app/support/alerteIA.fxml", 
+      "/com/boussole/app/support/adminReclamation.fxml",
+      "/com/boussole/app/support/adminAlerteIA.fxml"
     };
-    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[1]));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[3]));
     Parent root = null;
     try {
       root = loader.load();
