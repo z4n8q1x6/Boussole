@@ -19,8 +19,8 @@ public class ReclamationController {
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
 
-  // temp
-  private int franchise_id = 1;
+  // temp (for testing)
+  private int franchise_id = 2;
 
   public void initialize() {
     // connects the table columns to Reclamation model getters

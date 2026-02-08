@@ -12,12 +12,17 @@ import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Schema;
 import com.google.genai.types.Type.Known;
+import java.util.Optional;
 
 public class Gemini {
-  public static AlerteIA generate_alerte() {
-    Client client = new Client(); // Uses GOOGLE_API_KEY env var
-    // For manuel api usage:
-    // Client client = Client.builder().apiKey("API_KEY").build();
+  public static Optional<AlerteIA> generate_alerte() {
+    // Client client = new Client(); // Uses GOOGLE_API_KEY env var
+    String apiKey = Config.get("GEMINI_API");
+    if (apiKey == null) {
+      System.err.println("GEMINI_API_KEY not set.");
+      return Optional.empty();
+    }
+    Client client = Client.builder().apiKey(apiKey).build();
 
     Schema schema =
         Schema.builder()
@@ -67,7 +72,8 @@ public class Gemini {
         } catch (JsonProcessingException e) {
           System.err.println("Error processing json: " + e);
         }
-        break;
+        client.close();
+        return Optional.of(alerteIA);
       } catch (ServerException e) {
         // no more tokens for that model or model overloaded... -> try next model
         System.err.println("Failed to generate content: " + e);
@@ -79,7 +85,7 @@ public class Gemini {
       }
     }
     client.close();
-    return alerteIA;
+    return Optional.empty();
   }
 }
 

@@ -1,5 +1,6 @@
 package com.boussole.app;
 
+import com.boussole.app.utils.Database;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -13,16 +14,17 @@ public class App extends Application {
   public void start(Stage stage) {
     String[] views = {
       "/com/boussole/app/support/reclamation.fxml",
-      "/com/boussole/app/support/alerteIA.fxml", 
+      "/com/boussole/app/support/alerteIA.fxml",
       "/com/boussole/app/support/adminReclamation.fxml",
       "/com/boussole/app/support/adminAlerteIA.fxml"
     };
-    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[3]));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[1]));
     Parent root = null;
     try {
+
       root = loader.load();
     } catch (IOException e) {
-      e.printStackTrace();
+      System.err.println("Error: " + e.getMessage());
       return;
     }
 
@@ -30,6 +32,11 @@ public class App extends Application {
     stage.setTitle("Boussole");
     stage.setScene(scene);
     stage.show();
+  }
+
+  @Override
+  public void stop() {
+    Database.getInstance().closeConnection();
   }
 
   public static void main(String[] args) {

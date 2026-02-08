@@ -4,7 +4,6 @@ import com.boussole.app.models.Reclamation;
 import com.boussole.app.services.ReclamationService;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;

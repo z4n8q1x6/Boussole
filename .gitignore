@@ -28,6 +28,7 @@ Thumbs.db
 .env
 buffer.md
 temp_key.txt
+*.properties
 
 # --- Project Specific ---
 # Ignore the generated-sources folder if you use one

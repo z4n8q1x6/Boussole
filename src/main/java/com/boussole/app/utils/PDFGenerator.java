@@ -1,47 +1,44 @@
 package com.boussole.app.utils;
 
+import com.boussole.app.models.AlerteIA;
+import com.boussole.app.services.AlerteIAService;
+import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
+import javafx.collections.ObservableList;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.openpdf.text.Document;
+import org.openpdf.text.Element;
+import org.openpdf.text.Font;
 import org.openpdf.text.PageSize;
+import org.openpdf.text.Phrase;
+import org.openpdf.text.pdf.PdfPCell;
 import org.openpdf.text.pdf.PdfPTable;
 import org.openpdf.text.pdf.PdfWriter;
-import com.boussole.app.services.AlerteIAService;
-import com.boussole.app.models.AlerteIA;
-import javafx.collections.ObservableList;
-import java.io.File;
-import java.io.FileOutputStream;
-import org.openpdf.text.pdf.PdfPCell;
-import org.openpdf.text.Element;
-import org.openpdf.text.Phrase;
-import org.openpdf.text.Font;
-import java.awt.Color;
 
 public class PDFGenerator {
-  
+
   public static String generateAlertePDF(Stage parentStage) {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Save Alertes PDF");
     fileChooser.setInitialFileName("alertes.pdf");
-    fileChooser.getExtensionFilters().add(
-        new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
-    );
-    
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
     File file = fileChooser.showSaveDialog(parentStage);
-    
+
     if (file == null) {
-      return "";  
+      return "";
     }
-    
+
     String filename = file.getAbsolutePath();
     Document document = new Document(PageSize.A3, 18, 18, 36, 36);
-    
+
     try {
       PdfWriter.getInstance(document, new FileOutputStream(filename));
       document.open();
       PdfPTable table = new PdfPTable(5);
-      table.setWidthPercentage(100);  
-      table.setWidths(new float[]{1f, 1.5f, 1f, 1f, 5.5f});  
+      table.setWidthPercentage(100);
+      table.setWidths(new float[] {1f, 1.5f, 1f, 1f, 5.5f});
 
       // headers
       Font headerFont = new Font(Font.HELVETICA, 12, Font.BOLD);
@@ -50,11 +47,11 @@ public class PDFGenerator {
         PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE); 
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPadding(8);
         table.addCell(cell);
       }
-      
+
       // data
       AlerteIAService service = new AlerteIAService();
       ObservableList<AlerteIA> alerteIAs = service.getAll();

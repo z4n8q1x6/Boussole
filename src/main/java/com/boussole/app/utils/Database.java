@@ -5,11 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Database {
-  private static final String URL = "jdbc:mysql://localhost:3306/boussole";
-  private static final String USER = "boussole_user";
-  private static final String PASSWORD = "2121";
+  private static final String URL = Config.get("DB_URL");
+  private static final String USER = Config.get("DB_USER");
+  private static final String PASSWORD = Config.get("DB_PASSWORD");
   private Connection connection;
-  private static Database instance;
+  private static final Database instance = new Database();
 
   private Database() {
     try {
@@ -21,9 +21,6 @@ public class Database {
   }
 
   public static Database getInstance() {
-    if (instance == null) {
-      instance = new Database();
-    }
     return instance;
   }
 

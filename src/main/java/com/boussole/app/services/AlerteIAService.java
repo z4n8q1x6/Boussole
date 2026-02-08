@@ -17,13 +17,15 @@ public class AlerteIAService {
   }
 
   public boolean add(AlerteIA alerteIA) {
-    String sql = "INSERT INTO alerteIAs (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?, ?)";
+    String sql =
+        "INSERT INTO alerteIAs (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?,"
+            + " ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, alerteIA.getType_alerte());
       preparedStatement.setString(2, alerteIA.getMessage());
       preparedStatement.setFloat(3, alerteIA.getScore_gravite());
-      preparedStatement.setFloat(4, alerteIA.getFranchiseId());
+      preparedStatement.setInt(4, alerteIA.getFranchiseId());
       preparedStatement.executeUpdate();
       return true;
     } catch (SQLException e) {
@@ -63,7 +65,7 @@ public class AlerteIAService {
         list.add(alerteIA);
       }
     } catch (SQLException e) {
-      System.err.println("Failed to display reclamations: " + e.getMessage());
+      System.err.println("Failed to display alerteIAs: " + e.getMessage());
     }
     return list;
   }

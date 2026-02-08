@@ -3,6 +3,7 @@ package com.boussole.app.controllers;
 import com.boussole.app.models.AlerteIA;
 import com.boussole.app.services.AlerteIAService;
 import com.boussole.app.utils.Gemini;
+import java.util.Optional;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -45,14 +46,19 @@ public class AlerteIAController {
 
   @FXML
   public void generate() {
-    AlerteIA alerteIA = new AlerteIA();
-    alerteIA = Gemini.generate_alerte();
-    alerteIA.setFranchiseId(franchise_id);
-    if (service.add(alerteIA)) {
-      display();
-      System.out.println("Alerte added successfully.");
+    Optional<AlerteIA> result = Gemini.generate_alerte();
+    if (result.isPresent()) {
+      AlerteIA alerteIA = result.get();
+      alerteIA.setFranchiseId(franchise_id);
+      if (service.add(alerteIA)) {
+        display();
+        System.out.println("Alerte added successfully.");
+      } else {
+        System.out.println("Failed to add reclamation.");
+      }
     } else {
-      System.out.println("Failed to add reclamation.");
+      Alert alert = new Alert(Alert.AlertType.ERROR, "Your API key is invalid.");
+      alert.show();
     }
   }
 

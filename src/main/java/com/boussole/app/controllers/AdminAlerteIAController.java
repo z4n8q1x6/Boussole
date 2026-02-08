@@ -86,13 +86,13 @@ public class AdminAlerteIAController {
   public void pdf() {
     Stage stage = (Stage) pdfButton.getScene().getWindow();
     String result = PDFGenerator.generateAlertePDF(stage);
-    if(result == "generated"){
+    if(result.equals("generated")){
       Alert alert = new Alert(AlertType.INFORMATION);
       alert.setTitle("Export Success");
       alert.setContentText("PDF saved successfully!");
       alert.showAndWait();
       System.out.println("PDF generated.");
-    }else if(result != ""){
+    }else if(!result.isEmpty()){
       Alert alert = new Alert(AlertType.ERROR);
       alert.setTitle("Export Failed");
       alert.setContentText("Error: " + result);
