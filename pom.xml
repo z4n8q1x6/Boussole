@@ -4,11 +4,11 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.boussole.app</groupId>
-    <artifactId>boussole_app</artifactId>
+    <groupId>tn.esprit.boussole</groupId>
+    <artifactId>boussole</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>boussole_app</name>
+    <name>boussole</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -90,7 +90,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.boussole.app.App</mainClass>
+                    <mainClass>tn.esprit.boussole.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
