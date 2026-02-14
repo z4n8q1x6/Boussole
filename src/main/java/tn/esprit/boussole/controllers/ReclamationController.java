@@ -5,6 +5,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.services.ReclamationService;
+import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.UIUtils;
 
 public class ReclamationController {
@@ -119,25 +120,18 @@ public class ReclamationController {
     Reclamation selected = table.getSelectionModel().getSelectedItem();
 
     if (selected != null) {
-      Alert alert =
-          new Alert(
-              Alert.AlertType.CONFIRMATION,
-              "Supprimer cette réclamation ?",
-              ButtonType.YES,
-              ButtonType.NO);
-      alert.showAndWait();
+      ButtonType result =
+          AlertUtil.showConfirmation("Confirmation", "Supprimer cette réclamation ?");
 
-      if (alert.getResult() == ButtonType.YES) {
+      if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
           display();
           System.out.println("Reclamation deleted successfully.");
         }
       }
     } else {
-      Alert alert =
-          new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une réclamation à supprimer.");
-      alert.setHeaderText("Aucune sélection");
-      alert.showAndWait();
+      AlertUtil.showWarning(
+          "Aucune sélection", "Veuillez sélectionner une réclamation à supprimer.");
     }
   }
 }

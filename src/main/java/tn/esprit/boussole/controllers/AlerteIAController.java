@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.services.AlerteIAService;
+import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.Gemini;
 
 public class AlerteIAController {
@@ -57,8 +58,7 @@ public class AlerteIAController {
         System.out.println("Failed to add reclamation.");
       }
     } else {
-      Alert alert = new Alert(Alert.AlertType.ERROR, "Your API key is invalid.");
-      alert.show();
+      AlertUtil.showError("Erreur", "Votre clé API est invalide.");
     }
   }
 
@@ -67,25 +67,16 @@ public class AlerteIAController {
     AlerteIA selected = table.getSelectionModel().getSelectedItem();
 
     if (selected != null) {
-      Alert alert =
-          new Alert(
-              Alert.AlertType.CONFIRMATION,
-              "Supprimer cette alerte?",
-              ButtonType.YES,
-              ButtonType.NO);
-      alert.showAndWait();
+      ButtonType result = AlertUtil.showConfirmation("Confirmation", "Supprimer cette alerte?");
 
-      if (alert.getResult() == ButtonType.YES) {
+      if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
           display();
           System.out.println("Alerte deleted successfully.");
         }
       }
     } else {
-      Alert alert =
-          new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une alerte à supprimer.");
-      alert.setHeaderText("Aucune sélection");
-      alert.showAndWait();
+      AlertUtil.showWarning("Aucune séléction", "Veuillez sélectionner une alerte à supprimer.");
     }
   }
 

@@ -3,12 +3,11 @@ package tn.esprit.boussole.controllers;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.services.AlerteIAService;
+import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.PDFGenerator;
 
 public class AdminAlerteIAController {
@@ -57,25 +56,16 @@ public class AdminAlerteIAController {
     AlerteIA selected = table.getSelectionModel().getSelectedItem();
 
     if (selected != null) {
-      Alert alert =
-          new Alert(
-              Alert.AlertType.CONFIRMATION,
-              "Supprimer cette alerte?",
-              ButtonType.YES,
-              ButtonType.NO);
-      alert.showAndWait();
+      ButtonType result = AlertUtil.showConfirmation("Confirmation", "Supprimer cette alerte?");
 
-      if (alert.getResult() == ButtonType.YES) {
+      if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
           display();
           System.out.println("Alerte deleted successfully.");
         }
       }
     } else {
-      Alert alert =
-          new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une alerte à supprimer.");
-      alert.setHeaderText("Aucune sélection");
-      alert.showAndWait();
+      AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner une alerte à supprimer.");
     }
   }
 
@@ -88,16 +78,10 @@ public class AdminAlerteIAController {
     Stage stage = (Stage) pdfButton.getScene().getWindow();
     String result = PDFGenerator.generateAlertePDF(stage);
     if (result.equals("generated")) {
-      Alert alert = new Alert(AlertType.INFORMATION);
-      alert.setTitle("Export Success");
-      alert.setContentText("PDF saved successfully!");
-      alert.showAndWait();
+      AlertUtil.showInformation("Export Success", "PDF saved successfully!");
       System.out.println("PDF generated.");
     } else if (!result.isEmpty()) {
-      Alert alert = new Alert(AlertType.ERROR);
-      alert.setTitle("Export Failed");
-      alert.setContentText("Error: " + result);
-      alert.showAndWait();
+      AlertUtil.showError("Export Failed", "Error: " + result);
       System.out.println("PDF NOT generated.");
     }
   }

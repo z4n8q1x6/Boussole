@@ -14,11 +14,11 @@ public class App extends Application {
   public void start(Stage stage) {
     String[] views = {
       "/tn/esprit/boussole/support/reclamation.fxml",
-      "/tn/esprit/boussole/support/alerteIA.fxml",
       "/tn/esprit/boussole/support/adminReclamation.fxml",
-      "/tn/esprit/boussole/support/adminAlerteIA.fxml"
+      "/tn/esprit/boussole/support/alerteIA.fxml",
+      "/tn/esprit/boussole/support/adminAlerteIA.fxml",
     };
-    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[3]));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[1]));
     Parent root = null;
     try {
 
