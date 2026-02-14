@@ -10,7 +10,7 @@ public class Produit {
     private String image;
 
     // Constructor without id (for insert)
-    public Produit(String ordinater, String aze88az4e8, double v, int i, String azeazeaze) {
+    public Produit(String nom, String reference, double prix_achat, int stock_dispo, String image) {
         this.nom = nom;
         this.reference = reference;
         this.prix_achat = prix_achat;
