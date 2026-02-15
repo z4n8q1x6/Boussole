@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.GestionBilansController">
+
+    <!-- Sidebar gauche (identique au Dashboard) -->
+    <left>
+        <VBox spacing="15" style="-fx-background-color: linear-gradient(#05243a, #0b3d91); -fx-pref-width:220; -fx-padding:20;" >
+            <children>
+                <Label text="Boussole" style="-fx-text-fill: white; -fx-font-size:18px; -fx-font-weight:bold;" />
+
+                <Button fx:id="btnDashboard" text="Tableau de Bord" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+                <Button fx:id="btnBudgets" text="Budgets" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+                <Button fx:id="btnBilans" text="Bilans" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+
+                <!-- Spacer -->
+                <Pane VBox.vgrow="ALWAYS" />
+
+                <Label text="v1.0" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size:11px;" />
+            </children>
+        </VBox>
+    </left>
+
+    <!-- Centre -->
+    <center>
+        <VBox spacing="20" style="-fx-background-color: #f6f8fb; -fx-padding:20;">
+            <children>
+                <Label text="Reporting Financier" style="-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill: #0b3d91;" />
+
+                <!-- Bouton Générer Bilan -->
+                <HBox spacing="10">
+                    <children>
+                        <Button fx:id="btnGenererBilan" text="📊 Générer Bilan Mensuel" style="-fx-padding:10 20 10 20; -fx-font-size:14px; -fx-background-color: #2e7d32; -fx-text-fill: white; -fx-cursor: hand;" />
+                        <Button fx:id="btnExporterPDF" text="📥 Exporter en PDF" style="-fx-padding:10 20 10 20; -fx-font-size:14px; -fx-background-color: #1565c0; -fx-text-fill: white; -fx-cursor: hand;" />
+                        <Label text="(Sélectionnez un bilan et exportez-le en PDF)" style="-fx-text-fill: #66788a; -fx-font-size:12px;" />
+                    </children>
+                </HBox>
+
+                <!-- TableView Historique Bilans -->
+                <Label text="Historique des Bilans" style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill: #0b3d91;" />
+                <TableView fx:id="tableBilans" prefHeight="400" style="-fx-font-size:12px;">
+                    <columns>
+                        <TableColumn fx:id="colMois" text="Mois" prefWidth="80" />
+                        <TableColumn fx:id="colAnnee" text="Année" prefWidth="80" />
+                        <TableColumn fx:id="colRecettes" text="Total Recettes (TND)" prefWidth="150" />
+                        <TableColumn fx:id="colCharges" text="Total Charges (TND)" prefWidth="150" />
+                        <TableColumn fx:id="colResultat" text="Résultat Net (TND)" prefWidth="150" />
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="120" />
+                    </columns>
+                </TableView>
+
+            </children>
+        </VBox>
+    </center>
+
+</BorderPane>

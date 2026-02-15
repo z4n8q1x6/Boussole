@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.GestionBudgetsController">
+
+    <!-- Sidebar gauche (identique au Dashboard) -->
+    <left>
+        <VBox spacing="15" style="-fx-background-color: linear-gradient(#05243a, #0b3d91); -fx-pref-width:220; -fx-padding:20;" >
+            <children>
+                <Label text="Boussole" style="-fx-text-fill: white; -fx-font-size:18px; -fx-font-weight:bold;" />
+
+                <Button fx:id="btnDashboard" text="Tableau de Bord" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+                <Button fx:id="btnBudgets" text="Budgets" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+                <Button fx:id="btnBilans" text="Bilans" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+
+                <!-- Spacer -->
+                <Pane VBox.vgrow="ALWAYS" />
+
+                <Label text="v1.0" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size:11px;" />
+            </children>
+        </VBox>
+    </left>
+
+    <!-- Centre -->
+    <center>
+        <VBox spacing="20" style="-fx-background-color: #f6f8fb; -fx-padding:20;">
+            <children>
+                <Label text="Stratégie Budgétaire" style="-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill: #0b3d91;" />
+
+                <!-- Formulaire Budget -->
+                <VBox spacing="10" style="-fx-border-color: #e0e0e0; -fx-border-radius:8; -fx-background-color: white; -fx-padding:15;">
+                    <children>
+                        <Label text="Ajouter/Modifier un Budget" style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill: #0b3d91;" />
+
+                        <HBox spacing="15">
+                            <children>
+                                <VBox spacing="5" prefWidth="150">
+                                    <children>
+                                        <Label text="Mois" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
+                                        <ComboBox fx:id="combMois" style="-fx-font-size:12px;" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="5" prefWidth="150">
+                                    <children>
+                                        <Label text="Année" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
+                                        <ComboBox fx:id="cbAnnee" style="-fx-font-size:12px;" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="5" prefWidth="180">
+                                    <children>
+                                        <Label text="Type de Budget" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
+                                        <ComboBox fx:id="cbTypeBudget" style="-fx-font-size:12px;" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="5" prefWidth="180">
+                                    <children>
+                                        <Label text="Catégorie" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
+                                        <ComboBox fx:id="cbCategorie" style="-fx-font-size:12px;" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="15">
+                            <children>
+                                <VBox spacing="5" prefWidth="150">
+                                    <children>
+                                        <Label text="Montant (TND)" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
+                                        <TextField fx:id="txtMontant" style="-fx-font-size:12px;" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <CheckBox fx:id="chkReseau" text="Appliquer à tout le réseau" style="-fx-font-size:12px;" />
+
+                        <Button fx:id="btnSauvegarder" text="Sauvegarder" style="-fx-padding:8 20 8 20; -fx-font-size:14px; -fx-background-color: #0b3d91; -fx-text-fill: white; -fx-cursor: hand;" />
+                    </children>
+                </VBox>
+
+                <!-- TableView Budgets -->
+                <Label text="Budgets Existants" style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill: #0b3d91;" />
+                <TableView fx:id="tableBudgets" prefHeight="300" style="-fx-font-size:12px;">
+                    <columns>
+                        <TableColumn fx:id="colMois" text="Mois" prefWidth="80" />
+                        <TableColumn fx:id="colAnnee" text="Année" prefWidth="80" />
+                        <TableColumn fx:id="colType" text="Type" prefWidth="120" />
+                        <TableColumn fx:id="colCategorie" text="Catégorie" prefWidth="150" />
+                        <TableColumn fx:id="colMontant" text="Montant (TND)" prefWidth="120" />
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="100" />
+                    </columns>
+                </TableView>
+
+            </children>
+        </VBox>
+    </center>
+
+</BorderPane>
+

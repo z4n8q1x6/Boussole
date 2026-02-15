@@ -1,0 +1,56 @@
+/* ============================================================================
+   Styles CSS pour les boutons d'actions (Modifier/Supprimer)
+   Utilisés dans GestionBudgetsController et GestionBilansController
+   ============================================================================ */
+
+/* Bouton d'édition (Modifier) - Vert */
+.button-action-edit {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 6 10 6 10;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border: none;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.0, 0, 2);
+}
+
+.button-action-edit:hover {
+    -fx-background-color: #45a049;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0.0, 0, 3);
+}
+
+.button-action-edit:pressed {
+    -fx-background-color: #3d8b40;
+}
+
+/* Bouton de suppression (Supprimer) - Rouge */
+.button-action-delete {
+    -fx-background-color: #f44336;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 6 10 6 10;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border: none;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.0, 0, 2);
+}
+
+.button-action-delete:hover {
+    -fx-background-color: #da190b;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0.0, 0, 3);
+}
+
+.button-action-delete:pressed {
+    -fx-background-color: #ba0000;
+}
+
+/* Style générique pour tous les boutons d'action */
+.button-action {
+    -fx-font-weight: bold;
+    -fx-min-width: 40px;
+    -fx-min-height: 30px;
+}
+
