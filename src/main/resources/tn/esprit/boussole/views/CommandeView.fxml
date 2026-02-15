@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.CommandeController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <children>
+        <!-- Barre d'outils -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <Label styleClass="title-label" text="📋 Gestion des Commandes" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button mnemonicParsing="false" onAction="#handleRefresh" styleClass="action-button" text="🔄 Rafraîchir" />
+            </children>
+        </HBox>
+
+        <!-- Tableau des commandes -->
+        <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="colDate" prefWidth="150.0" text="Date création" />
+                <TableColumn fx:id="colMontant" prefWidth="120.0" text="Montant total" />
+                <TableColumn fx:id="colStatut" prefWidth="100.0" text="Statut" />
+                <TableColumn fx:id="colFranchise" prefWidth="100.0" text="Franchise ID" />
+                <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
+            </columns>
+        </TableView>
+
+        <!-- Formulaire -->
+        <VBox styleClass="form-panel">
+            <children>
+                <Label styleClass="form-title" text="AJOUTER / MODIFIER UNE COMMANDE" />
+
+                <GridPane hgap="20.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" minWidth="80.0" />
+                        <ColumnConstraints minWidth="200.0" />
+                        <ColumnConstraints halignment="RIGHT" minWidth="80.0" />
+                        <ColumnConstraints minWidth="200.0" />
+                    </columnConstraints>
+
+                    <children>
+                        <Label styleClass="form-label" text="Montant total:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                        <TextField fx:id="montantField" promptText="0.00" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                        <Label styleClass="form-label" text="Statut:" GridPane.rowIndex="0" GridPane.columnIndex="2" />
+                        <ComboBox fx:id="statutCombo" promptText="Sélectionner un statut" GridPane.rowIndex="0" GridPane.columnIndex="3" />
+
+                        <Label styleClass="form-label" text="Franchise ID:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <TextField fx:id="franchiseIdField" promptText="ID franchise" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                    </children>
+                </GridPane>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#handleAjouter" styleClass="action-button" text="➕ Ajouter" />
+                        <Button mnemonicParsing="false" onAction="#handleModifier" styleClass="edit-button" text="✏️ Modifier" />
+                        <Button mnemonicParsing="false" onAction="#handleSupprimer" styleClass="delete-button" text="🗑️ Supprimer" />
+                        <Button mnemonicParsing="false" onAction="#handleEffacer" styleClass="clear-button" text="🗑️ Effacer" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>
