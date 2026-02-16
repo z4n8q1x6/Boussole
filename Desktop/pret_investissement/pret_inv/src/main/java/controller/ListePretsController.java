@@ -66,7 +66,7 @@ public class ListePretsController {
         try {
             List<Pret> data = pretService.getAllPrets();
             pretList.setAll(data);
-            // On ne définit pas directement pretList sur la table ici car configurerFiltres s'en occupe
+           
         } catch (Exception e) {
             afficherAlerte("Erreur de chargement", "Impossible de récupérer les données : " + e.getMessage(), Alert.AlertType.ERROR);
         }
