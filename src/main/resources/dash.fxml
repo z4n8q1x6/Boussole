@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.dashController">
+    <children>
+        <!-- MENU LATÉRAL GAUCHE -->
+        <VBox prefHeight="700.0" prefWidth="250.0" style="-fx-background-color: linear-gradient(to bottom, #2C3E50, #34495E);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- En-tête du menu avec logo -->
+                <HBox alignment="CENTER_LEFT" prefHeight="80.0" spacing="15.0">
+                    <padding>
+                        <Insets left="25.0" right="25.0" />
+                    </padding>
+                    <children>
+                        <Label text="🧭" textFill="WHITE">
+                            <font>
+                                <Font size="30.0" />
+                            </font>
+                        </Label>
+                        <Label text="Boussole" textFill="WHITE">
+                            <font>
+                                <Font name="System Bold" size="20.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
+
+                <!-- Boutons du menu -->
+                <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20.0" />
+                    </padding>
+                    <children>
+                        <!-- Dashboard -->
+                        <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📊  Tableau de bord">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </Button>
+
+                        <!-- Gestion utilisateurs - ACTIF -->
+                        <Button fx:id="btnUsers" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-color: white; -fx-border-width: 0 0 0 5;" text="👥  Gestion Utilisateurs">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </Button>
+
+                        <!-- Liste Entreprises - NOUVEAU -->
+                        <Button fx:id="btnEntreprises" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="🏢  Liste Entreprises">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </Button>
+
+                        <!-- Paramètres -->
+                        <Button fx:id="btnSettings" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="⚙️  Paramètres">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </Button>
+
+                        <!-- Rapports -->
+                        <Button fx:id="btnReports" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📄  Rapports">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </Button>
+                    </children>
+                </VBox>
+
+                <!-- Bouton déconnexion en bas -->
+                <Button fx:id="btnLogout" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: #E74C3C; -fx-cursor: hand; -fx-border-width: 0;" text="🚪  Déconnexion">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                    <padding>
+                        <Insets left="30.0" />
+                    </padding>
+                    <VBox.margin>
+                        <Insets bottom="20.0" top="20.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
+
+        <!-- ZONE PRINCIPALE -->
+        <StackPane fx:id="contentArea" layoutX="250.0" prefHeight="700.0" prefWidth="950.0" style="-fx-background-color: #ECF0F1;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+    </children>
+</AnchorPane>

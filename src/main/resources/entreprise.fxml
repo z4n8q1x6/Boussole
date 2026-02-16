@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="950.0" style="-fx-background-color: #ECF0F1;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.entrepriseController">
+    <children>
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" prefHeight="70.0" spacing="20.0" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+            <padding>
+                <Insets left="30.0" right="30.0" />
+            </padding>
+            <children>
+                <VBox HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label text="Gestion des Entreprises" textFill="#2C3E50">
+                            <font>
+                                <Font name="System Bold" size="20.0" />
+                            </font>
+                        </Label>
+                        <Label text="Consulter, modifier et supprimer des entreprises" textFill="#7F8C8D">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- Barre d'actions -->
+        <HBox alignment="CENTER_LEFT" prefHeight="80.0" spacing="20.0">
+            <padding>
+                <Insets left="30.0" right="30.0" top="30.0" />
+            </padding>
+            <children>
+                <TextField fx:id="searchField" onKeyReleased="#handleSearch" prefHeight="45.0" prefWidth="300.0" promptText="🔍 Rechercher une entreprise..." style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;">
+                    <font>
+                        <Font size="13.0" />
+                    </font>
+                </TextField>
+            </children>
+        </HBox>
+
+        <!-- TableView -->
+        <TableView fx:id="tableEntreprises" prefHeight="500.0" style="-fx-background-color: white; -fx-background-radius: 10;" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="colNom" prefWidth="150.0" text="Nom" />
+                <TableColumn fx:id="colEmail" prefWidth="200.0" text="Email" />
+                <TableColumn fx:id="colTelephone" prefWidth="120.0" text="Téléphone" />
+                <TableColumn fx:id="colAdresse" prefWidth="200.0" text="Adresse" />
+                <TableColumn fx:id="colActif" prefWidth="80.0" text="Actif" />
+                <TableColumn fx:id="colSolde" prefWidth="100.0" text="Solde" />
+                <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+            <VBox.margin>
+                <Insets bottom="20.0" left="30.0" right="30.0" />
+            </VBox.margin>
+        </TableView>
+
+        <!-- Pagination info -->
+        <HBox alignment="CENTER_LEFT" prefHeight="40.0">
+            <padding>
+                <Insets left="30.0" right="30.0" />
+            </padding>
+            <children>
+                <Label fx:id="lblPagination" text="Affichage de X à Y sur Z entreprises" textFill="#7F8C8D">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+    </children>
+</VBox>

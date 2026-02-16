@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="550.0" prefWidth="400.0" style="-fx-background-color: linear-gradient(to bottom, #2C3E50, #34495E);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.loginController">
+    <children>
+        <!-- StackPane pour centrer le contenu -->
+        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- Carte centrale de connexion -->
+                <VBox alignment="TOP_CENTER" maxHeight="450.0" maxWidth="350.0" prefHeight="450.0" prefWidth="350.0" spacing="20.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);">
+                    <padding>
+                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                    </padding>
+                    <children>
+                        <!-- Titre -->
+                        <Label text="Connexion" textFill="#2C3E50">
+                            <font>
+                                <Font name="System Bold" size="28.0" />
+                            </font>
+                        </Label>
+
+                        <!-- Sous-titre -->
+                        <Label text="Bienvenue ! Connectez-vous à votre compte" textAlignment="CENTER" textFill="#7F8C8D" wrapText="true">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets bottom="10.0" />
+                            </VBox.margin>
+                        </Label>
+
+                        <!-- Champ email -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Email" textFill="#2C3E50">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="emailField" promptText="Entrez votre email" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;">
+                                    <font>
+                                        <Font size="13.0" />
+                                    </font>
+                                </TextField>
+                            </children>
+                        </VBox>
+
+                        <!-- Champ mot de passe -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Mot de passe" textFill="#2C3E50">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                </Label>
+                                <PasswordField fx:id="passwordField" promptText="Entrez votre mot de passe" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;">
+                                    <font>
+                                        <Font size="13.0" />
+                                    </font>
+                                </PasswordField>
+                            </children>
+                        </VBox>
+
+                        <!-- Case à cocher -->
+                        <CheckBox fx:id="rememberMeCheckbox" text="Se souvenir de moi" textFill="#2C3E50">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </CheckBox>
+
+                        <!-- Bouton de connexion -->
+                        <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" style="-fx-background-color: #3498DB; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Se connecter">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="12.0" top="12.0" />
+                            </padding>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Button>
+
+                        <!-- Lien mot de passe oublié -->
+                        <Hyperlink fx:id="forgotPasswordLink" text="Mot de passe oublié ?" textFill="#3498DB">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Hyperlink>
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+
+        <!-- En-tête de l'application -->
+        <Label layoutX="50.0" layoutY="30.0" text="Boussole" textFill="WHITE">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+    </children>
+</AnchorPane>

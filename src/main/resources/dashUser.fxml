@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.dashUserController">
+    <children>
+        <!-- MENU LATÉRAL GAUCHE -->
+        <VBox prefHeight="700.0" prefWidth="250.0" style="-fx-background-color: linear-gradient(to bottom, #2C3E50, #34495E);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- En-tête du menu avec logo -->
+                <HBox alignment="CENTER_LEFT" prefHeight="80.0" spacing="15.0">
+                    <padding>
+                        <Insets left="25.0" right="25.0" />
+                    </padding>
+                    <children>
+                        <Label text="🧭" textFill="WHITE">
+                            <font>
+                                <Font size="30.0" />
+                            </font>
+                        </Label>
+                        <Label text="Boussole" textFill="WHITE">
+                            <font>
+                                <Font name="System Bold" size="20.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
+
+                <!-- ScrollPane pour le menu si la liste est longue -->
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                    <content>
+                        <VBox spacing="5.0" style="-fx-background-color: transparent;">
+                            <padding>
+                                <Insets bottom="20.0" top="10.0" />
+                            </padding>
+                            <children>
+                                <!-- SECTION PRINCIPAL -->
+                                <Label text="PRINCIPAL" textFill="#95A5A6">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                    <padding>
+                                        <Insets left="20.0" top="10.0" />
+                                    </padding>
+                                </Label>
+
+                                <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📊  Tableau de bord">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnProduit" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📦  Produit">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnCommande" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="🛒  Commande">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnLigneCommande" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📝  Ligne commande">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+
+                                <!-- SECTION GESTION -->
+                                <Label text="📌 GESTION" textFill="#95A5A6">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                    <padding>
+                                        <Insets left="20.0" top="15.0" />
+                                    </padding>
+                                </Label>
+
+                                <Button fx:id="btnFournisseur" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="🚚  Fournisseur">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnFranchises" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="🏢  Franchises">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnAlertes" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="⚠️  Alertes">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnReclamations" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📢  Réclamations">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+
+                                <!-- SECTION FINANCES -->
+                                <Label text="📌 FINANCES" textFill="#95A5A6">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                    <padding>
+                                        <Insets left="20.0" top="15.0" />
+                                    </padding>
+                                </Label>
+
+                                <Button fx:id="btnBilan" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📈  Bilan">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnBudget" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="💰  Budget prévisionnel">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnCharge" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="💸  Charge">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnMensualite" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="📅  Mensualité">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnPret" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="🏦  Prêt">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                                <Button fx:id="btnTransaction" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;" text="💳  Transaction">
+                                    <padding><Insets left="30.0" /></padding>
+                                </Button>
+                            </children>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+
+                <!-- Bouton déconnexion en bas -->
+                <Button fx:id="btnLogout" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: #E74C3C; -fx-cursor: hand; -fx-border-width: 0;" text="🚪  Déconnexion">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                    <padding>
+                        <Insets left="30.0" />
+                    </padding>
+                    <VBox.margin>
+                        <Insets bottom="10.0" top="10.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
+
+        <!-- ZONE PRINCIPALE -->
+        <VBox layoutX="250.0" prefHeight="700.0" prefWidth="950.0" style="-fx-background-color: #ECF0F1;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- Header -->
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" spacing="20.0" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                    <children>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label fx:id="lblPageTitle" text="Tableau de bord" textFill="#2C3E50">
+                                    <font>
+                                        <Font name="System Bold" size="20.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="lblPageSubtitle" text="Vue d'ensemble de votre activité" textFill="#7F8C8D">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+
+                        <!-- Info utilisateur connecté -->
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <Label style="-fx-background-color: #27AE60; -fx-background-radius: 20; -fx-text-fill: white; -fx-padding: 10;" text="U">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="lblUsername" text="Utilisateur" textFill="#2C3E50">
+                                    <font>
+                                        <Font size="13.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+
+                <!-- Zone de contenu dynamique -->
+                <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="550.0" style="-fx-background-color: white; -fx-background-radius: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.addUserController">
+    <children>
+        <!-- En-tête coloré - FIXE -->
+        <AnchorPane prefHeight="80.0" prefWidth="550.0" style="-fx-background-color: linear-gradient(to right, #2C3E50, #34495E); -fx-background-radius: 15 15 0 0;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- Icône utilisateur -->
+                <Label layoutX="30.0" layoutY="20.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 50; -fx-padding: 10;" text="👤" textFill="WHITE">
+                    <font>
+                        <Font size="24.0" />
+                    </font>
+                </Label>
+
+                <!-- Titre -->
+                <Label layoutX="90.0" layoutY="30.0" text="Nouvelle Entreprise" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                </Label>
+
+                <!-- Bouton fermer -->
+                <Button fx:id="btnClose" layoutX="500.0" layoutY="25.0" mnemonicParsing="false" onAction="#handleClose" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 50; -fx-text-fill: white; -fx-cursor: hand; -fx-font-size: 20px; -fx-font-weight: bold;" text="×">
+                    <padding>
+                        <Insets bottom="2.0" left="10.0" right="10.0" top="2.0" />
+                    </padding>
+                </Button>
+            </children>
+        </AnchorPane>
+
+        <!-- ScrollPane pour le formulaire -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="620.0" prefWidth="550.0" style="-fx-background-color: transparent; -fx-background: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+            <content>
+                <!-- Formulaire -->
+                <VBox prefWidth="510.0" spacing="20.0">
+                    <padding>
+                        <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+                    </padding>
+                    <children>
+                        <Label text="Informations du Responsable" textFill="#34495E">
+                            <font><Font name="System Bold" size="14.0" /></font>
+                        </Label>
+
+                        <!-- Ligne 1: Nom et Prénom -->
+                        <HBox spacing="20.0">
+                            <children>
+                                <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Nom *" textFill="#2C3E50">
+                                            <font><Font name="System Bold" size="12.0" /></font>
+                                        </Label>
+                                        <TextField fx:id="txtNom" promptText="Entrez le nom" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Prénom *" textFill="#2C3E50">
+                                            <font><Font name="System Bold" size="12.0" /></font>
+                                        </Label>
+                                        <TextField fx:id="txtPrenom" promptText="Entrez le prénom" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <!-- Ligne 2: Email -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Email *" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <TextField fx:id="txtEmail" promptText="utilisateur@exemple.com" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                            </children>
+                        </VBox>
+
+                        <!-- Ligne 3: Mot de passe -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Mot de passe *" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <PasswordField fx:id="txtPassword" promptText="Entrez le mot de passe" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                            </children>
+                        </VBox>
+
+                        <Label text="Informations de l'Entreprise" textFill="#34495E">
+                            <font><Font name="System Bold" size="14.0" /></font>
+                            <VBox.margin><Insets top="10.0" /></VBox.margin>
+                        </Label>
+
+                        <!-- Ligne 8: Nom de l'entreprise -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Nom de l'entreprise *" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <TextField fx:id="txtNomEntreprise" promptText="Nom de l'entreprise" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                            </children>
+                        </VBox>
+
+                        <!-- Ligne 4: Téléphone -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Téléphone" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <TextField fx:id="txtTelephone" promptText="+216 XX XXX XXX" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                            </children>
+                        </VBox>
+
+                        <!-- Ligne 9: Adresse de l'entreprise -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Adresse de l'entreprise" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <TextField fx:id="txtAdresseEntreprise" promptText="Adresse complète de l'entreprise" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" />
+                            </children>
+                        </VBox>
+
+                        <!-- Ligne 7: Solde actuel -->
+                        <VBox spacing="8.0">
+                            <children>
+                                <Label text="Solde initial" textFill="#2C3E50">
+                                    <font><Font name="System Bold" size="12.0" /></font>
+                                </Label>
+                                <TextField fx:id="txtSolde" promptText="0.00" style="-fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-padding: 10;" text="0.00" />
+                            </children>
+                        </VBox>
+
+                        <!-- Case à cocher Actif -->
+                        <CheckBox fx:id="checkActif" selected="true" text="Compte actif" textFill="#2C3E50">
+                            <font><Font size="13.0" /></font>
+                        </CheckBox>
+
+                        <!-- Boutons d'action -->
+                        <HBox alignment="CENTER" spacing="20.0">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                            <children>
+                                <!-- Bouton Annuler -->
+                                <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#handleCancel" prefHeight="45.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 8; -fx-cursor: hand;" text="Annuler">
+                                    <font><Font name="System Bold" size="14.0" /></font>
+                                </Button>
+
+                                <!-- Bouton Créer -->
+                                <Button fx:id="btnCreate" mnemonicParsing="false" onAction="#handleCreate" prefHeight="45.0" prefWidth="230.0" style="-fx-background-color: linear-gradient(to right, #3498DB, #2980B9); -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="✓ Créer l'entreprise">
+                                    <font><Font name="System Bold" size="14.0" /></font>
+                                </Button>
+                            </children>
+                        </HBox>
+
+                        <!-- Note en bas -->
+                        <Label text="* Champs obligatoires" textFill="#7F8C8D">
+                            <font><Font size="11.0" /></font>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Label>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>
