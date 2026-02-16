@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #0e5384;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.chargesdepenses.gui.afficherBackChargeController">
+    <VBox spacing="18.0" alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 20;" maxWidth="800.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="30.0" AnchorPane.bottomAnchor="30.0">
+        <padding>
+            <Insets top="35.0" right="35.0" bottom="35.0" left="35.0" />
+        </padding>
+        <HBox spacing="12.0" alignment="CENTER_LEFT">
+            <ImageView fx:id="logoBoussole" fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                <image>
+                    <Image url="@images/boussole_logo_n.png" />
+                </image>
+            </ImageView>
+            <Label text="Liste des Charges" textFill="#0e5384">
+                <font>
+                    <Font name="System Bold" size="22.0" />
+                </font>
+            </Label>
+            <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10.0">
+                <Button fx:id="btnFront" text="Voir Front" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 15; -fx-cursor: hand;" />
+                <TextField fx:id="txtRecherche" promptText="Rechercher par titre..." prefWidth="200.0" />
+                <ComboBox fx:id="comboTri" promptText="Trier par" prefWidth="150.0" />
+            </HBox>
+        </HBox>
+        <TableView fx:id="tableCharges" prefHeight="500.0" prefWidth="700.0">
+            <columns>
+                <TableColumn fx:id="colTitre" text="Titre" prefWidth="120.0" />
+                <TableColumn fx:id="colMontant" text="Montant" prefWidth="90.0" />
+                <TableColumn fx:id="colDate" text="Date" prefWidth="100.0" />
+                <TableColumn fx:id="colType" text="Type" prefWidth="120.0" />
+                <TableColumn fx:id="colPreuve" text="Preuve" prefWidth="120.0" />
+                <TableColumn fx:id="colStatus" text="Statut" prefWidth="100.0" />
+                <TableColumn fx:id="colFranchiseId" text="Franchise ID" prefWidth="90.0" />
+                <TableColumn fx:id="colModifier" text="Modifier" prefWidth="40.0" />
+                <TableColumn fx:id="colSupprimer" text="Supprimer" prefWidth="40.0" />
+            </columns>
+        </TableView>
+        <HBox alignment="CENTER_RIGHT" spacing="20.0" prefWidth="700.0">
+            <Label text="Total :" textFill="#0e5384">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Label>
+            <Label fx:id="lblTotal" text="0.0 DT" textFill="#0e5384">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Label>
+            <Button fx:id="btnAjouter" text="+" style="-fx-background-color: #4593cb; -fx-text-fill: white; -fx-font-size: 24; -fx-background-radius: 25;" maxWidth="50.0" maxHeight="50.0" minWidth="50.0" minHeight="50.0" />
+        </HBox>
+    </VBox>
+</AnchorPane>
