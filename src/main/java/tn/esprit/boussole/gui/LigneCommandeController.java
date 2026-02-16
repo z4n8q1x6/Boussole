@@ -106,13 +106,13 @@ public class LigneCommandeController implements Initializable {
 
         // Colonne Actions avec boutons
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️");
-            private final Button deleteBtn = new Button("🗑️");
+            private final Button editBtn = new Button("✏️ Modifier");
+            private final Button deleteBtn = new Button("🗑️ Supprimer");
             private final HBox pane = new HBox(5, editBtn, deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
-                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
 
                 editBtn.setOnAction(event -> {
                     LigneCommande ligne = getTableView().getItems().get(getIndex());
@@ -164,8 +164,11 @@ public class LigneCommandeController implements Initializable {
                 }
             });
 
+            System.out.println("Produits chargés pour combo: " + produitList.size());
+
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les produits: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -199,8 +202,11 @@ public class LigneCommandeController implements Initializable {
                 }
             });
 
+            System.out.println("Commandes chargées pour combo: " + commandeList.size());
+
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les commandes: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -208,8 +214,10 @@ public class LigneCommandeController implements Initializable {
         try {
             ligneCommandeList = FXCollections.observableArrayList(ligneCommandeService.selectAll());
             ligneTable.setItems(ligneCommandeList);
+            System.out.println("Lignes de commande chargées: " + ligneCommandeList.size());
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les lignes de commande: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -258,6 +266,7 @@ public class LigneCommandeController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne de commande ajoutée avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -283,6 +292,7 @@ public class LigneCommandeController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne de commande modifiée avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -311,6 +321,7 @@ public class LigneCommandeController implements Initializable {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne supprimée avec succès!");
             } catch (SQLException e) {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

@@ -4,59 +4,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="20.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.LigneCommandeController">
+<VBox spacing="15.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.LigneCommandeController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
     </padding>
 
     <children>
         <!-- Barre d'outils -->
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-                <Label styleClass="title-label" text="📝 Gestion des Lignes de Commande" />
+                <Label styleClass="title-label" text="📝 Lignes de Commande" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#handleRefresh" styleClass="action-button" text="🔄 Rafraîchir" />
+                <Button mnemonicParsing="false" onAction="#handleRefresh" styleClass="action-button" text="Rafraîchir" />
             </children>
         </HBox>
 
-        <!-- Tableau des lignes de commande -->
-        <TableView fx:id="ligneTable" VBox.vgrow="ALWAYS">
+        <!-- Tableau des lignes de commande - HAUTEUR RÉDUITE à 250px -->
+        <TableView fx:id="ligneTable" prefHeight="250">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
-                <TableColumn fx:id="colQuantite" prefWidth="80.0" text="Quantité" />
-                <TableColumn fx:id="colPrix" prefWidth="100.0" text="Prix unitaire" />
-                <TableColumn fx:id="colTotal" prefWidth="100.0" text="Total" />
-                <TableColumn fx:id="colCommandeId" prefWidth="100.0" text="Commande ID" />
-                <TableColumn fx:id="colProduit" prefWidth="150.0" text="Produit" />
-                <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
+                <TableColumn fx:id="colId" prefWidth="50" text="ID" />
+                <TableColumn fx:id="colQuantite" prefWidth="80" text="Qté" />
+                <TableColumn fx:id="colPrix" prefWidth="100" text="Prix" />
+                <TableColumn fx:id="colTotal" prefWidth="100" text="Total" />
+                <TableColumn fx:id="colCommandeId" prefWidth="90" text="Cmd ID" />
+                <TableColumn fx:id="colProduit" prefWidth="200" text="Produit" />
+                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
             </columns>
         </TableView>
 
         <!-- Formulaire -->
         <VBox styleClass="form-panel">
             <children>
-                <Label styleClass="form-title" text="AJOUTER / MODIFIER UNE LIGNE DE COMMANDE" />
+                <Label styleClass="form-title" text="AJOUTER / MODIFIER UNE LIGNE" />
 
-                <GridPane hgap="20.0" vgap="10.0">
+                <GridPane hgap="15.0" vgap="10.0">
                     <columnConstraints>
-                        <ColumnConstraints halignment="RIGHT" minWidth="100.0" />
-                        <ColumnConstraints minWidth="250.0" />
-                        <ColumnConstraints halignment="RIGHT" minWidth="100.0" />
-                        <ColumnConstraints minWidth="250.0" />
+                        <ColumnConstraints halignment="RIGHT" minWidth="80" />
+                        <ColumnConstraints minWidth="200" />
+                        <ColumnConstraints halignment="RIGHT" minWidth="80" />
+                        <ColumnConstraints minWidth="200" />
                     </columnConstraints>
 
                     <children>
                         <Label styleClass="form-label" text="Commande:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                        <ComboBox fx:id="commandeCombo" promptText="Sélectionner une commande" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="commandeCombo" promptText="Sélectionner" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
                         <Label styleClass="form-label" text="Produit:" GridPane.rowIndex="0" GridPane.columnIndex="2" />
-                        <ComboBox fx:id="produitCombo" promptText="Sélectionner un produit" GridPane.rowIndex="0" GridPane.columnIndex="3" />
+                        <ComboBox fx:id="produitCombo" promptText="Sélectionner" GridPane.rowIndex="0" GridPane.columnIndex="3" />
 
                         <Label styleClass="form-label" text="Quantité:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                        <TextField fx:id="quantiteField" promptText="Quantité" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        <TextField fx:id="quantiteField" promptText="0" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-                        <Label styleClass="form-label" text="Prix unitaire:" GridPane.rowIndex="1" GridPane.columnIndex="2" />
-                        <TextField fx:id="prixUnitaireField" promptText="Prix unitaire" editable="false" GridPane.rowIndex="1" GridPane.columnIndex="3" />
+                        <Label styleClass="form-label" text="Prix:" GridPane.rowIndex="1" GridPane.columnIndex="2" />
+                        <TextField fx:id="prixUnitaireField" promptText="0.00" editable="false" GridPane.rowIndex="1" GridPane.columnIndex="3" />
                     </children>
                 </GridPane>
 

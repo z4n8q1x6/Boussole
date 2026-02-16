@@ -1,6 +1,5 @@
-/* style.css - Version améliorée */
+/* style.css - Version corrigée */
 
-/* Police globale */
 .root {
     -fx-font-family: 'Segoe UI', 'System', sans-serif;
     -fx-background-color: #f4f7fc;
@@ -16,9 +15,7 @@
     -fx-text-fill: #8a9cb0;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-letter-spacing: 1px;
     -fx-padding: 25 20 5 20;
-    -fx-text-transform: uppercase;
 }
 
 .nav-button {
@@ -30,7 +27,6 @@
     -fx-cursor: hand;
     -fx-border-width: 0;
     -fx-background-radius: 0;
-    -fx-font-weight: 500;
 }
 
 .nav-button:hover {
@@ -41,30 +37,19 @@
 .nav-button:selected {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
-    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.3), 5, 0, 0, 0);
 }
 
 .nav-button:disabled {
     -fx-opacity: 0.4;
-    -fx-text-fill: #7f8c8d;
 }
 
-.nav-button Tooltip {
-    -fx-background-color: #34495e;
-    -fx-text-fill: white;
-    -fx-font-size: 11px;
-}
-
-/* Logo */
 .logo {
     -fx-text-fill: white;
     -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-padding: 0 0 20 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 0);
 }
 
-/* Version */
 .version-label {
     -fx-text-fill: #5d6d7e;
     -fx-font-size: 10px;
@@ -83,14 +68,6 @@
     -fx-font-weight: bold;
     -fx-text-fill: #2c3e50;
     -fx-padding: 0 0 20 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 2, 0, 0, 0);
-}
-
-.section-title {
-    -fx-font-size: 18px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #34495e;
-    -fx-padding: 0 0 15 0;
 }
 
 /* ========== TABLEAUX ========== */
@@ -111,21 +88,20 @@
 
 .table-view .column-header {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #5d6d7e;
-    -fx-font-weight: 600;
-    -fx-font-size: 12px;
-    -fx-padding: 12 5;
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10 5;
 }
 
 .table-row-cell {
     -fx-background-color: white;
     -fx-border-color: #f0f3f8;
     -fx-border-width: 0 0 1 0;
-    -fx-cell-size: 45px;
+    -fx-cell-size: 40px;
 }
 
 .table-row-cell:hover {
@@ -144,6 +120,7 @@
 .table-cell {
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 8 12;
+    -fx-text-fill: #34495e;
 }
 
 /* ========== FORMULAIRES ========== */
@@ -158,7 +135,7 @@
 }
 
 .form-title {
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-font-size: 16px;
     -fx-text-fill: #2c3e50;
     -fx-padding: 0 0 15 0;
@@ -179,14 +156,13 @@
     -fx-border-radius: 6;
     -fx-border-color: #e0e7f0;
     -fx-border-width: 1;
-    -fx-padding: 10;
+    -fx-padding: 8;
     -fx-font-size: 13px;
 }
 
 .text-field:focused, .combo-box:focused {
     -fx-border-color: #3498db;
     -fx-background-color: white;
-    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.2), 5, 0, 0, 0);
 }
 
 .text-field:disabled {
@@ -195,37 +171,30 @@
 }
 
 .combo-box .list-cell {
-    -fx-padding: 8;
+    -fx-padding: 5 8;
 }
 
 /* ========== BOUTONS ========== */
 .action-button {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
     -fx-font-size: 13px;
     -fx-padding: 10 20;
     -fx-background-radius: 6;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.3), 5, 0, 0, 0);
 }
 
 .action-button:hover {
     -fx-background-color: #2980b9;
-    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.4), 8, 0, 0, 0);
-}
-
-.action-button:pressed {
-    -fx-background-color: #2471a3;
-    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.2), 3, 0, 0, 0);
 }
 
 .edit-button {
     -fx-background-color: #f39c12;
     -fx-text-fill: white;
-    -fx-font-weight: 600;
-    -fx-font-size: 12px;
-    -fx-padding: 8 15;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10 20;
     -fx-background-radius: 6;
     -fx-cursor: hand;
 }
@@ -237,9 +206,9 @@
 .delete-button {
     -fx-background-color: #e74c3c;
     -fx-text-fill: white;
-    -fx-font-weight: 600;
-    -fx-font-size: 12px;
-    -fx-padding: 8 15;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10 20;
     -fx-background-radius: 6;
     -fx-cursor: hand;
 }
@@ -251,9 +220,9 @@
 .clear-button {
     -fx-background-color: #95a5a6;
     -fx-text-fill: white;
-    -fx-font-weight: 600;
-    -fx-font-size: 12px;
-    -fx-padding: 8 15;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10 20;
     -fx-background-radius: 6;
     -fx-cursor: hand;
 }
@@ -262,7 +231,7 @@
     -fx-background-color: #7f8c8d;
 }
 
-/* Boutons dans la table (petits) */
+/* Boutons dans les lignes du tableau */
 .table-action-button {
     -fx-background-color: #ecf0f1;
     -fx-text-fill: #2c3e50;
@@ -276,36 +245,10 @@
     -fx-background-color: #bdc3c7;
 }
 
-/* ========== CARTES DE STATISTIQUES ========== */
-.stat-card {
-    -fx-background-color: white;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 0);
-    -fx-padding: 20;
-    -fx-min-width: 200;
-    -fx-min-height: 150;
-    -fx-alignment: CENTER;
-}
-
-.stat-card:hover {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 0);
-}
-
-.stat-icon {
-    -fx-font-size: 40px;
-    -fx-text-fill: #3498db;
-}
-
-.stat-title {
-    -fx-font-size: 14px;
-    -fx-text-fill: #7f8c8d;
-    -fx-padding: 10 0 5 0;
-}
-
-.stat-value {
-    -fx-font-size: 28px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+/* ========== GRILLES ========== */
+.grid-pane {
+    -fx-hgap: 15;
+    -fx-vgap: 10;
 }
 
 /* ========== SCROLLBAR ========== */
@@ -327,4 +270,49 @@
 .separator {
     -fx-background-color: #34495e;
     -fx-opacity: 0.3;
+}
+
+/* ========== MESSAGES D'ALERTE ========== */
+.alert {
+    -fx-font-family: 'Segoe UI', 'System', sans-serif;
+}
+
+.alert .header-panel {
+    -fx-background-color: #f8fafd;
+}
+
+.alert .content {
+    -fx-font-size: 13px;
+    -fx-padding: 10;
+}
+
+/* ========== COMBOBOX PERSONNALISÉE ========== */
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e7f0;
+    -fx-border-radius: 4;
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 8 12;
+    -fx-text-fill: #2c3e50;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #f0f7ff;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+/* ========== LABELS DANS LES TABLEAUX ========== */
+.table-column {
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Style pour les colonnes numériques */
+.table-column.number-column {
+    -fx-alignment: CENTER_RIGHT;
 }

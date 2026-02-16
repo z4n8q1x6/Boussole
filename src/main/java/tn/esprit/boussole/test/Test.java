@@ -9,17 +9,11 @@ public class Test extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        // Par défaut, on lance la vue principale
+        // Fenêtre plus grande : 1300x800
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/MainView.fxml"));
-        Scene scene = new Scene(loader.load());
-
-        // Pour tester directement une vue spécifique (décommentez celle que vous voulez)
-        // FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/ProduitView.fxml"));
-        // FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/CommandeView.fxml"));
-        // FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/LigneCommandeView.fxml"));
+        Scene scene = new Scene(loader.load(), 1300, 800);
 
         stage.setTitle("Boussole - Gestion Commerciale");
-        stage.setMaximized(true);
         stage.setScene(scene);
         stage.show();
     }
@@ -27,4 +21,4 @@ public class Test extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-}
+}   

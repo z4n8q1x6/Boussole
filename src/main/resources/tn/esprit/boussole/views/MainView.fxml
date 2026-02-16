@@ -6,9 +6,9 @@
 
 <BorderPane stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.MainController">
 
-    <!-- Barre latérale gauche -->
+    <!-- Barre latérale gauche - largeur augmentée -->
     <left>
-        <VBox fx:id="navigationPanel" styleClass="nav-panel" prefWidth="280" spacing="5">
+        <VBox fx:id="navigationPanel" styleClass="nav-panel" prefWidth="250" spacing="5">
             <padding>
                 <Insets top="20" bottom="20" />
             </padding>

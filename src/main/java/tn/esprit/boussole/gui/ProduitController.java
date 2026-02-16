@@ -65,13 +65,13 @@ public class ProduitController implements Initializable {
 
         // Colonne Actions avec boutons
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️");
-            private final Button deleteBtn = new Button("🗑️");
+            private final Button editBtn = new Button("✏️ Modifier");
+            private final Button deleteBtn = new Button("🗑️ Supprimer");
             private final HBox pane = new HBox(5, editBtn, deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
-                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
 
                 editBtn.setOnAction(event -> {
                     Produit produit = getTableView().getItems().get(getIndex());
@@ -97,8 +97,10 @@ public class ProduitController implements Initializable {
         try {
             produitList = FXCollections.observableArrayList(produitService.selectAll());
             produitTable.setItems(produitList);
+            System.out.println("Produits chargés: " + produitList.size());
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les produits: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -135,6 +137,7 @@ public class ProduitController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Produit ajouté avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -161,6 +164,7 @@ public class ProduitController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Produit modifié avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -189,6 +193,7 @@ public class ProduitController implements Initializable {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Produit supprimé avec succès!");
             } catch (SQLException e) {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

@@ -21,7 +21,7 @@ public class CommandeController implements Initializable {
 
     @FXML private TableView<Commande> commandeTable;
     @FXML private TableColumn<Commande, Integer> colId;
-    @FXML private TableColumn<Commande, String> colDate;  // Changé de LocalDateTime à String
+    @FXML private TableColumn<Commande, String> colDate;
     @FXML private TableColumn<Commande, Double> colMontant;
     @FXML private TableColumn<Commande, String> colStatut;
     @FXML private TableColumn<Commande, Integer> colFranchise;
@@ -64,7 +64,7 @@ public class CommandeController implements Initializable {
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
         colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchise_id"));
 
-        // Formatage de la date - CORRECTION ICI
+        // Formatage de la date
         colDate.setCellValueFactory(cellData -> {
             LocalDateTime date = cellData.getValue().getDate_creation();
             return new javafx.beans.property.SimpleStringProperty(
@@ -74,13 +74,13 @@ public class CommandeController implements Initializable {
 
         // Colonne Actions avec boutons
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️");
-            private final Button deleteBtn = new Button("🗑️");
+            private final Button editBtn = new Button("✏️ Modifier");
+            private final Button deleteBtn = new Button("🗑️ Supprimer");
             private final HBox pane = new HBox(5, editBtn, deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
-                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
 
                 editBtn.setOnAction(event -> {
                     Commande commande = getTableView().getItems().get(getIndex());
@@ -102,13 +102,14 @@ public class CommandeController implements Initializable {
         });
     }
 
-    // Le reste du code reste identique...
     private void chargerDonnees() {
         try {
             commandeList = FXCollections.observableArrayList(commandeService.selectAll());
             commandeTable.setItems(commandeList);
+            System.out.println("Commandes chargées: " + commandeList.size());
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les commandes: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -142,6 +143,7 @@ public class CommandeController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande ajoutée avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ajout: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -166,6 +168,7 @@ public class CommandeController implements Initializable {
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande modifiée avec succès!");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -194,6 +197,7 @@ public class CommandeController implements Initializable {
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande supprimée avec succès!");
             } catch (SQLException e) {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
