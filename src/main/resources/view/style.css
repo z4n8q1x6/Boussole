@@ -1,0 +1,153 @@
+/* --- CONFIGURATION GÉNÉRALE --- */
+
+.main-container {
+    -fx-background-color: #2c3e50;
+    -fx-padding: 40;
+}
+
+.app-title {
+    -fx-font-size: 32px;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-text-fill: white;
+}
+
+/* --- BARRE DE NAVIGATION (SIDEBAR) --- */
+
+.sidebar {
+    -fx-background-color: #1a252f;
+    -fx-padding: 20;
+    -fx-border-color: transparent #141a20 transparent transparent;
+    -fx-border-width: 2;
+}
+
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+    -fx-padding: 0 0 10 0;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 15;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #34495e;
+    -fx-text-fill: white;
+}
+
+.sidebar-button-active {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 15;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+}
+
+/* --- FORMULAIRE ET CARTES --- */
+
+.form-card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 15, 0, 0, 5);
+}
+
+.form-header {
+    -fx-font-size: 24px;
+    -fx-text-fill: #34495e;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10 0;
+}
+
+.custom-field {
+    -fx-background-radius: 5;
+    -fx-border-color: #dcdde1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+    -fx-background-color: #f9f9f9;
+}
+
+.custom-field:focused {
+    -fx-border-color: #3498db;
+    -fx-background-color: white;
+}
+
+/* --- BOUTONS ET MESSAGES --- */
+
+.login-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 30;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.login-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.message-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+}
+
+/* --- STYLE DE LA TABLE (CRUD) --- */
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-selection-bar: #3498db;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f2f2f2;
+    -fx-border-color: #dcdde1;
+    -fx-padding: 8;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #3498db;
+}
+
+/* --- BOUTONS D'ACTION DANS LE TABLEAU --- */
+
+.btn-edit {
+    -fx-background-color: #f1c40f; /* Jaune/Or */
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-background-radius: 5;
+    -fx-padding: 5 12;
+    -fx-font-weight: bold;
+}
+
+.btn-edit:hover {
+    -fx-background-color: #f39c12;
+}
+
+.btn-delete {
+    -fx-background-color: #e74c3c; /* Rouge */
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-background-radius: 5;
+    -fx-padding: 5 12;
+    -fx-font-weight: bold;
+}
+
+.btn-delete:hover {
+    -fx-background-color: #c0392b;
+}
+
+/* Conteneur HBox à l'intérieur de la cellule d'action */
+.hbox {
+    -fx-alignment: CENTER;
+    -fx-spacing: 10;
+}
