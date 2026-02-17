@@ -16,6 +16,7 @@ public class addUserController {
     @FXML private TextField txtEmail;
     @FXML private PasswordField txtPassword;
     @FXML private TextField txtTelephone;
+    @FXML private TextField txtAdresse;
     @FXML private TextField txtSolde;
     @FXML private TextField txtNomEntreprise;
     @FXML private TextField txtAdresseEntreprise;
@@ -43,6 +44,13 @@ public class addUserController {
         // Validation numérique pour le solde
         txtSolde.textProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal.matches("\\d*(\\.\\d*)?")) txtSolde.setText(oldVal);
+        });
+        
+        // Validation pour le téléphone (uniquement des chiffres)
+        txtTelephone.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.matches("\\d*")) {
+                txtTelephone.setText(oldVal);
+            }
         });
     }
 
@@ -136,11 +144,28 @@ public class addUserController {
             txtPassword.requestFocus();
             return false;
         }
+        
+        // Validation du téléphone
+        String telephone = txtTelephone.getText().trim();
+        if (!telephone.isEmpty() && (telephone.length() != 8 || !telephone.matches("\\d+"))) {
+            showAlert(Alert.AlertType.WARNING, "Téléphone invalide", "Le numéro de téléphone doit contenir exactement 8 chiffres.");
+            txtTelephone.requestFocus();
+            return false;
+        }
 
         // Validation du nom de l'entreprise
-        if (txtNomEntreprise.getText().trim().isEmpty()) {
+        String nomEntreprise = txtNomEntreprise.getText().trim();
+        if (nomEntreprise.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Nom d'entreprise obligatoire",
                     "Le nom de l'entreprise est obligatoire.");
+            txtNomEntreprise.requestFocus();
+            return false;
+        }
+        
+        // Vérifie qu'il n'y a pas de chiffres (lettres, espaces, symboles autorisés)
+        if (nomEntreprise.matches(".*\\d.*")) {
+             showAlert(Alert.AlertType.WARNING, "Nom d'entreprise invalide",
+                    "Le nom de l'entreprise ne doit pas contenir de chiffres.");
             txtNomEntreprise.requestFocus();
             return false;
         }

@@ -1,6 +1,5 @@
 package tn.esprit.boussole.gui;
 
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -23,7 +22,6 @@ import java.util.Optional;
 public class usersController {
 
     @FXML private TableView<user> tableUsers;
-    @FXML private TableColumn<user, Integer> colId;
     @FXML private TableColumn<user, String> colNom;
     @FXML private TableColumn<user, String> colPrenom;
     @FXML private TableColumn<user, String> colEmail;
@@ -40,11 +38,6 @@ public class usersController {
     @FXML
     public void initialize() {
         userService = new userService();
-
-        // Remplacer l'ID de la base par un numéro séquentiel (1, 2, 3...)
-        colId.setText("N°"); // Changer le titre de la colonne
-        colId.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(tableUsers.getItems().indexOf(column.getValue()) + 1));
-        colId.setSortable(false); // Désactiver le tri sur cette colonne car elle dépend de l'ordre d'affichage
 
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));

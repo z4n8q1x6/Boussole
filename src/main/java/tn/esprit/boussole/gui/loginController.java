@@ -1,34 +1,134 @@
 package tn.esprit.boussole.gui;
 
+import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import tn.esprit.boussole.utils.MyBdConnexion;
 import tn.esprit.boussole.service.AuthService;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.prefs.Preferences;
 
 public class loginController {
 
+    @FXML private StackPane rootPane;
+    @FXML private ImageView backgroundImage;
+    @FXML private VBox brandingVBox;
+    @FXML private VBox loginFormVBox;
+    @FXML private Canvas particleCanvas;
+    
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private CheckBox rememberMeCheckbox;
     @FXML private Button loginButton;
+    @FXML private Button googleLoginButton;
     @FXML private Hyperlink forgotPasswordLink;
 
     private final Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
     private final AuthService authService = new AuthService();
+    
+    private GraphicsContext gc;
+    private List<Particle> particles;
+    private Random random = new Random();
 
     @FXML
     public void initialize() {
+        // Binding pour l'image de fond responsive
+        if (rootPane != null && backgroundImage != null) {
+            backgroundImage.fitWidthProperty().bind(rootPane.widthProperty());
+            backgroundImage.fitHeightProperty().bind(rootPane.heightProperty());
+            
+            // Animation Ken Burns (Zoom lent) sur l'image de fond
+            ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(20), backgroundImage);
+            scaleTransition.setFromX(1.0);
+            scaleTransition.setFromY(1.0);
+            scaleTransition.setToX(1.1);
+            scaleTransition.setToY(1.1);
+            scaleTransition.setCycleCount(ScaleTransition.INDEFINITE);
+            scaleTransition.setAutoReverse(true);
+            scaleTransition.play();
+        }
+        
+        // Animation d'entrée pour le branding (gauche)
+        if (brandingVBox != null) {
+            brandingVBox.setOpacity(0);
+            brandingVBox.setTranslateY(20);
+            
+            FadeTransition fade = new FadeTransition(Duration.seconds(1), brandingVBox);
+            fade.setFromValue(0);
+            fade.setToValue(1);
+            
+            TranslateTransition translate = new TranslateTransition(Duration.seconds(1), brandingVBox);
+            translate.setFromY(20);
+            translate.setToY(0);
+            
+            fade.play();
+            translate.play();
+        }
+        
+        // Animation d'entrée pour le formulaire (droite) - avec un léger délai
+        if (loginFormVBox != null) {
+            loginFormVBox.setOpacity(0);
+            loginFormVBox.setTranslateY(20);
+            
+            FadeTransition fade = new FadeTransition(Duration.seconds(1), loginFormVBox);
+            fade.setFromValue(0);
+            fade.setToValue(1);
+            fade.setDelay(Duration.seconds(0.3)); // Délai pour effet cascade
+            
+            TranslateTransition translate = new TranslateTransition(Duration.seconds(1), loginFormVBox);
+            translate.setFromY(20);
+            translate.setToY(0);
+            translate.setDelay(Duration.seconds(0.3));
+            
+            fade.play();
+            translate.play();
+        }
+        
+        // Initialisation des particules
+        if (particleCanvas != null) {
+            gc = particleCanvas.getGraphicsContext2D();
+            particles = new ArrayList<>();
+            for (int i = 0; i < 50; i++) { // 50 particules
+                particles.add(new Particle());
+            }
+            
+            // Lier la taille du canvas à la taille du rootPane
+            particleCanvas.widthProperty().bind(rootPane.widthProperty());
+            particleCanvas.heightProperty().bind(rootPane.heightProperty());
+
+            // Lancer l'animation des particules
+            new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    updateParticles();
+                    drawParticles();
+                }
+            }.start();
+        }
+
         String remembered = prefs.get("rememberedEmail", "");
         if (!remembered.isEmpty()) {
             emailField.setText(remembered);
@@ -37,13 +137,38 @@ public class loginController {
 
         loginButton.setOnAction(e -> handleLogin());
         forgotPasswordLink.setOnAction(e -> handleForgotPassword());
+        
+        if (googleLoginButton != null) {
+            googleLoginButton.setOnAction(e -> handleGoogleLogin());
+        }
 
-        loginButton.setOnMouseEntered(e ->
-                loginButton.setStyle("-fx-background-color: #2980B9; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;")
-        );
-        loginButton.setOnMouseExited(e ->
-                loginButton.setStyle("-fx-background-color: #3498DB; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;")
-        );
+        setupButtonHoverEffects();
+    }
+    
+    private void updateParticles() {
+        gc.clearRect(0, 0, particleCanvas.getWidth(), particleCanvas.getHeight()); // Effacer le canvas
+        for (Particle p : particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            
+            // Revenir en haut si la particule sort par le bas
+            if (p.y > particleCanvas.getHeight()) {
+                p.y = -p.radius;
+                p.x = random.nextDouble() * particleCanvas.getWidth();
+            }
+            // Revenir à gauche si la particule sort par la droite
+            if (p.x > particleCanvas.getWidth()) {
+                p.x = -p.radius;
+                p.y = random.nextDouble() * particleCanvas.getHeight();
+            }
+        }
+    }
+    
+    private void drawParticles() {
+        for (Particle p : particles) {
+            gc.setFill(Color.rgb(255, 255, 255, p.opacity));
+            gc.fillOval(p.x, p.y, p.radius * 2, p.radius * 2);
+        }
     }
 
     @FXML
@@ -81,6 +206,10 @@ public class loginController {
 
         showAlert(Alert.AlertType.INFORMATION, "Connexion réussie", "Bienvenue " + email + " !");
         navigateToRoleInterface(info.role);
+    }
+    
+    private void handleGoogleLogin() {
+        showAlert(Alert.AlertType.INFORMATION, "Google Login", "Authentification Google en cours de développement...");
     }
 
     private AuthInfo fetchAuthInfo(String email) {
@@ -148,7 +277,40 @@ public class loginController {
 
     @FXML
     private void handleForgotPassword() {
-        showAlert(Alert.AlertType.INFORMATION, "Mot de passe oublié", "Fonctionnalité à implémenter.");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/forgotPassword.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = (Stage) forgotPasswordLink.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setMaximized(true); // Garder le plein écran
+            stage.show();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page de récupération.");
+        }
+    }
+    
+    private void setupButtonHoverEffects() {
+        if (loginButton != null) {
+            loginButton.setOnMouseEntered(e ->
+                    loginButton.setStyle("-fx-background-color: #0284C7; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;")
+            );
+            loginButton.setOnMouseExited(e ->
+                    loginButton.setStyle("-fx-background-color: #0EA5E9; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;")
+            );
+        }
+        
+        if (googleLoginButton != null) {
+            googleLoginButton.setOnMouseEntered(e ->
+                    googleLoginButton.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 10; -fx-text-fill: #020617; -fx-cursor: hand; -fx-font-weight: bold;")
+            );
+            googleLoginButton.setOnMouseExited(e ->
+                    googleLoginButton.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #020617; -fx-cursor: hand; -fx-font-weight: bold;")
+            );
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
@@ -165,6 +327,23 @@ public class loginController {
         AuthInfo(String storedPassword, String role) {
             this.storedPassword = storedPassword;
             this.role = role;
+        }
+    }
+    
+    // Classe interne pour les particules
+    private class Particle {
+        double x, y;
+        double vx, vy;
+        double radius;
+        double opacity;
+        
+        public Particle() {
+            this.x = random.nextDouble() * particleCanvas.getWidth();
+            this.y = random.nextDouble() * particleCanvas.getHeight();
+            this.vx = (random.nextDouble() - 0.5) * 0.5; // Petite vitesse aléatoire
+            this.vy = (random.nextDouble() - 0.5) * 0.5;
+            this.radius = random.nextDouble() * 2 + 1; // Rayon entre 1 et 3
+            this.opacity = random.nextDouble() * 0.5 + 0.2; // Opacité entre 0.2 et 0.7
         }
     }
 }

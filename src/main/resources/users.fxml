@@ -63,7 +63,6 @@
         <!-- TableView -->
         <TableView fx:id="tableUsers" prefHeight="500.0" style="-fx-background-color: white; -fx-background-radius: 10;" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="60.0" text="ID" />
                 <TableColumn fx:id="colNom" prefWidth="130.0" text="NOM" />
                 <TableColumn fx:id="colPrenom" prefWidth="130.0" text="PRÉNOM" />
                 <TableColumn fx:id="colEmail" prefWidth="220.0" text="EMAIL" />

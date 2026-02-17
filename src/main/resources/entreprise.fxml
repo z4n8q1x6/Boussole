@@ -51,7 +51,6 @@
         <!-- TableView -->
         <TableView fx:id="tableEntreprises" prefHeight="500.0" style="-fx-background-color: white; -fx-background-radius: 10;" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
                 <TableColumn fx:id="colNom" prefWidth="150.0" text="Nom" />
                 <TableColumn fx:id="colEmail" prefWidth="200.0" text="Email" />
                 <TableColumn fx:id="colTelephone" prefWidth="120.0" text="Téléphone" />

@@ -1,6 +1,5 @@
 package tn.esprit.boussole.gui;
 
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -24,7 +23,6 @@ import java.util.Optional;
 public class entrepriseController {
 
     @FXML private TableView<franchise> tableEntreprises;
-    @FXML private TableColumn<franchise, Integer> colId;
     @FXML private TableColumn<franchise, String> colNom;
     @FXML private TableColumn<franchise, String> colEmail;
     @FXML private TableColumn<franchise, String> colTelephone;
@@ -43,11 +41,6 @@ public class entrepriseController {
     public void initialize() {
         System.out.println("Initialisation de entrepriseController...");
         franchiseService = new franchiseService();
-
-        // Remplacer l'ID de la base par un numéro séquentiel (1, 2, 3...)
-        colId.setText("N°");
-        colId.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(tableEntreprises.getItems().indexOf(column.getValue()) + 1));
-        colId.setSortable(false);
 
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
