@@ -1,26 +1,34 @@
 package tn.esprit.chargesdepenses.models;
 
-import tn.esprit.chargesdepenses.models.enums.StatusValidation;
-import tn.esprit.chargesdepenses.models.enums.TypeCharge;
 import java.time.LocalDate;
 
 public class Charge {
 
-    private int id; // Changé de Long à int pour correspondre au SQL (INT)
+    public enum StatusValidation {
+        EN_ATTENTE,
+        VALIDE,
+        REJETTE
+    }
+
+    public enum TypeCharge {
+        CHARGES_EXPLOITATIONS,
+        CHARGES_FINANCIERES,
+        CHARGES_EXCEPTIONNELLES
+    }
+
+    private int id;
     private String titre;
     private Double montant;
     private LocalDate dateCharge;
     private TypeCharge type;
     private String preuveImage;
     private StatusValidation statusValidation = StatusValidation.EN_ATTENTE;
-
-    // TRÈS IMPORTANT : Ajout du lien avec la franchise (requis par ton SQL)
     private int franchiseId;
+    private String franchiseName; // Champ pour afficher le nom
 
     // Constructeurs
     public Charge() {}
 
-    // Constructeur complet (utile pour la récupération depuis la BD)
     public Charge(int id, String titre, Double montant, LocalDate dateCharge, TypeCharge type, String preuveImage, StatusValidation statusValidation, int franchiseId) {
         this.id = id;
         this.titre = titre;
@@ -32,7 +40,6 @@ public class Charge {
         this.franchiseId = franchiseId;
     }
 
-    // Constructeur sans ID (utile pour l'insertion car l'ID est AUTO_INCREMENT)
     public Charge(String titre, Double montant, LocalDate dateCharge, TypeCharge type, String preuveImage, int franchiseId) {
         this.titre = titre;
         this.montant = montant;
@@ -66,6 +73,9 @@ public class Charge {
 
     public int getFranchiseId() { return franchiseId; }
     public void setFranchiseId(int franchiseId) { this.franchiseId = franchiseId; }
+
+    public String getFranchiseName() { return franchiseName; }
+    public void setFranchiseName(String franchiseName) { this.franchiseName = franchiseName; }
 
     @Override
     public String toString() {

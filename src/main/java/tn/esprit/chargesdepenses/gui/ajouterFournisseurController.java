@@ -19,29 +19,24 @@ public class ajouterFournisseurController {
     @FXML private TextField nomInput;
     @FXML private TextField matriculeInput;
     @FXML private TextField telephoneInput;
-    @FXML private TextField franchiseIdInput;
+    @FXML private TextField franchiseIdInput; // Retour au TextField pour l'ID
     @FXML private Button btnListe;
     @FXML private Button btnValider;
     @FXML private Button btnVersCharge;
 
-    // Assurez-vous que cette classe existe dans votre package services
     private final FournisseurService fournisseurService = new FournisseurService();
 
     @FXML
     public void initialize() {
-        // Initialisation si nécessaire
-        // Par exemple, forcer franchiseId à être numérique
+        // Validation pour l'ID franchise (chiffres uniquement)
         franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                franchiseIdInput.setText(newValue.replaceAll("[^\\d]", ""));
-            }
+            if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
     }
 
     @FXML
     private void handleAjouter() {
         String erreur = validerFormulaire();
-
         if (erreur != null) {
             showAlert("Erreur de saisie", erreur, Alert.AlertType.WARNING);
             return;
@@ -52,27 +47,23 @@ public class ajouterFournisseurController {
                     nomInput.getText().trim(),
                     matriculeInput.getText().trim(),
                     telephoneInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText().trim())
+                    Integer.parseInt(franchiseIdInput.getText().trim()) // Directement l'ID
             );
 
             fournisseurService.insertOne(nouveauFournisseur);
-
             showAlert("Succès", "Fournisseur enregistré avec succès !", Alert.AlertType.INFORMATION);
-            
-            // Rediriger vers la liste des fournisseurs après l'ajout
             handleAfficherListe();
 
         } catch (SQLException e) {
             showAlert("Erreur Base de Données", "Impossible d'enregistrer le fournisseur : " + e.getMessage(), Alert.AlertType.ERROR);
         } catch (NumberFormatException e) {
-            showAlert("Erreur de Format", "L'ID de la franchise doit être un nombre entier valide.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "L'ID de franchise doit être un nombre valide.", Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     private void handleAfficherListe() {
         try {
-            // Redirection vers la liste des fournisseurs
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackFournisseur.fxml")); 
             Parent root = loader.load();
             Stage stage = (Stage) btnListe.getScene().getWindow();
@@ -100,21 +91,19 @@ public class ajouterFournisseurController {
     }
 
     private String validerFormulaire() {
-        if (nomInput.getText().trim().isEmpty()) {
-            return "Le nom du fournisseur est obligatoire.";
+        if (nomInput.getText().trim().isEmpty() || franchiseIdInput.getText().trim().isEmpty()) {
+            return "Le nom et la franchise sont obligatoires.";
         }
-        if (franchiseIdInput.getText().trim().isEmpty()) {
-            return "L'ID de la franchise est obligatoire.";
-        }
-        // Vous pouvez ajouter d'autres validations ici (format téléphone, etc.)
-        return null;
-    }
 
-    private void viderChamps() {
-        nomInput.clear();
-        matriculeInput.clear();
-        telephoneInput.clear();
-        franchiseIdInput.clear();
+        if (nomInput.getText().matches("^\\d+$")) {
+            return "Le nom du fournisseur ne peut pas contenir uniquement des chiffres.";
+        }
+
+        if (!matriculeInput.getText().trim().isEmpty() && matriculeInput.getText().matches("^\\d+$")) {
+            return "Le matricule fiscal ne peut pas contenir uniquement des chiffres.";
+        }
+
+        return null;
     }
 
     private void showAlert(String title, String content, Alert.AlertType type) {

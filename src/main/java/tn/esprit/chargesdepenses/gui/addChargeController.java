@@ -7,8 +7,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Charge;
-import tn.esprit.chargesdepenses.models.enums.StatusValidation;
-import tn.esprit.chargesdepenses.models.enums.TypeCharge;
 import tn.esprit.chargesdepenses.services.ChargeService;
 
 import java.io.IOException;
@@ -20,10 +18,17 @@ public class addChargeController {
     @FXML private TextField titreInput;
     @FXML private TextField montantInput;
     @FXML private DatePicker dateInput;
-    @FXML private ComboBox<TypeCharge> typeCombo;
+    @FXML private ComboBox<Charge.TypeCharge> typeCombo;
     @FXML private TextField preuveImageInput;
-    @FXML private ComboBox<StatusValidation> statusCombo;
-    @FXML private TextField franchiseIdInput;
+    @FXML private ComboBox<Charge.StatusValidation> statusCombo;
+    @FXML private TextField franchiseIdInput; // Renommé pour clarté (correspond au FXML si je le change aussi, sinon je garde franchiseInput mais je traite comme ID)
+    // Note: Dans le FXML précédent j'avais mis franchiseInput (TextField). Je vais garder ce nom pour éviter de toucher au FXML si possible, 
+    // ou je remets franchiseIdInput si c'était le nom d'origine.
+    // Le FXML actuel a "franchiseCombo" (ComboBox) ou "franchiseInput" (TextField) selon mes dernières modifs.
+    // Je vais vérifier le FXML actuel.
+    // Ah, j'avais remis des TextField nommés "franchiseInput" dans les dernières étapes.
+    // Je vais utiliser "franchiseIdInput" pour être cohérent avec l'ID.
+    
     @FXML private Button btnListe; 
     @FXML private Button btnVersFournisseur;
 
@@ -31,23 +36,23 @@ public class addChargeController {
 
     @FXML
     public void initialize() {
-        // Remplissage des ComboBox avec les Enums
-        typeCombo.getItems().setAll(TypeCharge.values());
-        statusCombo.getItems().setAll(StatusValidation.values());
-
-        // Date par défaut à aujourd'hui
+        typeCombo.getItems().setAll(Charge.TypeCharge.values());
+        statusCombo.getItems().setAll(Charge.StatusValidation.values());
         dateInput.setValue(LocalDate.now());
 
-        // Restriction : que des chiffres pour le montant
         montantInput.textProperty().addListener((obs, old, newValue) -> {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
+        });
+        
+        // Validation pour l'ID franchise (chiffres uniquement)
+        franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
+            if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
     }
 
     @FXML
     private void handleAjouter() {
         String erreur = validerFormulaire();
-
         if (erreur != null) {
             showAlert("Erreur de saisie", erreur, Alert.AlertType.WARNING);
             return;
@@ -60,33 +65,27 @@ public class addChargeController {
                     dateInput.getValue(),
                     typeCombo.getValue(),
                     preuveImageInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText())
+                    Integer.parseInt(franchiseIdInput.getText().trim()) // Directement l'ID
             );
             nouvelleCharge.setStatusValidation(statusCombo.getValue());
 
             chargeService.insertOne(nouvelleCharge);
-
             showAlert("Succès", "Dépense enregistrée avec succès !", Alert.AlertType.INFORMATION);
-
-            // Rediriger vers la liste des charges après l'ajout
             handleAfficherListe();
 
         } catch (SQLException e) {
             showAlert("Erreur DB", "Impossible d'enregistrer : " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (NumberFormatException e) {
+            showAlert("Erreur", "L'ID de franchise doit être un nombre valide.", Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     private void handleAfficherListe() {
         try {
-            // Chargement de la page de la liste des charges
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackCharge.fxml"));
             Parent root = loader.load();
-
-            // Récupération de la fenêtre (Stage) actuelle
             Stage stage = (Stage) titreInput.getScene().getWindow();
-
-            // Changement de scène
             stage.setScene(new Scene(root));
             stage.setTitle("Boussole - Liste des Charges");
             stage.show();
@@ -116,6 +115,20 @@ public class addChargeController {
                 statusCombo.getValue() == null || franchiseIdInput.getText().isEmpty()) {
             return "Tous les champs sont obligatoires.";
         }
+
+        if (titreInput.getText().matches("^\\d+$")) {
+            return "Le titre ne peut pas contenir uniquement des chiffres.";
+        }
+
+        try {
+            double montant = Double.parseDouble(montantInput.getText());
+            if (montant <= 0) {
+                return "Le montant doit être strictement supérieur à 0.";
+            }
+        } catch (NumberFormatException e) {
+            return "Le montant est invalide.";
+        }
+
         return null;
     }
 

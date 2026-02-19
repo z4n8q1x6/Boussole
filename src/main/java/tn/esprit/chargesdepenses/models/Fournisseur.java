@@ -6,14 +6,12 @@ public class Fournisseur {
     private String nom;
     private String matriculeFiscal;
     private String telephone;
-
-    // AJOUT INDISPENSABLE : pour correspondre au SQL "franchise_id INT NOT NULL"
     private int franchiseId;
+    private String franchiseName; // Champ pour afficher le nom
 
     // Constructeurs
     public Fournisseur() {}
 
-    // Constructeur pour la récupération (avec ID et franchiseId)
     public Fournisseur(Long id, String nom, String matriculeFiscal, String telephone, int franchiseId) {
         this.id = id;
         this.nom = nom;
@@ -22,7 +20,6 @@ public class Fournisseur {
         this.franchiseId = franchiseId;
     }
 
-    // Constructeur pour l'insertion (sans ID car auto-incrément)
     public Fournisseur(String nom, String matriculeFiscal, String telephone, int franchiseId) {
         this.nom = nom;
         this.matriculeFiscal = matriculeFiscal;
@@ -45,6 +42,9 @@ public class Fournisseur {
 
     public int getFranchiseId() { return franchiseId; }
     public void setFranchiseId(int franchiseId) { this.franchiseId = franchiseId; }
+
+    public String getFranchiseName() { return franchiseName; }
+    public void setFranchiseName(String franchiseName) { this.franchiseName = franchiseName; }
 
     @Override
     public String toString() {

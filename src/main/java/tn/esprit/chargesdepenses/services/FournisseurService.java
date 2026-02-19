@@ -12,13 +12,11 @@ public class FournisseurService implements CRUD<Fournisseur> {
     private Connection cnx;
 
     public FournisseurService() {
-        // Récupération de la connexion via ton Singleton
         cnx = MyBDConnexion.getInstance().getCnx();
     }
 
     @Override
     public void insertOne(Fournisseur fournisseur) throws SQLException {
-        // On n'insère pas l'ID car il est AUTO_INCREMENT
         String req = "INSERT INTO `fournisseur` (`nom`, `matricule_fiscal`, `telephone`, `franchise_id`) VALUES (?, ?, ?, ?)";
 
         PreparedStatement ps = cnx.prepareStatement(req);
@@ -33,13 +31,15 @@ public class FournisseurService implements CRUD<Fournisseur> {
 
     @Override
     public void updateOne(Fournisseur fournisseur) throws SQLException {
-        String req = "UPDATE `fournisseur` SET `nom` = ?, `matricule_fiscal` = ?, `telephone` = ? WHERE `id` = ?";
+        // Ajout de franchise_id à la clause SET
+        String req = "UPDATE `fournisseur` SET `nom` = ?, `matricule_fiscal` = ?, `telephone` = ?, `franchise_id` = ? WHERE `id` = ?";
 
         PreparedStatement ps = cnx.prepareStatement(req);
         ps.setString(1, fournisseur.getNom());
         ps.setString(2, fournisseur.getMatriculeFiscal());
         ps.setString(3, fournisseur.getTelephone());
-        ps.setLong(4, fournisseur.getId()); // Utilise Long car ton entité utilise Long pour l'ID
+        ps.setInt(4, fournisseur.getFranchiseId()); // Ajout de la franchise_id
+        ps.setLong(5, fournisseur.getId());
 
         ps.executeUpdate();
         System.out.println("Fournisseur mis à jour !");
@@ -59,23 +59,48 @@ public class FournisseurService implements CRUD<Fournisseur> {
     @Override
     public List<Fournisseur> selectAll() throws SQLException {
         List<Fournisseur> fournisseurs = new ArrayList<>();
-        String req = "SELECT * FROM `fournisseur`";
+        // Jointure pour récupérer le nom de la franchise
+        String req = "SELECT f.*, fr.nom as franchise_nom FROM `fournisseur` f JOIN `franchises` fr ON f.franchise_id = fr.id";
 
         Statement st = cnx.createStatement();
         ResultSet rs = st.executeQuery(req);
 
         while (rs.next()) {
             Fournisseur f = new Fournisseur();
-            // Mapping des colonnes SQL vers l'objet Java
             f.setId(rs.getLong("id"));
             f.setNom(rs.getString("nom"));
             f.setMatriculeFiscal(rs.getString("matricule_fiscal"));
             f.setTelephone(rs.getString("telephone"));
             f.setFranchiseId(rs.getInt("franchise_id"));
+            f.setFranchiseName(rs.getString("franchise_nom")); // Récupération du nom
 
             fournisseurs.add(f);
         }
 
         return fournisseurs;
+    }
+
+    // Nouvelle méthode pour trouver l'ID par le nom
+    public int getFranchiseIdByName(String name) throws SQLException {
+        String req = "SELECT id FROM franchises WHERE nom = ?";
+        PreparedStatement ps = cnx.prepareStatement(req);
+        ps.setString(1, name);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("id");
+        }
+        return -1; 
+    }
+    
+    // Nouvelle méthode pour trouver le nom par l'ID
+    public String getFranchiseNameById(int id) throws SQLException {
+        String req = "SELECT nom FROM franchises WHERE id = ?";
+        PreparedStatement ps = cnx.prepareStatement(req);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getString("nom");
+        }
+        return "Inconnu";
     }
 }

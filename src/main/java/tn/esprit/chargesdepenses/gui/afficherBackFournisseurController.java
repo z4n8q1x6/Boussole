@@ -17,6 +17,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Fournisseur;
 import tn.esprit.chargesdepenses.services.FournisseurService;
@@ -31,7 +32,7 @@ public class afficherBackFournisseurController {
     @FXML private TableColumn<Fournisseur, String> colNom;
     @FXML private TableColumn<Fournisseur, String> colMatricule;
     @FXML private TableColumn<Fournisseur, String> colTelephone;
-    @FXML private TableColumn<Fournisseur, Integer> colFranchiseId;
+    @FXML private TableColumn<Fournisseur, String> colFranchiseId; // Changé en String
     @FXML private TableColumn<Fournisseur, Void> colModifier;
     @FXML private TableColumn<Fournisseur, Void> colSupprimer;
     
@@ -48,11 +49,46 @@ public class afficherBackFournisseurController {
 
     @FXML
     public void initialize() {
+        // Rendre la table éditable
+        tableFournisseurs.setEditable(true);
+
         // Configuration des colonnes
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colNom.setCellFactory(TextFieldTableCell.forTableColumn());
+        colNom.setOnEditCommit(event -> {
+            Fournisseur fournisseur = event.getRowValue();
+            if (!event.getNewValue().matches("^\\d+$")) {
+                fournisseur.setNom(event.getNewValue());
+                updateFournisseurInDB(fournisseur);
+            } else {
+                showAlert("Erreur", "Le nom ne peut pas contenir uniquement des chiffres.");
+                tableFournisseurs.refresh();
+            }
+        });
+
         colMatricule.setCellValueFactory(new PropertyValueFactory<>("matriculeFiscal"));
+        colMatricule.setCellFactory(TextFieldTableCell.forTableColumn());
+        colMatricule.setOnEditCommit(event -> {
+            Fournisseur fournisseur = event.getRowValue();
+            if (!event.getNewValue().matches("^\\d+$")) {
+                fournisseur.setMatriculeFiscal(event.getNewValue());
+                updateFournisseurInDB(fournisseur);
+            } else {
+                showAlert("Erreur", "Le matricule ne peut pas contenir uniquement des chiffres.");
+                tableFournisseurs.refresh();
+            }
+        });
+
         colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
-        colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
+        colTelephone.setCellFactory(TextFieldTableCell.forTableColumn());
+        colTelephone.setOnEditCommit(event -> {
+            Fournisseur fournisseur = event.getRowValue();
+            fournisseur.setTelephone(event.getNewValue());
+            updateFournisseurInDB(fournisseur);
+        });
+        
+        // Afficher le nom de la franchise (non éditable inline)
+        colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
 
         // Ajout des boutons d'action dans le tableau
         addModifierButtonToTable();
@@ -89,6 +125,15 @@ public class afficherBackFournisseurController {
         // Actions des boutons principaux
         btnAjouter.setOnAction(e -> openAjoutForm());
         btnFront.setOnAction(e -> openFrontOffice());
+    }
+
+    private void updateFournisseurInDB(Fournisseur fournisseur) {
+        try {
+            fournisseurService.updateOne(fournisseur);
+        } catch (SQLException e) {
+            showAlert("Erreur", "Impossible de mettre à jour le fournisseur : " + e.getMessage());
+            loadFournisseurs(); // Recharger pour annuler les changements visuels
+        }
     }
 
     private void trierFournisseurs() {

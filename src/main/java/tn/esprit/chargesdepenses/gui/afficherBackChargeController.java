@@ -1,5 +1,6 @@
 package tn.esprit.chargesdepenses.gui;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -16,8 +17,11 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.chargesdepenses.models.Charge;
 import tn.esprit.chargesdepenses.services.ChargeService;
 import java.io.IOException;
@@ -34,13 +38,13 @@ public class afficherBackChargeController {
     @FXML
     private TableColumn<Charge, String> colDate;
     @FXML
-    private TableColumn<Charge, String> colType;
+    private TableColumn<Charge, Charge.TypeCharge> colType; // Changé en TypeCharge pour ComboBox
     @FXML
     private TableColumn<Charge, String> colPreuve;
     @FXML
-    private TableColumn<Charge, String> colStatus;
+    private TableColumn<Charge, Charge.StatusValidation> colStatus; // Changé en StatusValidation pour ComboBox
     @FXML
-    private TableColumn<Charge, Integer> colFranchiseId;
+    private TableColumn<Charge, String> colFranchiseId;
     @FXML
     private TableColumn<Charge, Void> colModifier;
     @FXML
@@ -63,27 +67,70 @@ public class afficherBackChargeController {
 
     @FXML
     public void initialize() {
+        // Rendre la table éditable
+        tableCharges.setEditable(true);
+
+        // Configuration des colonnes
         colTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
+        colTitre.setCellFactory(TextFieldTableCell.forTableColumn());
+        colTitre.setOnEditCommit(event -> {
+            Charge charge = event.getRowValue();
+            charge.setTitre(event.getNewValue());
+            updateChargeInDB(charge);
+        });
+
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
-        colDate.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(() -> cellData.getValue().getDateCharge().toString()));
-        colType.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(() -> cellData.getValue().getType().name()));
+        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colMontant.setOnEditCommit(event -> {
+            Charge charge = event.getRowValue();
+            if (event.getNewValue() > 0) {
+                charge.setMontant(event.getNewValue());
+                updateChargeInDB(charge);
+                calculerTotal(); // Recalculer le total après modif
+            } else {
+                showAlert("Erreur", "Le montant doit être supérieur à 0.");
+                tableCharges.refresh(); // Annuler l'affichage
+            }
+        });
+
+        colDate.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDateCharge().toString()));
+        // Date non éditable inline pour l'instant (complexe sans DatePickerTableCell)
+
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colType.setCellFactory(ComboBoxTableCell.forTableColumn(Charge.TypeCharge.values()));
+        colType.setOnEditCommit(event -> {
+            Charge charge = event.getRowValue();
+            charge.setType(event.getNewValue());
+            updateChargeInDB(charge);
+        });
+
         colPreuve.setCellValueFactory(new PropertyValueFactory<>("preuveImage"));
-        colStatus.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(() -> cellData.getValue().getStatusValidation().name()));
-        colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
+        colPreuve.setCellFactory(TextFieldTableCell.forTableColumn());
+        colPreuve.setOnEditCommit(event -> {
+            Charge charge = event.getRowValue();
+            charge.setPreuveImage(event.getNewValue());
+            updateChargeInDB(charge);
+        });
+
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("statusValidation"));
+        colStatus.setCellFactory(ComboBoxTableCell.forTableColumn(Charge.StatusValidation.values()));
+        colStatus.setOnEditCommit(event -> {
+            Charge charge = event.getRowValue();
+            charge.setStatusValidation(event.getNewValue());
+            updateChargeInDB(charge);
+        });
+        
+        colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
+        // Franchise non éditable inline (car affiche le nom mais stocke l'ID)
 
         addModifierButtonToTable();
         addSupprimerButtonToTable();
 
-        // Initialisation de la liste filtrée et triée
         filteredData = new FilteredList<>(chargesList, p -> true);
         sortedData = new SortedList<>(filteredData);
-        
-        // Lier le comparateur de la SortedList au TableView
         sortedData.comparatorProperty().bind(tableCharges.comparatorProperty());
-        
         tableCharges.setItems(sortedData);
 
-        // Listener pour la recherche
         txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(charge -> {
                 if (newValue == null || newValue.isEmpty()) {
@@ -92,16 +139,24 @@ public class afficherBackChargeController {
                 String lowerCaseFilter = newValue.toLowerCase();
                 return charge.getTitre().toLowerCase().contains(lowerCaseFilter);
             });
-            calculerTotal(); // Recalculer le total basé sur les éléments filtrés
+            calculerTotal();
         });
 
-        // Initialisation du ComboBox de tri
         comboTri.setItems(FXCollections.observableArrayList("Montant Croissant", "Montant Décroissant"));
         comboTri.setOnAction(e -> trierCharges());
 
         loadCharges();
         btnAjouter.setOnAction(e -> openAjoutForm());
         btnFront.setOnAction(e -> openFrontOffice());
+    }
+
+    private void updateChargeInDB(Charge charge) {
+        try {
+            chargeService.updateOne(charge);
+        } catch (SQLException e) {
+            showAlert("Erreur", "Impossible de mettre à jour la charge : " + e.getMessage());
+            loadCharges(); // Recharger pour annuler les changements visuels en cas d'erreur
+        }
     }
 
     private void openFrontOffice() {
@@ -112,8 +167,6 @@ public class afficherBackChargeController {
             stage.setScene(new Scene(root));
             stage.setTitle("Charges & Dépenses - Front Office");
             stage.show();
-            // Optionnel : fermer la fenêtre actuelle
-            // ((Stage) btnFront.getScene().getWindow()).close();
         } catch (IOException e) {
             showAlert("Erreur", "Impossible d'ouvrir le Front Office: " + e.getMessage());
         }
@@ -147,7 +200,6 @@ public class afficherBackChargeController {
     }
 
     private void calculerTotal() {
-        // Calculer le total uniquement sur les éléments visibles (filtrés)
         double total = tableCharges.getItems().stream()
                 .mapToDouble(Charge::getMontant)
                 .sum();
@@ -156,7 +208,7 @@ public class afficherBackChargeController {
 
     private void addModifierButtonToTable() {
         colModifier.setCellFactory(param -> new TableCell<>() {
-            private final javafx.scene.control.Button btn = new javafx.scene.control.Button("✎");
+            private final Button btn = new Button("✎");
             {
                 btn.setStyle("-fx-background-color: #4593cb; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 btn.setOnAction(event -> {
@@ -174,7 +226,7 @@ public class afficherBackChargeController {
 
     private void addSupprimerButtonToTable() {
         colSupprimer.setCellFactory(param -> new TableCell<>() {
-            private final javafx.scene.control.Button btn = new javafx.scene.control.Button("🗑");
+            private final Button btn = new Button("🗑");
             {
                 btn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 btn.setOnAction(event -> {

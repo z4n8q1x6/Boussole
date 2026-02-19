@@ -44,7 +44,7 @@
                 <TableColumn fx:id="colType" text="Type" prefWidth="120.0" />
                 <TableColumn fx:id="colPreuve" text="Preuve" prefWidth="120.0" />
                 <TableColumn fx:id="colStatus" text="Statut" prefWidth="100.0" />
-                <TableColumn fx:id="colFranchiseId" text="Franchise ID" prefWidth="90.0" />
+                <TableColumn fx:id="colFranchiseId" text="Nom Franchise" prefWidth="120.0" />
                 <TableColumn fx:id="colModifier" text="Modifier" prefWidth="40.0" />
                 <TableColumn fx:id="colSupprimer" text="Supprimer" prefWidth="40.0" />
             </columns>

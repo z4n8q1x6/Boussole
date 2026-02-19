@@ -15,7 +15,7 @@ public class modifierFournisseurController {
     @FXML private TextField nomInput;
     @FXML private TextField matriculeInput;
     @FXML private TextField telephoneInput;
-    @FXML private TextField franchiseIdInput;
+    @FXML private TextField franchiseIdInput; // Retour au TextField pour l'ID
     @FXML private Button btnValider;
 
     private final FournisseurService fournisseurService = new FournisseurService();
@@ -23,16 +23,12 @@ public class modifierFournisseurController {
 
     @FXML
     public void initialize() {
-        // Initialisation si nécessaire
-        // Par exemple, forcer franchiseId à être numérique
+        // Validation pour l'ID franchise (chiffres uniquement)
         franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                franchiseIdInput.setText(newValue.replaceAll("[^\\d]", ""));
-            }
+            if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
     }
 
-    // Méthode appelée depuis la liste pour passer le fournisseur à modifier
     public void setFournisseurActuel(Fournisseur fournisseur) {
         this.fournisseurActuel = fournisseur;
         if (fournisseur != null) {
@@ -70,17 +66,23 @@ public class modifierFournisseurController {
         } catch (SQLException e) {
             showAlert("Erreur Base de Données", "Impossible de mettre à jour le fournisseur : " + e.getMessage(), Alert.AlertType.ERROR);
         } catch (NumberFormatException e) {
-            showAlert("Erreur de Format", "L'ID de la franchise doit être un nombre entier valide.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "L'ID de franchise doit être un nombre valide.", Alert.AlertType.ERROR);
         }
     }
 
     private String validerFormulaire() {
-        if (nomInput.getText().trim().isEmpty()) {
-            return "Le nom du fournisseur est obligatoire.";
+        if (nomInput.getText().trim().isEmpty() || franchiseIdInput.getText().trim().isEmpty()) {
+            return "Le nom et la franchise sont obligatoires.";
         }
-        if (franchiseIdInput.getText().trim().isEmpty()) {
-            return "L'ID de la franchise est obligatoire.";
+
+        if (nomInput.getText().matches("^\\d+$")) {
+            return "Le nom du fournisseur ne peut pas contenir uniquement des chiffres.";
         }
+
+        if (!matriculeInput.getText().trim().isEmpty() && matriculeInput.getText().matches("^\\d+$")) {
+            return "Le matricule fiscal ne peut pas contenir uniquement des chiffres.";
+        }
+
         return null;
     }
 

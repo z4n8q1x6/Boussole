@@ -1,9 +1,6 @@
 package tn.esprit.chargesdepenses.test;
 
 import tn.esprit.chargesdepenses.models.Charge;
-import tn.esprit.chargesdepenses.models.Fournisseur;
-import tn.esprit.chargesdepenses.models.enums.StatusValidation;
-import tn.esprit.chargesdepenses.models.enums.TypeCharge;
 import tn.esprit.chargesdepenses.services.ChargeService;
 import tn.esprit.chargesdepenses.services.FournisseurService;
 import tn.esprit.chargesdepenses.utils.MyBDConnexion;
@@ -22,7 +19,7 @@ public class Test {
                 "Achat Fournitures",
                 150.50,
                 LocalDate.now(),
-                TypeCharge.CHARGES_EXPLOITATIONS,
+                Charge.TypeCharge.CHARGES_EXPLOITATIONS,
                 "facture_001.png",
                 1 // ATTENTION: l'ID de franchise 1 doit exister dans ta table franchise
         );

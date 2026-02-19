@@ -41,7 +41,7 @@
                 <TableColumn fx:id="colNom" prefWidth="150.0" text="Nom" />
                 <TableColumn fx:id="colMatricule" prefWidth="150.0" text="Matricule Fiscal" />
                 <TableColumn fx:id="colTelephone" prefWidth="120.0" text="Téléphone" />
-                <TableColumn fx:id="colFranchiseId" prefWidth="100.0" text="Franchise ID" />
+                <TableColumn fx:id="colFranchiseId" prefWidth="100.0" text="Nom Franchise" />
                 <TableColumn fx:id="colModifier" prefWidth="60.0" text="Modifier" />
                 <TableColumn fx:id="colSupprimer" prefWidth="60.0" text="Supprimer" />
             </columns>
