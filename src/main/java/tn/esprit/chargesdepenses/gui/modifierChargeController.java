@@ -1,11 +1,15 @@
 package tn.esprit.chargesdepenses.gui;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Charge;
 import tn.esprit.chargesdepenses.services.ChargeService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 public class modifierChargeController {
@@ -22,7 +26,9 @@ public class modifierChargeController {
     @FXML
     private ComboBox<Charge.StatusValidation> statusCombo;
     @FXML
-    private TextField franchiseIdInput; // Retour au TextField pour l'ID
+    private TextField franchiseIdInput;
+    @FXML
+    private Button btnListe; // Bouton Retour
 
     private final ChargeService chargeService = new ChargeService();
     private Charge chargeActuelle;
@@ -35,7 +41,6 @@ public class modifierChargeController {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
         });
         
-        // Validation pour l'ID franchise (chiffres uniquement)
         franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
             if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
@@ -51,36 +56,45 @@ public class modifierChargeController {
         }
 
         try {
-            String titre = titreInput.getText().trim();
-            double montant = Double.parseDouble(montantInput.getText());
-            LocalDate date = dateInput.getValue();
-            Charge.TypeCharge type = typeCombo.getValue();
-            String preuve = preuveImageInput.getText().trim();
-            Charge.StatusValidation status = statusCombo.getValue();
-            int franchiseId = Integer.parseInt(franchiseIdInput.getText().trim());
-
-            if (chargeActuelle == null) {
-                showAlert("Erreur", "Aucune charge sélectionnée pour la modification.", Alert.AlertType.ERROR);
-                return;
-            }
-            
-            chargeActuelle.setTitre(titre);
-            chargeActuelle.setMontant(montant);
-            chargeActuelle.setDateCharge(date);
-            chargeActuelle.setType(type);
-            chargeActuelle.setPreuveImage(preuve);
-            chargeActuelle.setStatusValidation(status);
-            chargeActuelle.setFranchiseId(franchiseId);
+            chargeActuelle.setTitre(titreInput.getText().trim());
+            chargeActuelle.setMontant(Double.parseDouble(montantInput.getText()));
+            chargeActuelle.setDateCharge(dateInput.getValue());
+            chargeActuelle.setType(typeCombo.getValue());
+            chargeActuelle.setPreuveImage(preuveImageInput.getText().trim());
+            chargeActuelle.setStatusValidation(statusCombo.getValue());
+            chargeActuelle.setFranchiseId(Integer.parseInt(franchiseIdInput.getText().trim()));
 
             chargeService.updateOne(chargeActuelle);
             showAlert("Succès", "La charge a été mise à jour avec succès", Alert.AlertType.INFORMATION);
             
-            ((Stage) titreInput.getScene().getWindow()).close();
+            // Redirection automatique vers la liste
+            handleAfficherListe();
 
-        } catch (NumberFormatException e) {
-            showAlert("Erreur", "Le montant et l'ID de franchise doivent être des nombres valides.", Alert.AlertType.ERROR);
         } catch (Exception e) {
             showAlert("Erreur", "Erreur lors de la mise à jour: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleAfficherListe() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackCharge.fxml"));
+            Parent root = loader.load();
+            
+            // On récupère la scène actuelle (peu importe le bouton utilisé)
+            Stage stage = (Stage) titreInput.getScene().getWindow();
+            Scene newScene = new Scene(root);
+            
+            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            newScene.getStylesheets().add(css);
+            
+            stage.setScene(newScene);
+            stage.setTitle("Boussole - Liste des Charges");
+            stage.show();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur Navigation", "Impossible de charger la liste : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -103,20 +117,6 @@ public class modifierChargeController {
                 statusCombo.getValue() == null || franchiseIdInput.getText().isEmpty()) {
             return "Tous les champs sont obligatoires.";
         }
-
-        if (titreInput.getText().matches("^\\d+$")) {
-            return "Le titre ne peut pas contenir uniquement des chiffres.";
-        }
-
-        try {
-            double montant = Double.parseDouble(montantInput.getText());
-            if (montant <= 0) {
-                return "Le montant doit être strictement supérieur à 0.";
-            }
-        } catch (NumberFormatException e) {
-            return "Le montant est invalide.";
-        }
-
         return null;
     }
 

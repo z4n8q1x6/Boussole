@@ -19,7 +19,7 @@ public class ajouterFournisseurController {
     @FXML private TextField nomInput;
     @FXML private TextField matriculeInput;
     @FXML private TextField telephoneInput;
-    @FXML private TextField franchiseIdInput; // Retour au TextField pour l'ID
+    @FXML private TextField franchiseIdInput;
     @FXML private Button btnListe;
     @FXML private Button btnValider;
     @FXML private Button btnVersCharge;
@@ -28,7 +28,6 @@ public class ajouterFournisseurController {
 
     @FXML
     public void initialize() {
-        // Validation pour l'ID franchise (chiffres uniquement)
         franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
             if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
@@ -47,7 +46,7 @@ public class ajouterFournisseurController {
                     nomInput.getText().trim(),
                     matriculeInput.getText().trim(),
                     telephoneInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText().trim()) // Directement l'ID
+                    Integer.parseInt(franchiseIdInput.getText().trim())
             );
 
             fournisseurService.insertOne(nouveauFournisseur);
@@ -66,13 +65,23 @@ public class ajouterFournisseurController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackFournisseur.fxml")); 
             Parent root = loader.load();
-            Stage stage = (Stage) btnListe.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            
+            Scene currentScene = btnListe.getScene();
+            if (currentScene == null) currentScene = nomInput.getScene();
+            
+            Stage stage = (Stage) currentScene.getWindow();
+            Scene newScene = new Scene(root);
+            
+            // Application explicite du CSS
+            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            newScene.getStylesheets().add(css);
+            
+            stage.setScene(newScene);
             stage.setTitle("Boussole - Liste des Fournisseurs");
             stage.show();
         } catch (IOException e) {
-            showAlert("Erreur Navigation", "Impossible de charger afficherBackFournisseur.fxml : " + e.getMessage(), Alert.AlertType.ERROR);
             e.printStackTrace();
+            showAlert("Erreur Navigation", "Impossible de charger afficherBackFournisseur.fxml : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -82,7 +91,13 @@ public class ajouterFournisseurController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCharge.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnListe.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene newScene = new Scene(root);
+            
+            // Application explicite du CSS
+            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            newScene.getStylesheets().add(css);
+            
+            stage.setScene(newScene);
             stage.setTitle("Ajouter une Charge");
             stage.show();
         } catch (IOException e) {
@@ -94,15 +109,6 @@ public class ajouterFournisseurController {
         if (nomInput.getText().trim().isEmpty() || franchiseIdInput.getText().trim().isEmpty()) {
             return "Le nom et la franchise sont obligatoires.";
         }
-
-        if (nomInput.getText().matches("^\\d+$")) {
-            return "Le nom du fournisseur ne peut pas contenir uniquement des chiffres.";
-        }
-
-        if (!matriculeInput.getText().trim().isEmpty() && matriculeInput.getText().matches("^\\d+$")) {
-            return "Le matricule fiscal ne peut pas contenir uniquement des chiffres.";
-        }
-
         return null;
     }
 

@@ -6,94 +6,97 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="700.0" prefWidth="600.0" style="-fx-background-color: linear-gradient(to bottom, #0e5384, #4593cb); -fx-padding: 20;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.chargesdepenses.gui.addChargeController">
-    <VBox spacing="18.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5);" maxWidth="500.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
-        <padding>
-            <Insets bottom="35.0" left="35.0" right="35.0" top="35.0" />
-        </padding>
+<VBox prefHeight="700.0" prefWidth="600.0" spacing="20.0"
+      style="-fx-background-color: #06080F;"
+      stylesheets="@styles/dash.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.chargesdepenses.gui.addChargeController">
 
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Button fx:id="btnListe" onAction="#handleAfficherListe" style="-fx-background-color: transparent; -fx-text-fill: #4593cb; -fx-cursor: hand; -fx-padding: 0;" text="← Retour à la liste">
-                <font>
-                    <Font name="System Bold" size="13.0" />
-                </font>
-            </Button>
-            <HBox HBox.hgrow="ALWAYS" />
-            <Button fx:id="btnVersFournisseur" onAction="#handleVersFournisseur" style="-fx-background-color: #e1f5fe; -fx-text-fill: #0288d1; -fx-background-radius: 15; -fx-cursor: hand; -fx-padding: 5 10 5 10;" text="Ajouter Fournisseur →">
-                <font>
-                    <Font name="System Bold" size="12.0" />
-                </font>
-            </Button>
-        </HBox>
+    <padding>
+        <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+    </padding>
 
-        <HBox spacing="12.0" alignment="CENTER_LEFT">
-            <ImageView fitHeight="50.0" fitWidth="50.0" preserveRatio="true">
-                <image>
-                    <Image url="@images/boussole_logo_n.png" />
-                </image>
-            </ImageView>
-            <Label text="Ajouter une Charge" textFill="#0e5384">
-                <font>
-                    <Font name="System Bold" size="24.0" />
-                </font>
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <Button fx:id="btnListe" onAction="#handleAfficherListe" text="← Retour"
+                style="-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-font-size: 14px; -fx-cursor: hand;" />
+        <VBox HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnVersFournisseur" onAction="#handleVersFournisseur" text="Ajouter Fournisseur →"
+                style="-fx-background-color: #1E293B; -fx-text-fill: #00E5CC; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand;" />
+    </HBox>
+
+    <HBox spacing="15.0" alignment="CENTER_LEFT">
+        <ImageView fitHeight="50.0" fitWidth="50.0" preserveRatio="true">
+            <image>
+                <Image url="@images/boussole_logo_n.png" />
+            </image>
+        </ImageView>
+        <VBox>
+            <Label text="Ajouter une Charge" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="24.0" /></font>
             </Label>
+            <Label text="Remplissez les informations ci-dessous pour enregistrer une nouvelle dépense." textFill="#8892A4" wrapText="true">
+                <font><Font size="13.0" /></font>
+            </Label>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="15.0" style="-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-padding: 25;">
+        <VBox spacing="8.0">
+            <Label text="Titre de la charge" textFill="#CBD5F5" />
+            <TextField fx:id="titreInput" promptText="Ex: Facture Électricité"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+        </VBox>
+
+        <HBox spacing="15.0">
+            <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                <Label text="Montant (DT)" textFill="#CBD5F5" />
+                <TextField fx:id="montantInput" promptText="0.00"
+                           style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+            </VBox>
+            <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                <Label text="Date" textFill="#CBD5F5" />
+                <DatePicker fx:id="dateInput" maxWidth="1.7976931348623157E308"
+                            style="-fx-background-color: #1E293B; -fx-control-inner-background: #1E293B; -fx-text-fill: white;" />
+            </VBox>
         </HBox>
 
-        <Label text="Remplissez les informations ci-dessous pour enregistrer une nouvelle dépense." textFill="#95a5a6" wrapText="true">
-            <font>
-                <Font size="11.0" />
-            </font>
-        </Label>
+        <HBox spacing="15.0">
+            <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                <Label text="Type" textFill="#CBD5F5" />
+                <ComboBox fx:id="typeCombo" maxWidth="1.7976931348623157E308"
+                          style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8;" />
+            </VBox>
+            <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                <Label text="Statut" textFill="#CBD5F5" />
+                <ComboBox fx:id="statusCombo" maxWidth="1.7976931348623157E308"
+                          style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8;" />
+            </VBox>
+        </HBox>
 
-        <VBox spacing="5.0">
-            <Label text="Titre de la charge" textFill="#7f8c8d" />
-            <TextField fx:id="titreInput" promptText="Ex: Facture Électricité" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-border-width: 1;" />
+        <VBox spacing="8.0">
+            <Label text="Preuve (Image)" textFill="#CBD5F5" />
+            <TextField fx:id="preuveImageInput" promptText="Ex: facture.png"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
         </VBox>
 
-        <VBox spacing="5.0">
-            <Label text="Montant (DT)" textFill="#7f8c8d" />
-            <TextField fx:id="montantInput" promptText="0.00" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-border-width: 1;" />
+        <VBox spacing="8.0">
+            <Label text="Franchise (ID)" textFill="#CBD5F5" />
+            <TextField fx:id="franchiseIdInput" promptText="Ex: 1"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
         </VBox>
 
-        <VBox spacing="5.0">
-            <Label text="Date de la charge" textFill="#7f8c8d" />
-            <DatePicker fx:id="dateInput" maxWidth="1.7976931348623157E308" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;" />
-        </VBox>
-
-        <VBox spacing="5.0">
-            <Label text="Type de charge" textFill="#7f8c8d" />
-            <ComboBox fx:id="typeCombo" maxWidth="1.7976931348623157E308" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;" />
-        </VBox>
-
-        <VBox spacing="5.0">
-            <Label text="Preuve (Image/Document)" textFill="#7f8c8d" />
-            <TextField fx:id="preuveImageInput" promptText="Ex: facture.png" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-border-width: 1;" />
-        </VBox>
-
-        <VBox spacing="5.0">
-            <Label text="Statut de validation" textFill="#7f8c8d" />
-            <ComboBox fx:id="statusCombo" maxWidth="1.7976931348623157E308" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;" />
-        </VBox>
-
-        <VBox spacing="5.0">
-            <Label text="Franchise (ID)" textFill="#7f8c8d" />
-            <TextField fx:id="franchiseIdInput" promptText="Ex: 1" style="-fx-padding: 10; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-border-width: 1;" />
-        </VBox>
-
-        <Button fx:id="btnValider" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAjouter" prefHeight="45.0" style="-fx-background-color: #4593cb; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 13; -fx-font-weight: bold;" text="✓ Enregistrer la Charge">
-            <font>
-                <Font name="System Bold" size="14.0" />
-            </font>
+        <Button fx:id="btnValider" maxWidth="1.7976931348623157E308" onAction="#handleAjouter" text="✓ Enregistrer"
+                style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 12; -fx-cursor: hand; -fx-font-size: 14px;">
             <VBox.margin>
                 <Insets top="10.0" />
             </VBox.margin>
         </Button>
     </VBox>
-</AnchorPane>
+</VBox>

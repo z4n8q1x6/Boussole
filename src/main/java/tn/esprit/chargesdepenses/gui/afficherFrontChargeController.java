@@ -1,5 +1,11 @@
 package tn.esprit.chargesdepenses.gui;
 
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.UnitValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -7,256 +13,248 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+// Imports pour JFreeChart
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.data.general.DefaultPieDataset;
+
 import tn.esprit.chargesdepenses.models.Charge;
 import tn.esprit.chargesdepenses.services.ChargeService;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class afficherFrontChargeController {
 
-    @FXML
-    private GridPane gridCharges;
-    @FXML
-    private Button btnPrecedent;
-    @FXML
-    private Button btnSuivant;
-    @FXML
-    private Label lblPageInfo;
-    @FXML
-    private Button btnAjouter;
-    @FXML
-    private TextField txtRecherche;
-    @FXML
-    private ComboBox<String> comboTri;
+    @FXML private GridPane gridCharges;
+    @FXML private StackPane chartContainer; // Injecté depuis le nouveau FXML
+    @FXML private Button btnPrecedent;
+    @FXML private Button btnSuivant;
+    @FXML private Label lblPageInfo;
+    @FXML private Button btnAjouter;
+    @FXML private TextField txtRecherche;
+    @FXML private ComboBox<String> comboTri;
 
     private final ChargeService chargeService = new ChargeService();
     private List<Charge> allCharges = new ArrayList<>();
     private List<Charge> displayedCharges = new ArrayList<>();
-    
-    // Paramètres de pagination
+
     private static final int ITEMS_PER_PAGE = 3;
     private int currentPage = 0;
     private int totalPages = 0;
 
     @FXML
     public void initialize() {
-        // Initialisation du ComboBox de tri
         comboTri.setItems(FXCollections.observableArrayList("Montant Croissant", "Montant Décroissant"));
         comboTri.setOnAction(e -> applyFilters());
-
-        // Listener pour la recherche
-        txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
-            applyFilters();
-        });
+        txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
 
         loadData();
-        
-        // Configuration des boutons de pagination
-        btnPrecedent.setOnAction(e -> {
-            if (currentPage > 0) {
-                currentPage--;
-                updateView();
-            }
-        });
-        
-        btnSuivant.setOnAction(e -> {
-            if (currentPage < totalPages - 1) {
-                currentPage++;
-                updateView();
-            }
-        });
 
-        // Configuration du bouton Ajouter
+        btnPrecedent.setOnAction(e -> { if (currentPage > 0) { currentPage--; updateView(); } });
+        btnSuivant.setOnAction(e -> { if (currentPage < totalPages - 1) { currentPage++; updateView(); } });
         btnAjouter.setOnAction(e -> openAjoutForm());
     }
 
     private void loadData() {
         try {
             allCharges = chargeService.selectAll();
-            applyFilters(); // Appliquer les filtres initiaux (ou aucun)
+            applyFilters();
         } catch (SQLException e) {
             showAlert("Erreur", "Impossible de charger les données: " + e.getMessage());
         }
     }
 
     private void applyFilters() {
-        // 1. Filtrage par recherche
         String searchText = txtRecherche.getText().toLowerCase();
         displayedCharges = allCharges.stream()
                 .filter(c -> c.getTitre().toLowerCase().contains(searchText))
                 .collect(Collectors.toList());
 
-        // 2. Tri
         String sortOption = comboTri.getValue();
         if (sortOption != null) {
-            if (sortOption.equals("Montant Croissant")) {
-                displayedCharges.sort(Comparator.comparingDouble(Charge::getMontant));
-            } else if (sortOption.equals("Montant Décroissant")) {
-                displayedCharges.sort(Comparator.comparingDouble(Charge::getMontant).reversed());
-            }
+            if (sortOption.equals("Montant Croissant")) displayedCharges.sort(Comparator.comparingDouble(Charge::getMontant));
+            else if (sortOption.equals("Montant Décroissant")) displayedCharges.sort(Comparator.comparingDouble(Charge::getMontant).reversed());
         }
 
-        // 3. Recalcul de la pagination
         totalPages = (int) Math.ceil((double) displayedCharges.size() / ITEMS_PER_PAGE);
         if (totalPages == 0) totalPages = 1;
-        currentPage = 0; // Revenir à la première page après un filtre
+        currentPage = 0;
 
         updateView();
+        updateStatistics(); // Calculer les stats sur les données filtrées
+    }
+
+    /**
+     * LOGIQUE DE L'API STATISTIQUE (JFreeChart)
+     */
+    private void updateStatistics() {
+        if (displayedCharges.isEmpty()) {
+            chartContainer.getChildren().clear();
+            return;
+        }
+
+        // 1. Préparer les données (Somme des montants par Type de Charge)
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        Map<Charge.TypeCharge, Double> stats = displayedCharges.stream()
+                .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
+
+        stats.forEach((type, total) -> dataset.setValue(type.toString(), total));
+
+        // 2. Créer le graphique via l'API
+        JFreeChart chart = ChartFactory.createPieChart3D("Répartition des charges (DT)", dataset, true, true, false);
+
+        // 3. Personnaliser le style pour le mode sombre
+        chart.setBackgroundPaint(null); // Fond transparent
+        chart.getTitle().setPaint(java.awt.Color.WHITE); // Titre en BLANC
+        chart.getTitle().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 18));
+
+        PiePlot3D plot = (PiePlot3D) chart.getPlot();
+        plot.setBackgroundPaint(null);
+        plot.setOutlineVisible(false);
+        plot.setLabelPaint(java.awt.Color.WHITE); // Labels en BLANC
+        plot.setLabelBackgroundPaint(new java.awt.Color(12, 15, 26, 200)); // Fond des labels sombre
+
+        // Légende en blanc
+        if (chart.getLegend() != null) {
+            chart.getLegend().setBackgroundPaint(null);
+            chart.getLegend().setItemPaint(java.awt.Color.WHITE);
+        }
+
+        // 4. Afficher dans le conteneur JavaFX
+        ChartViewer viewer = new ChartViewer(chart);
+        chartContainer.getChildren().setAll(viewer);
     }
 
     private void updateView() {
         gridCharges.getChildren().clear();
-        
-        // Mise à jour des infos de pagination
         lblPageInfo.setText("Page " + (currentPage + 1) + " / " + totalPages);
         btnPrecedent.setDisable(currentPage == 0);
         btnSuivant.setDisable(currentPage >= totalPages - 1);
 
-        // Sélection des items pour la page courante
         int start = currentPage * ITEMS_PER_PAGE;
         int end = Math.min(start + ITEMS_PER_PAGE, displayedCharges.size());
 
         int column = 0;
-        int row = 1;
-
         for (int i = start; i < end; i++) {
-            Charge charge = displayedCharges.get(i);
-            VBox card = createChargeCard(charge);
-            
-            gridCharges.add(card, column++, row);
+            gridCharges.add(createChargeCard(displayedCharges.get(i)), column++, 1);
         }
     }
 
     private VBox createChargeCard(Charge charge) {
-        VBox card = new VBox();
+        VBox card = new VBox(10);
         card.setAlignment(Pos.TOP_CENTER);
-        card.setSpacing(10);
         card.setPadding(new Insets(15));
-        card.setPrefWidth(250);
-        card.setPrefHeight(350); 
+        card.setPrefSize(250, 380);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);");
 
-        // Image
-        ImageView imageView = new ImageView();
-        imageView.setFitHeight(120);
-        imageView.setFitWidth(220);
-        imageView.setPreserveRatio(true);
-        
-        try {
-            String imageUrl = charge.getPreuveImage();
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                 imageView.setImage(new Image(imageUrl)); 
-            }
-        } catch (Exception e) {
-            // Ignorer erreur image
-        }
+        ImageView iv = new ImageView();
+        iv.setFitHeight(120); iv.setFitWidth(220); iv.setPreserveRatio(true);
+        try { if (charge.getPreuveImage() != null) iv.setImage(new Image(charge.getPreuveImage())); } catch (Exception e) {}
 
-        // Titre
         Label lblTitre = new Label(charge.getTitre());
-        lblTitre.setFont(Font.font("System", FontWeight.BOLD, 18));
+        lblTitre.setFont(Font.font("System", FontWeight.BOLD, 16));
         lblTitre.setTextFill(Color.web("#0e5384"));
-        lblTitre.setWrapText(true);
 
-        // Montant
         Label lblMontant = new Label(charge.getMontant() + " DT");
-        lblMontant.setFont(Font.font("System", FontWeight.BOLD, 22));
+        lblMontant.setFont(Font.font("System", FontWeight.BOLD, 20));
         lblMontant.setTextFill(Color.web("#27ae60"));
 
-        // Date
-        Label lblDate = new Label("Date: " + charge.getDateCharge());
-        lblDate.setTextFill(Color.GRAY);
-
-        // Type
-        Label lblType = new Label(charge.getType().toString());
-        lblType.setStyle("-fx-background-color: #e1f5fe; -fx-text-fill: #0288d1; -fx-background-radius: 5; -fx-padding: 3 8 3 8;");
-
-        // Boutons d'action
-        HBox actionBox = new HBox(10);
+        HBox actionBox = new HBox(8);
         actionBox.setAlignment(Pos.CENTER);
-        
-        Button btnModifier = new Button("Modifier");
-        btnModifier.setStyle("-fx-background-color: #4593cb; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-        btnModifier.setOnAction(e -> openModifierForm(charge));
-        
-        Button btnSupprimer = new Button("Supprimer");
-        btnSupprimer.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-        btnSupprimer.setOnAction(e -> supprimerCharge(charge));
-        
-        actionBox.getChildren().addAll(btnModifier, btnSupprimer);
 
-        // Assemblage
-        card.getChildren().addAll(imageView, lblTitre, lblMontant, lblDate, lblType, actionBox);
-        
-        // Effet de survol
-        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(14, 83, 132, 0.4), 15, 0, 0, 0); -fx-cursor: hand;"));
-        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);"));
+        Button btnMod = new Button("✎");
+        btnMod.setStyle("-fx-background-color: #4593cb; -fx-text-fill: white; -fx-cursor: hand;");
+        btnMod.setOnAction(e -> openModifierForm(charge));
+
+        Button btnSup = new Button("🗑");
+        btnSup.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
+        btnSup.setOnAction(e -> supprimerCharge(charge));
+
+        Button btnPdf = new Button("PDF");
+        btnPdf.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;");
+        btnPdf.setOnAction(e -> genererFicheChargePDF(charge));
+
+        actionBox.getChildren().addAll(btnMod, btnSup, btnPdf);
+        card.getChildren().addAll(iv, lblTitre, lblMontant, new Label(charge.getType().toString()), actionBox);
 
         return card;
+    }
+
+    private void genererFicheChargePDF(Charge charge) {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Exporter PDF");
+        fc.setInitialFileName("Charge_" + charge.getTitre().replace(" ", "_") + ".pdf");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
+        File file = fc.showSaveDialog(gridCharges.getScene().getWindow());
+
+        if (file != null) {
+            try (PdfWriter writer = new PdfWriter(file.getAbsolutePath());
+                 PdfDocument pdf = new PdfDocument(writer);
+                 Document doc = new Document(pdf)) {
+
+                doc.add(new Paragraph("Rapport de Charge").setBold().setFontSize(18));
+                doc.add(new Paragraph("Boussole Management System\n\n"));
+
+                Table table = new Table(UnitValue.createPercentArray(new float[]{40, 60})).useAllAvailableWidth();
+                table.addCell("Titre :"); table.addCell(charge.getTitre());
+                table.addCell("Montant :"); table.addCell(charge.getMontant() + " DT");
+                table.addCell("Date :"); table.addCell(charge.getDateCharge().toString());
+                table.addCell("Catégorie :"); table.addCell(charge.getType().toString());
+                table.addCell("Statut :"); table.addCell(charge.getStatusValidation().toString());
+
+                doc.add(table);
+                showAlert("Succès", "PDF généré !");
+            } catch (Exception e) {
+                showAlert("Erreur", "Erreur PDF: " + e.getMessage());
+            }
+        }
     }
 
     private void openAjoutForm() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCharge.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Ajouter une charge");
-            stage.showAndWait();
-            loadData(); 
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire d'ajout: " + e.getMessage());
-        }
+            Stage stage = new Stage(); stage.setScene(new Scene(loader.load()));
+            stage.showAndWait(); loadData();
+        } catch (IOException e) { showAlert("Erreur", e.getMessage()); }
     }
 
     private void openModifierForm(Charge charge) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/modifierCharge.fxml"));
             Parent root = loader.load();
-            modifierChargeController controller = loader.getController();
-            controller.setChargeActuelle(charge); 
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Modifier la charge");
-            stage.showAndWait();
-            loadData(); 
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire de modification: " + e.getMessage());
-        }
+            ((modifierChargeController)loader.getController()).setChargeActuelle(charge);
+            Stage stage = new Stage(); stage.setScene(new Scene(root));
+            stage.showAndWait(); loadData();
+        } catch (IOException e) { showAlert("Erreur", e.getMessage()); }
     }
 
     private void supprimerCharge(Charge charge) {
-        try {
-            chargeService.deleteOne(charge);
-            loadData();
-        } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de supprimer la charge: " + e.getMessage());
-        }
+        try { chargeService.deleteOne(charge); loadData(); } catch (SQLException e) { showAlert("Erreur", e.getMessage()); }
     }
 
-    private void showAlert(String titre, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(titre);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void showAlert(String t, String m) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION); a.setTitle(t); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
     }
 }

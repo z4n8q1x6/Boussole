@@ -21,16 +21,10 @@ public class addChargeController {
     @FXML private ComboBox<Charge.TypeCharge> typeCombo;
     @FXML private TextField preuveImageInput;
     @FXML private ComboBox<Charge.StatusValidation> statusCombo;
-    @FXML private TextField franchiseIdInput; // Renommé pour clarté (correspond au FXML si je le change aussi, sinon je garde franchiseInput mais je traite comme ID)
-    // Note: Dans le FXML précédent j'avais mis franchiseInput (TextField). Je vais garder ce nom pour éviter de toucher au FXML si possible, 
-    // ou je remets franchiseIdInput si c'était le nom d'origine.
-    // Le FXML actuel a "franchiseCombo" (ComboBox) ou "franchiseInput" (TextField) selon mes dernières modifs.
-    // Je vais vérifier le FXML actuel.
-    // Ah, j'avais remis des TextField nommés "franchiseInput" dans les dernières étapes.
-    // Je vais utiliser "franchiseIdInput" pour être cohérent avec l'ID.
-    
+    @FXML private TextField franchiseIdInput;
     @FXML private Button btnListe; 
     @FXML private Button btnVersFournisseur;
+    @FXML private Button btnValider;
 
     private final ChargeService chargeService = new ChargeService();
 
@@ -44,7 +38,6 @@ public class addChargeController {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
         });
         
-        // Validation pour l'ID franchise (chiffres uniquement)
         franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
             if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
         });
@@ -53,6 +46,7 @@ public class addChargeController {
     @FXML
     private void handleAjouter() {
         String erreur = validerFormulaire();
+
         if (erreur != null) {
             showAlert("Erreur de saisie", erreur, Alert.AlertType.WARNING);
             return;
@@ -65,18 +59,20 @@ public class addChargeController {
                     dateInput.getValue(),
                     typeCombo.getValue(),
                     preuveImageInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText().trim()) // Directement l'ID
+                    Integer.parseInt(franchiseIdInput.getText().trim())
             );
             nouvelleCharge.setStatusValidation(statusCombo.getValue());
 
             chargeService.insertOne(nouvelleCharge);
+
             showAlert("Succès", "Dépense enregistrée avec succès !", Alert.AlertType.INFORMATION);
+
             handleAfficherListe();
 
         } catch (SQLException e) {
             showAlert("Erreur DB", "Impossible d'enregistrer : " + e.getMessage(), Alert.AlertType.ERROR);
         } catch (NumberFormatException e) {
-            showAlert("Erreur", "L'ID de franchise doit être un nombre valide.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Format de nombre invalide.", Alert.AlertType.ERROR);
         }
     }
 
@@ -85,13 +81,29 @@ public class addChargeController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackCharge.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) titreInput.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            
+            Scene currentScene = btnListe.getScene();
+            if (currentScene == null) {
+                currentScene = titreInput.getScene();
+            }
+            
+            Stage stage = (Stage) currentScene.getWindow();
+            Scene newScene = new Scene(root);
+            
+            // Application explicite du CSS
+            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            newScene.getStylesheets().add(css);
+            
+            stage.setScene(newScene);
             stage.setTitle("Boussole - Liste des Charges");
             stage.show();
+            
         } catch (IOException e) {
-            showAlert("Erreur Navigation", "Fichier afficherBackCharge.fxml introuvable: " + e.getMessage(), Alert.AlertType.ERROR);
             e.printStackTrace();
+            showAlert("Erreur Navigation", "Impossible de charger la liste : " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -100,8 +112,14 @@ public class addChargeController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterFournisseur.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) titreInput.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = (Stage) btnListe.getScene().getWindow();
+            Scene newScene = new Scene(root);
+            
+            // Application explicite du CSS
+            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            newScene.getStylesheets().add(css);
+            
+            stage.setScene(newScene);
             stage.setTitle("Ajouter un Fournisseur");
             stage.show();
         } catch (IOException e) {
@@ -115,20 +133,6 @@ public class addChargeController {
                 statusCombo.getValue() == null || franchiseIdInput.getText().isEmpty()) {
             return "Tous les champs sont obligatoires.";
         }
-
-        if (titreInput.getText().matches("^\\d+$")) {
-            return "Le titre ne peut pas contenir uniquement des chiffres.";
-        }
-
-        try {
-            double montant = Double.parseDouble(montantInput.getText());
-            if (montant <= 0) {
-                return "Le montant doit être strictement supérieur à 0.";
-            }
-        } catch (NumberFormatException e) {
-            return "Le montant est invalide.";
-        }
-
         return null;
     }
 

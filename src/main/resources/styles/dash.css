@@ -1,0 +1,50 @@
+/* --- TableView Dark Mode (Version compatible 100%) --- */
+.table-view {
+    -fx-background-color: #06080F;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #0C0F1A;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #8892A4;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* --- LE TEXTE DEVIENT BLANC ICI --- */
+.table-view .table-cell {
+    -fx-text-fill: white; /* Force le texte en blanc */
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 10 0 10;
+}
+
+/* Style des lignes */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(14, 165, 233, 0.1);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(14, 165, 233, 0.2);
+}
+
+/* --- STYLE POUR LES BOUTONS DANS LA TABLE --- */
+.table-cell .button {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}

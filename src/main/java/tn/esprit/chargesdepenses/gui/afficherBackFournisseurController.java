@@ -8,34 +8,23 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Fournisseur;
 import tn.esprit.chargesdepenses.services.FournisseurService;
-
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Comparator;
 
 public class afficherBackFournisseurController {
-
     @FXML private TableView<Fournisseur> tableFournisseurs;
     @FXML private TableColumn<Fournisseur, String> colNom;
     @FXML private TableColumn<Fournisseur, String> colMatricule;
     @FXML private TableColumn<Fournisseur, String> colTelephone;
-    @FXML private TableColumn<Fournisseur, String> colFranchiseId; // Changé en String
+    @FXML private TableColumn<Fournisseur, String> colFranchiseId;
     @FXML private TableColumn<Fournisseur, Void> colModifier;
     @FXML private TableColumn<Fournisseur, Void> colSupprimer;
-    
     @FXML private Button btnAjouter;
     @FXML private Button btnFront;
     @FXML private ComboBox<String> comboTri;
@@ -49,107 +38,65 @@ public class afficherBackFournisseurController {
 
     @FXML
     public void initialize() {
-        // Rendre la table éditable
         tableFournisseurs.setEditable(true);
 
-        // Configuration des colonnes
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colNom.setCellFactory(TextFieldTableCell.forTableColumn());
         colNom.setOnEditCommit(event -> {
-            Fournisseur fournisseur = event.getRowValue();
-            if (!event.getNewValue().matches("^\\d+$")) {
-                fournisseur.setNom(event.getNewValue());
-                updateFournisseurInDB(fournisseur);
-            } else {
-                showAlert("Erreur", "Le nom ne peut pas contenir uniquement des chiffres.");
-                tableFournisseurs.refresh();
-            }
+            Fournisseur f = event.getRowValue();
+            f.setNom(event.getNewValue());
+            updateFournisseurInDB(f);
         });
 
         colMatricule.setCellValueFactory(new PropertyValueFactory<>("matriculeFiscal"));
         colMatricule.setCellFactory(TextFieldTableCell.forTableColumn());
         colMatricule.setOnEditCommit(event -> {
-            Fournisseur fournisseur = event.getRowValue();
-            if (!event.getNewValue().matches("^\\d+$")) {
-                fournisseur.setMatriculeFiscal(event.getNewValue());
-                updateFournisseurInDB(fournisseur);
-            } else {
-                showAlert("Erreur", "Le matricule ne peut pas contenir uniquement des chiffres.");
-                tableFournisseurs.refresh();
-            }
+            Fournisseur f = event.getRowValue();
+            f.setMatriculeFiscal(event.getNewValue());
+            updateFournisseurInDB(f);
         });
 
         colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
         colTelephone.setCellFactory(TextFieldTableCell.forTableColumn());
         colTelephone.setOnEditCommit(event -> {
-            Fournisseur fournisseur = event.getRowValue();
-            fournisseur.setTelephone(event.getNewValue());
-            updateFournisseurInDB(fournisseur);
+            Fournisseur f = event.getRowValue();
+            f.setTelephone(event.getNewValue());
+            updateFournisseurInDB(f);
         });
-        
-        // Afficher le nom de la franchise (non éditable inline)
+
+        // Affichage du NOM de la franchise
         colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
 
-        // Ajout des boutons d'action dans le tableau
         addModifierButtonToTable();
         addSupprimerButtonToTable();
 
-        // Initialisation de la liste filtrée et triée
         filteredData = new FilteredList<>(fournisseursList, p -> true);
         sortedData = new SortedList<>(filteredData);
-        
-        // Lier le comparateur de la SortedList au TableView
         sortedData.comparatorProperty().bind(tableFournisseurs.comparatorProperty());
-        
         tableFournisseurs.setItems(sortedData);
 
-        // Listener pour la recherche par NOM
-        txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(fournisseur -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                String lowerCaseFilter = newValue.toLowerCase();
-                return fournisseur.getNom().toLowerCase().contains(lowerCaseFilter);
+        txtRecherche.textProperty().addListener((obs, old, newValue) -> {
+            filteredData.setPredicate(f -> {
+                if (newValue == null || newValue.isEmpty()) return true;
+                return f.getNom().toLowerCase().contains(newValue.toLowerCase());
             });
-            calculerTotal(); // Recalculer le total basé sur les éléments filtrés
+            calculerTotal();
         });
 
-        // Initialisation du ComboBox de tri par MATRICULE
         comboTri.setItems(FXCollections.observableArrayList("Matricule Croissant", "Matricule Décroissant"));
         comboTri.setOnAction(e -> trierFournisseurs());
 
-        // Chargement initial des données
         loadFournisseurs();
-        
-        // Actions des boutons principaux
         btnAjouter.setOnAction(e -> openAjoutForm());
-        btnFront.setOnAction(e -> openFrontOffice());
+        if (btnFront != null) btnFront.setOnAction(e -> openFrontOffice());
     }
 
-    private void updateFournisseurInDB(Fournisseur fournisseur) {
+    private void updateFournisseurInDB(Fournisseur f) {
         try {
-            fournisseurService.updateOne(fournisseur);
+            fournisseurService.updateOne(f);
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de mettre à jour le fournisseur : " + e.getMessage());
-            loadFournisseurs(); // Recharger pour annuler les changements visuels
-        }
-    }
-
-    private void trierFournisseurs() {
-        String selection = comboTri.getValue();
-        if (selection != null) {
-            if (selection.equals("Matricule Croissant")) {
-                tableFournisseurs.getSortOrder().clear();
-                colMatricule.setSortType(TableColumn.SortType.ASCENDING);
-                tableFournisseurs.getSortOrder().add(colMatricule);
-                tableFournisseurs.sort();
-            } else if (selection.equals("Matricule Décroissant")) {
-                tableFournisseurs.getSortOrder().clear();
-                colMatricule.setSortType(TableColumn.SortType.DESCENDING);
-                tableFournisseurs.getSortOrder().add(colMatricule);
-                tableFournisseurs.sort();
-            }
+            showAlert("Erreur", "MAJ impossible : " + e.getMessage());
+            loadFournisseurs();
         }
     }
 
@@ -159,28 +106,32 @@ public class afficherBackFournisseurController {
             fournisseursList.addAll(fournisseurService.selectAll());
             calculerTotal();
         } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de charger les fournisseurs: " + e.getMessage());
+            showAlert("Erreur", "Chargement impossible : " + e.getMessage());
         }
     }
 
     private void calculerTotal() {
-        // Compter le nombre d'éléments visibles
-        int total = tableFournisseurs.getItems().size();
-        lblTotal.setText(String.valueOf(total));
+        lblTotal.setText("Total : " + tableFournisseurs.getItems().size());
+    }
+
+    private void trierFournisseurs() {
+        String selection = comboTri.getValue();
+        if ("Matricule Croissant".equals(selection)) {
+            colMatricule.setSortType(TableColumn.SortType.ASCENDING);
+        } else {
+            colMatricule.setSortType(TableColumn.SortType.DESCENDING);
+        }
+        tableFournisseurs.getSortOrder().setAll(colMatricule);
     }
 
     private void addModifierButtonToTable() {
         colModifier.setCellFactory(param -> new TableCell<>() {
-            private final javafx.scene.control.Button btn = new javafx.scene.control.Button("✎");
+            private final Button btn = new Button("✎");
             {
-                btn.setStyle("-fx-background-color: #4593cb; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-                btn.setOnAction(event -> {
-                    Fournisseur fournisseur = getTableView().getItems().get(getIndex());
-                    openModifierForm(fournisseur);
-                });
+                btn.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-cursor: hand;");
+                btn.setOnAction(e -> openModifierForm(getTableView().getItems().get(getIndex())));
             }
-            @Override
-            protected void updateItem(Void item, boolean empty) {
+            @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
             }
@@ -189,84 +140,70 @@ public class afficherBackFournisseurController {
 
     private void addSupprimerButtonToTable() {
         colSupprimer.setCellFactory(param -> new TableCell<>() {
-            private final javafx.scene.control.Button btn = new javafx.scene.control.Button("🗑");
+            private final Button btn = new Button("🗑");
             {
-                btn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-                btn.setOnAction(event -> {
-                    Fournisseur fournisseur = getTableView().getItems().get(getIndex());
-                    supprimerFournisseur(fournisseur);
-                });
+                btn.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-cursor: hand;");
+                btn.setOnAction(e -> supprimerFournisseur(getTableView().getItems().get(getIndex())));
             }
-            @Override
-            protected void updateItem(Void item, boolean empty) {
+            @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
             }
         });
     }
 
-    private void openModifierForm(Fournisseur fournisseur) {
+    private void supprimerFournisseur(Fournisseur f) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/modifierFournisseur.fxml"));
-            Parent root = loader.load();
-            
-            modifierFournisseurController controller = loader.getController();
-            controller.setFournisseurActuel(fournisseur); 
-            
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Modifier le Fournisseur");
-            stage.showAndWait();
-            loadFournisseurs(); // Rafraîchir après modification
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire de modification: " + e.getMessage());
-            e.printStackTrace();
+            fournisseurService.deleteOne(f);
+            fournisseursList.remove(f);
+            calculerTotal();
+        } catch (SQLException e) {
+            showAlert("Erreur", "Suppression impossible : " + e.getMessage());
         }
     }
 
     private void openAjoutForm() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterFournisseur.fxml"));
-            Parent root = loader.load();
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Ajouter un Fournisseur");
-            stage.showAndWait(); // Attendre la fermeture pour rafraîchir
-            loadFournisseurs(); 
+            stage.setScene(new Scene(loader.load()));
+            stage.showAndWait();
+            loadFournisseurs();
         } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire d'ajout: " + e.getMessage());
+            showAlert("Erreur", "Ouverture impossible : " + e.getMessage());
         }
     }
-    
+
+    private void openModifierForm(Fournisseur f) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/modifierFournisseur.fxml"));
+            Parent root = loader.load();
+            modifierFournisseurController controller = loader.getController();
+            controller.setFournisseurActuel(f);
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            loadFournisseurs();
+        } catch (IOException e) {
+            showAlert("Erreur", "Ouverture impossible : " + e.getMessage());
+        }
+    }
+
     private void openFrontOffice() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherFrontFournisseur.fxml"));
-            Parent root = loader.load();
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Fournisseurs - Front Office");
+            stage.setScene(new Scene(loader.load()));
             stage.show();
         } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le Front Office: " + e.getMessage());
+            showAlert("Erreur", "Front Office inaccessible : " + e.getMessage());
         }
     }
 
-    private void supprimerFournisseur(Fournisseur fournisseur) {
-        // Idéalement, demander confirmation avant suppression
-        try {
-            fournisseurService.deleteOne(fournisseur);
-            fournisseursList.remove(fournisseur);
-            calculerTotal(); 
-        } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de supprimer le fournisseur: " + e.getMessage());
-        }
-    }
-
-    private void showAlert(String titre, String message) {
+    private void showAlert(String titre, String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titre);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText(msg);
         alert.showAndWait();
     }
 }
