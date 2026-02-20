@@ -6,7 +6,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.HBox;
+import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import tn.esprit.boussole.models.Commande;
 import tn.esprit.boussole.services.CommandeService;
 
@@ -20,16 +24,15 @@ import java.util.ResourceBundle;
 public class CommandeController implements Initializable {
 
     @FXML private TableView<Commande> commandeTable;
-    @FXML private TableColumn<Commande, Integer> colId;
     @FXML private TableColumn<Commande, String> colDate;
     @FXML private TableColumn<Commande, Double> colMontant;
     @FXML private TableColumn<Commande, String> colStatut;
-    @FXML private TableColumn<Commande, Integer> colFranchise;
+    @FXML private TableColumn<Commande, Integer> colFranchiseId;  // Affichage de l'ID
     @FXML private TableColumn<Commande, Void> colActions;
 
     @FXML private TextField montantField;
     @FXML private ComboBox<String> statutCombo;
-    @FXML private TextField franchiseIdField;
+    @FXML private TextField franchiseIdField;  // Champ pour saisir l'ID
 
     private CommandeService commandeService;
     private ObservableList<Commande> commandeList;
@@ -42,29 +45,43 @@ public class CommandeController implements Initializable {
         // Initialiser la combo box des statuts
         statutCombo.getItems().addAll("En attente", "Confirmée", "Expédiée", "Livrée", "Annulée");
 
-        // Configuration des colonnes
+        // Configuration des colonnes avec édition
         configurerTable();
 
         // Charger les données
         chargerDonnees();
 
-        // Listener pour la sélection
-        commandeTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        remplirFormulaire(newSelection);
-                    }
-                }
-        );
+        // Vider le formulaire au démarrage
+        viderFormulaire();
+
+        // Ajouter des listeners pour la validation en temps réel
+        ajouterValidations();
+    }
+
+    private void ajouterValidations() {
+        // Validation du champ Montant (doit être > 0)
+        montantField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*\\.?\\d*")) {
+                montantField.setText(oldValue);
+            }
+        });
+
+        // Validation du champ Franchise ID (doit être > 0 et entier)
+        franchiseIdField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                franchiseIdField.setText(oldValue);
+            }
+        });
     }
 
     private void configurerTable() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant_total"));
-        colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
-        colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchise_id"));
+        // Rendre le tableau éditable
+        commandeTable.setEditable(true);
 
-        // Formatage de la date
+        // Permettre la sélection de cellules individuelles
+        commandeTable.getSelectionModel().setCellSelectionEnabled(true);
+
+        // Colonne DATE (non éditable)
         colDate.setCellValueFactory(cellData -> {
             LocalDateTime date = cellData.getValue().getDate_creation();
             return new javafx.beans.property.SimpleStringProperty(
@@ -72,21 +89,82 @@ public class CommandeController implements Initializable {
             );
         });
 
-        // Colonne Actions avec boutons
+        // Colonne MONTANT (éditable avec validation)
+        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant_total"));
+        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter() {
+            @Override
+            public Double fromString(String value) {
+                try {
+                    double montant = Double.parseDouble(value);
+                    if (montant <= 0) {
+                        showAlert(Alert.AlertType.WARNING, "Attention", "Le montant doit être supérieur à 0");
+                        return null;
+                    }
+                    return montant;
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Le montant doit être un nombre valide");
+                    return null;
+                }
+            }
+        }));
+        colMontant.setOnEditCommit(event -> {
+            Commande commande = event.getRowValue();
+            Double newValue = event.getNewValue();
+            if (newValue != null && newValue > 0) {
+                commande.setMontant_total(newValue);
+                sauvegarderModification(commande);
+            } else {
+                chargerDonnees();
+            }
+        });
+
+        // Colonne STATUT (éditable avec ComboBox)
+        colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
+        colStatut.setCellFactory(ComboBoxTableCell.forTableColumn(
+                "En attente", "Confirmée", "Expédiée", "Livrée", "Annulée"
+        ));
+        colStatut.setOnEditCommit(event -> {
+            Commande commande = event.getRowValue();
+            commande.setStatut(event.getNewValue());
+            sauvegarderModification(commande);
+        });
+
+        // Colonne FRANCHISE ID (éditable avec validation)
+        colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchise_id"));
+        colFranchiseId.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter() {
+            @Override
+            public Integer fromString(String value) {
+                try {
+                    int id = Integer.parseInt(value);
+                    if (id <= 0) {
+                        showAlert(Alert.AlertType.WARNING, "Attention", "L'ID franchise doit être supérieur à 0");
+                        return null;
+                    }
+                    return id;
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "L'ID franchise doit être un nombre entier valide");
+                    return null;
+                }
+            }
+        }));
+        colFranchiseId.setOnEditCommit(event -> {
+            Commande commande = event.getRowValue();
+            Integer newValue = event.getNewValue();
+            if (newValue != null && newValue > 0) {
+                commande.setFranchise_id(newValue);
+                sauvegarderModification(commande);
+            } else {
+                chargerDonnees();
+            }
+        });
+
+        // Colonne Actions (avec bouton Supprimer uniquement)
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️ Modifier");
             private final Button deleteBtn = new Button("🗑️ Supprimer");
-            private final HBox pane = new HBox(5, editBtn, deleteBtn);
+            private final HBox pane = new HBox(deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
                 deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
-
-                editBtn.setOnAction(event -> {
-                    Commande commande = getTableView().getItems().get(getIndex());
-                    remplirFormulaire(commande);
-                    commandeTable.getSelectionModel().select(commande);
-                });
 
                 deleteBtn.setOnAction(event -> {
                     Commande commande = getTableView().getItems().get(getIndex());
@@ -102,6 +180,17 @@ public class CommandeController implements Initializable {
         });
     }
 
+    private void sauvegarderModification(Commande commande) {
+        try {
+            commandeService.updateOne(commande);
+            System.out.println("Commande modifiée: " + commande.getId());
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
+            e.printStackTrace();
+            chargerDonnees();
+        }
+    }
+
     private void chargerDonnees() {
         try {
             commandeList = FXCollections.observableArrayList(commandeService.selectAll());
@@ -113,21 +202,9 @@ public class CommandeController implements Initializable {
         }
     }
 
-    private void remplirFormulaire(Commande commande) {
-        montantField.setText(String.valueOf(commande.getMontant_total()));
-        statutCombo.setValue(commande.getStatut());
-        franchiseIdField.setText(String.valueOf(commande.getFranchise_id()));
-    }
-
-    @FXML
-    private void handleRefresh() {
-        chargerDonnees();
-        viderFormulaire();
-    }
-
     @FXML
     private void handleAjouter() {
-        if (!validerChamps()) return;
+        if (!validerChampsAjout()) return;
 
         try {
             Commande commande = new Commande(
@@ -148,58 +225,8 @@ public class CommandeController implements Initializable {
     }
 
     @FXML
-    private void handleModifier() {
-        Commande selected = commandeTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner une commande à modifier");
-            return;
-        }
-
-        if (!validerChamps()) return;
-
-        try {
-            selected.setMontant_total(Double.parseDouble(montantField.getText()));
-            selected.setStatut(statutCombo.getValue());
-            selected.setFranchise_id(Integer.parseInt(franchiseIdField.getText()));
-
-            commandeService.updateOne(selected);
-            viderFormulaire();
-            chargerDonnees();
-            showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande modifiée avec succès!");
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleSupprimer() {
-        Commande selected = commandeTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner une commande à supprimer");
-            return;
-        }
-        supprimerCommande(selected);
-    }
-
-    private void supprimerCommande(Commande commande) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer la commande");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer la commande #" + commande.getId() + " ?");
-
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                commandeService.deleteOne(commande);
-                viderFormulaire();
-                chargerDonnees();
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande supprimée avec succès!");
-            } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
+    private void handleRefresh() {
+        chargerDonnees();
     }
 
     @FXML
@@ -211,21 +238,65 @@ public class CommandeController implements Initializable {
         montantField.clear();
         statutCombo.setValue(null);
         franchiseIdField.clear();
-        commandeTable.getSelectionModel().clearSelection();
     }
 
-    private boolean validerChamps() {
-        if (montantField.getText().isEmpty() || statutCombo.getValue() == null ||
-                franchiseIdField.getText().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez remplir tous les champs");
+    private void supprimerCommande(Commande commande) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer la commande");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer cette commande ?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                commandeService.deleteOne(commande);
+                chargerDonnees();
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Commande supprimée avec succès!");
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private boolean validerChampsAjout() {
+        // Validation Montant
+        String montantStr = montantField.getText();
+        if (montantStr.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Le montant est obligatoire");
+            return false;
+        }
+        try {
+            double montant = Double.parseDouble(montantStr);
+            if (montant <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Attention", "Le montant doit être supérieur à 0");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Le montant doit être un nombre valide");
             return false;
         }
 
+        // Validation Statut
+        if (statutCombo.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner un statut");
+            return false;
+        }
+
+        // Validation Franchise ID
+        String franchiseStr = franchiseIdField.getText();
+        if (franchiseStr.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "L'ID franchise est obligatoire");
+            return false;
+        }
         try {
-            Double.parseDouble(montantField.getText());
-            Integer.parseInt(franchiseIdField.getText());
+            int id = Integer.parseInt(franchiseStr);
+            if (id <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Attention", "L'ID franchise doit être supérieur à 0");
+                return false;
+            }
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Le montant et l'ID franchise doivent être des nombres valides");
+            showAlert(Alert.AlertType.WARNING, "Attention", "L'ID franchise doit être un nombre entier valide");
             return false;
         }
 

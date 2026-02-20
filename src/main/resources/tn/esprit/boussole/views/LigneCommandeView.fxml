@@ -19,30 +19,29 @@
             </children>
         </HBox>
 
-        <!-- Tableau des lignes de commande - HAUTEUR RÉDUITE à 250px -->
-        <TableView fx:id="ligneTable" prefHeight="250">
+        <!-- Tableau des lignes de commande (SANS ID) -->
+        <TableView fx:id="ligneTable" prefHeight="300" editable="true">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="50" text="ID" />
-                <TableColumn fx:id="colQuantite" prefWidth="80" text="Qté" />
-                <TableColumn fx:id="colPrix" prefWidth="100" text="Prix" />
-                <TableColumn fx:id="colTotal" prefWidth="100" text="Total" />
-                <TableColumn fx:id="colCommandeId" prefWidth="90" text="Cmd ID" />
-                <TableColumn fx:id="colProduit" prefWidth="200" text="Produit" />
-                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
+                <TableColumn fx:id="colQuantite" prefWidth="100" text="Quantité" />
+                <TableColumn fx:id="colPrix" prefWidth="120" text="Prix unitaire" />
+                <TableColumn fx:id="colTotal" prefWidth="120" text="Total" editable="false" />
+                <TableColumn fx:id="colCommandeDate" prefWidth="180" text="Date commande" editable="false" />
+                <TableColumn fx:id="colProduit" prefWidth="200" text="Produit" editable="false" />
+                <TableColumn fx:id="colActions" prefWidth="120" text="Actions" editable="false" />
             </columns>
         </TableView>
 
-        <!-- Formulaire -->
+        <!-- Formulaire (pour AJOUT uniquement) -->
         <VBox styleClass="form-panel">
             <children>
-                <Label styleClass="form-title" text="AJOUTER / MODIFIER UNE LIGNE" />
+                <Label styleClass="form-title" text="AJOUTER UNE LIGNE DE COMMANDE" />
 
                 <GridPane hgap="15.0" vgap="10.0">
                     <columnConstraints>
                         <ColumnConstraints halignment="RIGHT" minWidth="80" />
-                        <ColumnConstraints minWidth="200" />
+                        <ColumnConstraints minWidth="250" />
                         <ColumnConstraints halignment="RIGHT" minWidth="80" />
-                        <ColumnConstraints minWidth="200" />
+                        <ColumnConstraints minWidth="250" />
                     </columnConstraints>
 
                     <children>
@@ -63,8 +62,6 @@
                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                     <children>
                         <Button mnemonicParsing="false" onAction="#handleAjouter" styleClass="action-button" text="➕ Ajouter" />
-                        <Button mnemonicParsing="false" onAction="#handleModifier" styleClass="edit-button" text="✏️ Modifier" />
-                        <Button mnemonicParsing="false" onAction="#handleSupprimer" styleClass="delete-button" text="🗑️ Supprimer" />
                         <Button mnemonicParsing="false" onAction="#handleEffacer" styleClass="clear-button" text="🗑️ Effacer" />
                     </children>
                 </HBox>

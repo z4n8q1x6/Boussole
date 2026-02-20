@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <VBox spacing="15.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.ProduitController">
@@ -19,23 +20,22 @@
             </children>
         </HBox>
 
-        <!-- Tableau des produits - HAUTEUR RÉDUITE à 250px -->
-        <TableView fx:id="produitTable" prefHeight="250">
+        <!-- Tableau des produits -->
+        <TableView fx:id="produitTable" prefHeight="250" editable="true">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="50" text="ID" />
                 <TableColumn fx:id="colNom" prefWidth="150" text="Nom" />
                 <TableColumn fx:id="colReference" prefWidth="120" text="Référence" />
-                <TableColumn fx:id="colPrix" prefWidth="100" text="Prix" />
+                <TableColumn fx:id="colPrix" prefWidth="100" text="Prix (DT)" />
                 <TableColumn fx:id="colStock" prefWidth="80" text="Stock" />
-                <TableColumn fx:id="colImage" prefWidth="200" text="Image" />
-                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
+                <TableColumn fx:id="colImage" prefWidth="100" text="Image" />
+                <TableColumn fx:id="colActions" prefWidth="100" text="Actions" editable="false" />
             </columns>
         </TableView>
 
-        <!-- Formulaire -->
+        <!-- Formulaire avec aperçu image -->
         <VBox styleClass="form-panel">
             <children>
-                <Label styleClass="form-title" text="AJOUTER / MODIFIER UN PRODUIT" />
+                <Label styleClass="form-title" text="AJOUTER UN PRODUIT" />
 
                 <GridPane hgap="15.0" vgap="10.0">
                     <columnConstraints>
@@ -59,15 +59,19 @@
                         <TextField fx:id="stockField" promptText="0" GridPane.rowIndex="1" GridPane.columnIndex="3" />
 
                         <Label styleClass="form-label" text="Image:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                        <TextField fx:id="imageField" promptText="URL de l'image" GridPane.columnSpan="3" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                        <HBox spacing="5" GridPane.columnSpan="3" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                            <TextField fx:id="imageField" promptText="Chemin de l'image" HBox.hgrow="ALWAYS" />
+                            <Button fx:id="btnParcourir" onAction="#handleParcourirImage" text="📁 Parcourir" styleClass="action-button" />
+                        </HBox>
+
+                        <Label styleClass="form-label" text="Aperçu:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                        <ImageView fx:id="apercuImage" fitHeight="80" fitWidth="80" preserveRatio="true" GridPane.rowIndex="3" GridPane.columnIndex="1" />
                     </children>
                 </GridPane>
 
                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                     <children>
                         <Button mnemonicParsing="false" onAction="#handleAjouter" styleClass="action-button" text="➕ Ajouter" />
-                        <Button mnemonicParsing="false" onAction="#handleModifier" styleClass="edit-button" text="✏️ Modifier" />
-                        <Button mnemonicParsing="false" onAction="#handleSupprimer" styleClass="delete-button" text="🗑️ Supprimer" />
                         <Button mnemonicParsing="false" onAction="#handleEffacer" styleClass="clear-button" text="🗑️ Effacer" />
                     </children>
                 </HBox>

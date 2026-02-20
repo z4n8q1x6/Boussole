@@ -6,7 +6,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.boussole.models.LigneCommande;
 import tn.esprit.boussole.models.Produit;
 import tn.esprit.boussole.models.Commande;
@@ -16,17 +19,17 @@ import tn.esprit.boussole.services.CommandeService;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class LigneCommandeController implements Initializable {
 
     @FXML private TableView<LigneCommande> ligneTable;
-    @FXML private TableColumn<LigneCommande, Integer> colId;
     @FXML private TableColumn<LigneCommande, Integer> colQuantite;
     @FXML private TableColumn<LigneCommande, Double> colPrix;
     @FXML private TableColumn<LigneCommande, Double> colTotal;
-    @FXML private TableColumn<LigneCommande, Integer> colCommandeId;
+    @FXML private TableColumn<LigneCommande, String> colCommandeDate;
     @FXML private TableColumn<LigneCommande, String> colProduit;
     @FXML private TableColumn<LigneCommande, Void> colActions;
 
@@ -42,6 +45,7 @@ public class LigneCommandeController implements Initializable {
     private ObservableList<LigneCommande> ligneCommandeList;
     private ObservableList<Produit> produitList;
     private ObservableList<Commande> commandeList;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -53,7 +57,7 @@ public class LigneCommandeController implements Initializable {
         chargerProduits();
         chargerCommandes();
 
-        // Configuration des colonnes
+        // Configuration des colonnes avec édition
         configurerTable();
 
         // Charger les données
@@ -67,58 +71,112 @@ public class LigneCommandeController implements Initializable {
             }
         });
 
-        // Listener pour la sélection
-        ligneTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        remplirFormulaire(newSelection);
-                    }
-                }
-        );
+        // Vider le formulaire au démarrage
+        viderFormulaire();
     }
 
     private void configurerTable() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colQuantite.setCellValueFactory(new PropertyValueFactory<>("quantite"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_unitaire"));
-        colCommandeId.setCellValueFactory(new PropertyValueFactory<>("commande_id"));
+        // Rendre le tableau éditable
+        ligneTable.setEditable(true);
 
-        // Calcul du total
+        // Permettre la sélection de cellules individuelles
+        ligneTable.getSelectionModel().setCellSelectionEnabled(true);
+
+        // Colonne QUANTITE (éditable avec validation)
+        colQuantite.setCellValueFactory(new PropertyValueFactory<>("quantite"));
+        colQuantite.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter() {
+            @Override
+            public Integer fromString(String value) {
+                try {
+                    int quantite = Integer.parseInt(value);
+                    if (quantite <= 0) {
+                        showAlert(Alert.AlertType.WARNING, "Attention", "La quantité doit être supérieure à 0");
+                        return null;
+                    }
+                    return quantite;
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "La quantité doit être un nombre entier valide");
+                    return null;
+                }
+            }
+        }));
+        colQuantite.setOnEditCommit(event -> {
+            LigneCommande ligne = event.getRowValue();
+            Integer newValue = event.getNewValue();
+            if (newValue != null && newValue > 0) {
+                ligne.setQuantite(newValue);
+                sauvegarderModification(ligne);
+                rafraichirTotal(ligne);
+            } else {
+                chargerDonnees();
+            }
+        });
+
+        // Colonne PRIX (éditable avec validation)
+        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_unitaire"));
+        colPrix.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter() {
+            @Override
+            public Double fromString(String value) {
+                try {
+                    double prix = Double.parseDouble(value);
+                    if (prix <= 0) {
+                        showAlert(Alert.AlertType.WARNING, "Attention", "Le prix doit être supérieur à 0");
+                        return null;
+                    }
+                    return prix;
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix doit être un nombre valide");
+                    return null;
+                }
+            }
+        }));
+        colPrix.setOnEditCommit(event -> {
+            LigneCommande ligne = event.getRowValue();
+            Double newValue = event.getNewValue();
+            if (newValue != null && newValue > 0) {
+                ligne.setPrix_unitaire(newValue);
+                sauvegarderModification(ligne);
+                rafraichirTotal(ligne);
+            } else {
+                chargerDonnees();
+            }
+        });
+
+        // Colonne TOTAL (calculé)
         colTotal.setCellValueFactory(cellData -> {
             double total = cellData.getValue().getQuantite() * cellData.getValue().getPrix_unitaire();
             return new javafx.beans.property.SimpleDoubleProperty(total).asObject();
         });
 
-        // Affichage du nom du produit
-        colProduit.setCellValueFactory(cellData -> {
-            try {
-                int produitId = cellData.getValue().getProduit_id();
-                for (Produit p : produitList) {
-                    if (p.getId() == produitId) {
-                        return new javafx.beans.property.SimpleStringProperty(p.getNom());
-                    }
-                }
-            } catch (Exception e) {
-                // Ignorer
+        // Colonne DATE COMMANDE (affichage)
+        colCommandeDate.setCellValueFactory(cellData -> {
+            int commandeId = cellData.getValue().getCommande_id();
+            Commande commande = getCommandeById(commandeId);
+            if (commande != null && commande.getDate_creation() != null) {
+                return new javafx.beans.property.SimpleStringProperty(
+                        commande.getDate_creation().format(formatter)
+                );
             }
             return new javafx.beans.property.SimpleStringProperty("N/A");
         });
 
-        // Colonne Actions avec boutons
+        // Colonne PRODUIT (affichage du nom) - CORRECTION: colProduit au lieu de colProduitNom
+        colProduit.setCellValueFactory(cellData -> {
+            int produitId = cellData.getValue().getProduit_id();
+            Produit produit = getProduitById(produitId);
+            if (produit != null) {
+                return new javafx.beans.property.SimpleStringProperty(produit.getNom());
+            }
+            return new javafx.beans.property.SimpleStringProperty("N/A");
+        });
+
+        // Colonne Actions (avec bouton Supprimer)
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️ Modifier");
             private final Button deleteBtn = new Button("🗑️ Supprimer");
-            private final HBox pane = new HBox(5, editBtn, deleteBtn);
+            private final HBox pane = new HBox(deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
                 deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
-
-                editBtn.setOnAction(event -> {
-                    LigneCommande ligne = getTableView().getItems().get(getIndex());
-                    remplirFormulaire(ligne);
-                    ligneTable.getSelectionModel().select(ligne);
-                });
 
                 deleteBtn.setOnAction(event -> {
                     LigneCommande ligne = getTableView().getItems().get(getIndex());
@@ -132,6 +190,24 @@ public class LigneCommandeController implements Initializable {
                 setGraphic(empty ? null : pane);
             }
         });
+    }
+
+    private void rafraichirTotal(LigneCommande ligne) {
+        int index = ligneTable.getItems().indexOf(ligne);
+        if (index >= 0) {
+            ligneTable.getItems().set(index, ligne);
+        }
+    }
+
+    private void sauvegarderModification(LigneCommande ligne) {
+        try {
+            ligneCommandeService.updateOne(ligne);
+            System.out.println("Ligne modifiée");
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
+            e.printStackTrace();
+            chargerDonnees();
+        }
     }
 
     private void chargerProduits() {
@@ -163,8 +239,6 @@ public class LigneCommandeController implements Initializable {
                     }
                 }
             });
-
-            System.out.println("Produits chargés pour combo: " + produitList.size());
 
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les produits: " + e.getMessage());
@@ -202,12 +276,28 @@ public class LigneCommandeController implements Initializable {
                 }
             });
 
-            System.out.println("Commandes chargées pour combo: " + commandeList.size());
-
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les commandes: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Produit getProduitById(int id) {
+        for (Produit p : produitList) {
+            if (p.getId() == id) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private Commande getCommandeById(int id) {
+        for (Commande c : commandeList) {
+            if (c.getId() == id) {
+                return c;
+            }
+        }
+        return null;
     }
 
     private void chargerDonnees() {
@@ -221,36 +311,9 @@ public class LigneCommandeController implements Initializable {
         }
     }
 
-    private void remplirFormulaire(LigneCommande ligne) {
-        // Sélectionner la commande
-        for (Commande c : commandeList) {
-            if (c.getId() == ligne.getCommande_id()) {
-                commandeCombo.setValue(c);
-                break;
-            }
-        }
-
-        // Sélectionner le produit
-        for (Produit p : produitList) {
-            if (p.getId() == ligne.getProduit_id()) {
-                produitCombo.setValue(p);
-                break;
-            }
-        }
-
-        quantiteField.setText(String.valueOf(ligne.getQuantite()));
-        prixUnitaireField.setText(String.valueOf(ligne.getPrix_unitaire()));
-    }
-
-    @FXML
-    private void handleRefresh() {
-        chargerDonnees();
-        viderFormulaire();
-    }
-
     @FXML
     private void handleAjouter() {
-        if (!validerChamps()) return;
+        if (!validerChampsAjout()) return;
 
         try {
             LigneCommande ligne = new LigneCommande(
@@ -271,59 +334,10 @@ public class LigneCommandeController implements Initializable {
     }
 
     @FXML
-    private void handleModifier() {
-        LigneCommande selected = ligneTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner une ligne à modifier");
-            return;
-        }
-
-        if (!validerChamps()) return;
-
-        try {
-            selected.setQuantite(Integer.parseInt(quantiteField.getText()));
-            selected.setPrix_unitaire(Double.parseDouble(prixUnitaireField.getText()));
-            selected.setCommande_id(commandeCombo.getValue().getId());
-            selected.setProduit_id(produitCombo.getValue().getId());
-
-            ligneCommandeService.updateOne(selected);
-            viderFormulaire();
-            chargerDonnees();
-            showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne de commande modifiée avec succès!");
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleSupprimer() {
-        LigneCommande selected = ligneTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner une ligne à supprimer");
-            return;
-        }
-        supprimerLigneCommande(selected);
-    }
-
-    private void supprimerLigneCommande(LigneCommande ligne) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer la ligne de commande");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer cette ligne ?");
-
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                ligneCommandeService.deleteOne(ligne);
-                viderFormulaire();
-                chargerDonnees();
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne supprimée avec succès!");
-            } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
+    private void handleRefresh() {
+        chargerDonnees();
+        chargerProduits();
+        chargerCommandes();
     }
 
     @FXML
@@ -336,30 +350,52 @@ public class LigneCommandeController implements Initializable {
         produitCombo.setValue(null);
         quantiteField.clear();
         prixUnitaireField.clear();
-        ligneTable.getSelectionModel().clearSelection();
     }
 
-    private boolean validerChamps() {
-        if (commandeCombo.getValue() == null || produitCombo.getValue() == null ||
-                quantiteField.getText().isEmpty() || prixUnitaireField.getText().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez remplir tous les champs");
+    private void supprimerLigneCommande(LigneCommande ligne) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer la ligne de commande");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer cette ligne ?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                ligneCommandeService.deleteOne(ligne);
+                chargerDonnees();
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Ligne supprimée avec succès!");
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private boolean validerChampsAjout() {
+        if (commandeCombo.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner une commande");
             return false;
         }
 
-        try {
-            int quantite = Integer.parseInt(quantiteField.getText());
-            if (quantite <= 0) {
-                showAlert(Alert.AlertType.WARNING, "Attention", "La quantité doit être positive");
-                return false;
-            }
+        if (produitCombo.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez sélectionner un produit");
+            return false;
+        }
 
-            double prix = Double.parseDouble(prixUnitaireField.getText());
-            if (prix <= 0) {
-                showAlert(Alert.AlertType.WARNING, "Attention", "Le prix doit être positif");
+        // Validation Quantité
+        String quantiteStr = quantiteField.getText();
+        if (quantiteStr.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "La quantité est obligatoire");
+            return false;
+        }
+        try {
+            int quantite = Integer.parseInt(quantiteStr);
+            if (quantite <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Attention", "La quantité doit être supérieure à 0");
                 return false;
             }
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "La quantité et le prix doivent être des nombres valides");
+            showAlert(Alert.AlertType.WARNING, "Attention", "La quantité doit être un nombre entier valide");
             return false;
         }
 
