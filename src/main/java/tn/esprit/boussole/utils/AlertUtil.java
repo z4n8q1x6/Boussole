@@ -26,5 +26,6 @@ public class AlertUtil {
   public static void showInformation(String header, String content) {
     Alert alert = new Alert(AlertType.INFORMATION, content);
     alert.setHeaderText(header);
+    alert.showAndWait();
   }
 }

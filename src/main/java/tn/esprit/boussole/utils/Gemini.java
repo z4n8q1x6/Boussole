@@ -15,6 +15,10 @@ import java.util.Optional;
 import tn.esprit.boussole.models.AlerteIA;
 
 public class Gemini {
+  private static String[] myModels = {
+    "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"
+  };
+
   public static Optional<AlerteIA> generate_alerte() {
     // Client client = new Client(); // Uses GOOGLE_API_KEY env var
     String apiKey = Config.get("GEMINI_API");
@@ -61,7 +65,6 @@ public class Gemini {
             totalCharges, totalRecettes, (totalRecettes - totalCharges));
 
     AlerteIA alerteIA = new AlerteIA();
-    String[] myModels = {"gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"};
     int i = 0;
     while (i < myModels.length) {
       try {
@@ -92,6 +95,36 @@ public class Gemini {
       }
     }
     client.close();
+    return Optional.empty();
+  }
+
+  public static Optional<String> generateAdvice(String prompt) {
+    String apiKey = Config.get("GEMINI_API");
+    if (apiKey == null) {
+      System.err.println("GEMINI_API_KEY not set");
+      return Optional.empty();
+    }
+
+    Client client = Client.builder().apiKey(apiKey).build();
+    int i = 0;
+    while (i < myModels.length) {
+      try {
+        GenerateContentResponse response = client.models.generateContent(myModels[i], prompt, null);
+        // DEBUG
+        System.out.println(myModels[i]);
+        System.out.println(response.text());
+        client.close();
+        return Optional.of(response.text());
+      } catch (ServerException e) {
+        // no more tokens for that model or model overloaded... -> try next model
+        System.err.println("Failed to generate content: " + e);
+        i++;
+      } catch (ClientException e) {
+        // problem with client api/model_name... -> no retries
+        System.err.println("Failed to generate content: " + e);
+        break;
+      }
+    }
     return Optional.empty();
   }
 }

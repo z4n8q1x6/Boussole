@@ -29,35 +29,48 @@
 
     <!-- Action buttons top right -->
     <HBox spacing="10" alignment="CENTER_RIGHT">
+      <Button text="Analyze Severity"
+        onAction="#analyzeSeverity"
+        prefHeight="36"
+        style="
+        -fx-background-color: #6366F1;
+        -fx-text-fill: #FFFFFF;
+        -fx-font-weight: bold;
+        -fx-background-radius: 6;
+        -fx-padding: 0 14;
+        -fx-cursor: hand;
+      " />
       <Button onAction="#handleUpdate"
         text="Modifier"
         prefHeight="40"
         prefWidth="170"
         style="-fx-background-color: transparent;
-               -fx-text-fill: #00E5CC;
-               -fx-font-weight: bold;
-               -fx-background-radius: 8;
-               -fx-border-color: rgba(0,229,204,0.4);
-               -fx-border-radius: 8;
-               -fx-padding: 0 18;
-               -fx-cursor: hand;
-               -fx-alignment: center;" />
+                -fx-text-fill: #00E5CC;
+                -fx-font-weight: bold;
+                -fx-background-radius: 8;
+                -fx-border-color: rgba(0,229,204,0.4);
+                -fx-border-radius: 8;
+                -fx-padding: 0 18;
+                -fx-cursor: hand;
+                -fx-alignment: center;" />
 
       <Button onAction="#delete"
         text="Supprimer"
         prefHeight="40"
         prefWidth="120"
         style="-fx-background-color: #3D1A1A;
-               -fx-text-fill: #F43F5E;
-               -fx-font-weight: bold;
-               -fx-background-radius: 8;
-               -fx-border-color: rgba(244,63,94,0.3);
-               -fx-border-radius: 8;
-               -fx-padding: 0 18;
-               -fx-cursor: hand;
-               -fx-alignment: center;" />
+                -fx-text-fill: #F43F5E;
+                -fx-font-weight: bold;
+                -fx-background-radius: 8;
+                -fx-border-color: rgba(244,63,94,0.3);
+                -fx-border-radius: 8;
+                -fx-padding: 0 18;
+                -fx-cursor: hand;
+                -fx-alignment: center;" />
+
     </HBox>
   </HBox>
+
 
   <!-- Card container -->
   <VBox spacing="10"

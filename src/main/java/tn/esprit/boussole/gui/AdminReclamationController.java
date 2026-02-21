@@ -1,6 +1,7 @@
 package tn.esprit.boussole.gui;
 
 import java.io.IOException;
+import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +13,7 @@ import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.service.ReclamationService;
 import tn.esprit.boussole.utils.AlertUtil;
+import tn.esprit.boussole.utils.Gemini;
 
 public class AdminReclamationController {
   private final ReclamationService service = new ReclamationService();
@@ -117,5 +119,37 @@ public class AdminReclamationController {
       e.printStackTrace();
     }
     display();
+  }
+
+  @FXML
+  public void analyzeSeverity() {
+    Reclamation selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      AlertUtil.showWarning("No selection", "Select a complaint");
+      return;
+    }
+
+    String prompt =
+        String.format(
+            """
+            Analyze this complaint and rate its severity/impact:
+
+            Subject: %s
+            Description: %s
+
+            Provide:
+            1. Severity: Critical / High / Medium / Low
+            2. Why: 1-2 sentence explanation
+            3. Action: What to do about it
+            """,
+            selected.getSujet(), selected.getDescription());
+
+    Optional<String> analysis = Gemini.generateAdvice(prompt);
+
+    if (analysis.isPresent()) {
+      AlertUtil.showInformation("Severity Analysis", analysis.get());
+    } else {
+      AlertUtil.showError("Error", "Could not analyze");
+    }
   }
 }

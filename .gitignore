@@ -26,10 +26,11 @@ Thumbs.db
 
 # --- Secrets & Notes ---
 .env
-buffer.md
 temp_key.txt
 *.properties
+*.md
 
 # --- Project Specific ---
 # Ignore the generated-sources folder if you use one
 src/main/generated/
+

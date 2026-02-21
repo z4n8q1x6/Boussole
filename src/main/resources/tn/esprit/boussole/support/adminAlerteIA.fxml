@@ -23,7 +23,7 @@
   </padding>
 
   <!-- Header -->
-  <HBox alignment="CENTER_LEFT">
+  <HBox spacing="12" alignment="CENTER_LEFT">
     <VBox spacing="4" HBox.hgrow="ALWAYS">
       <Label text="Alertes IA — Admin" textFill="#E8EDF5">
         <font>
@@ -33,21 +33,37 @@
       <Label text="Surveillance globale de toutes les franchises"
         textFill="#8e9aaf" />
     </VBox>
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-      <Button fx:id="pdfButton"
-        onAction="#pdf"
-        text="Exporter PDF"
-        prefHeight="40"
-        style="-fx-background-color: transparent;
-               -fx-text-fill: #00E5CC;
-               -fx-font-weight: bold;
-               -fx-background-radius: 8;
-               -fx-border-color: rgba(0,229,204,0.4);
-               -fx-border-radius: 8;
-               -fx-padding: 0 18;
-               -fx-cursor: hand;" />
-    </HBox>
+
+    <Button text="Health"
+      onAction="#franchiseHealthScore"
+      prefHeight="40"
+      prefWidth="130"
+      style="-fx-background-color: rgba(139,92,246,0.15);
+         -fx-text-fill: #A78BFA;
+         -fx-font-weight: bold;
+         -fx-background-radius: 8;
+         -fx-border-color: rgba(139,92,246,0.4);
+         -fx-border-radius: 8;
+         -fx-padding: 0 18;
+         -fx-cursor: hand;
+         -fx-alignment: center;" />
+
+    <Button fx:id="pdfButton"
+      onAction="#pdf"
+      text="PDF"
+      prefHeight="40"
+      prefWidth="130"
+      style="-fx-background-color: rgba(59,130,246,0.15);
+         -fx-text-fill: #60A5FA;
+         -fx-font-weight: bold;
+         -fx-background-radius: 8;
+         -fx-border-color: rgba(59,130,246,0.4);
+         -fx-border-radius: 8;
+         -fx-padding: 0 18;
+         -fx-cursor: hand;
+         -fx-alignment: center;" />
   </HBox>
+
 
   <!-- Main content -->
   <SplitPane dividerPositions="0.6"
