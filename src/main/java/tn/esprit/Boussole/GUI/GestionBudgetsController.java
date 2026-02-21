@@ -18,8 +18,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import tn.esprit.Boussole.Models.Charge;
 import tn.esprit.Boussole.Models.budget_previsionnel;
-import tn.esprit.Boussole.Models.TypeCharge;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
@@ -27,13 +27,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+
 
 public class GestionBudgetsController implements Initializable {
 
     @FXML private Button btnDashboard;
     @FXML private Button btnBudgets;
     @FXML private Button btnBilans;
-    @FXML private ComboBox<Integer> combMois;
+    @FXML private ComboBox<Integer> cbMois; // Correction du champ manquant
     @FXML private ComboBox<Integer> cbAnnee;
     @FXML private ComboBox<budget_previsionnel.TypeBudget> cbTypeBudget;
     @FXML private ComboBox<String> cbCategorie;
@@ -50,7 +56,6 @@ public class GestionBudgetsController implements Initializable {
     @FXML private TableColumn<budget_previsionnel, Double> colMontant;
 
     private ServiceBudgetPrevisionnel serviceBudget;
-    private static final int FRANCHISE_ID = 1;
     private Integer idBudgetAModifier = null;
 
     @Override
@@ -58,8 +63,8 @@ public class GestionBudgetsController implements Initializable {
         serviceBudget = new ServiceBudgetPrevisionnel();
 
         // 1. Configuration des ComboBox
-        for (int mois = 1; mois <= 12; mois++) combMois.getItems().add(mois);
-        combMois.getSelectionModel().selectFirst();
+        for (int mois = 1; mois <= 12; mois++) cbMois.getItems().add(mois);
+        cbMois.getSelectionModel().selectFirst();
 
         for (int annee = 2024; annee <= 2030; annee++) cbAnnee.getItems().add(annee);
         cbAnnee.getSelectionModel().selectFirst();
@@ -111,8 +116,7 @@ public class GestionBudgetsController implements Initializable {
             List<budget_previsionnel> budgets = serviceBudget.getAllByFranchise(franchiseId);
             tableBudgets.getItems().addAll(budgets);
         } catch (Exception e) {
-            System.err.println("Erreur lors du rafraîchissement: " + e.getMessage());
-            e.printStackTrace();
+            Logger.getLogger(GestionBudgetsController.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -122,7 +126,7 @@ public class GestionBudgetsController implements Initializable {
         budget_previsionnel.TypeBudget typeBudget = cbTypeBudget.getValue();
 
         if (typeBudget == budget_previsionnel.TypeBudget.LIMITE_DEPENSE) {
-            for (TypeCharge charge : TypeCharge.values()) {
+            for (Charge.TypeCharge charge : Charge.TypeCharge.values()) {
                 cbCategorie.getItems().add(charge.name());
             }
             cbCategorie.setDisable(false);
@@ -139,92 +143,60 @@ public class GestionBudgetsController implements Initializable {
      * UPDATE si idBudgetAModifier != null, sinon INSERT
      */
     private void sauvegarderBudget() {
-        // Valider le formulaire d'abord
-        if (!validerFormulaireBudget()) {
-            return; // Message d'erreur déjà affiché par la méthode de validation
+        if (!validerSaisie()) {
+            return;
         }
 
         try {
-            int mois = combMois.getValue();
-            int annee = cbAnnee.getValue();
-            budget_previsionnel.TypeBudget typeBudget = cbTypeBudget.getValue();
-            String categorie = cbCategorie.getValue();
-            double montant = Double.parseDouble(txtMontant.getText());
+            budget_previsionnel budget = new budget_previsionnel();
+            budget.setMois(cbMois.getValue());
+            budget.setAnnee(cbAnnee.getValue());
+            budget.setType_budget(cbTypeBudget.getValue());
+            budget.setCategorie(cbCategorie.isDisabled() ? "GLOBAL" : cbCategorie.getValue());
+            budget.setMontantCible(Double.parseDouble(txtMontant.getText()));
+            budget.setFranchiseId(SessionManager.getInstance().getIdFranchise());
 
             if (idBudgetAModifier != null) {
-                // UPDATE
-                budget_previsionnel budget = new budget_previsionnel(
-                    idBudgetAModifier, mois, annee, montant, typeBudget, categorie, FRANCHISE_ID
-                );
+                budget.setId(idBudgetAModifier);
                 serviceBudget.updateOne(budget);
                 afficherMessageSucces("Budget modifié avec succès !");
-                idBudgetAModifier = null;
-                btnSauvegarder.setText("Sauvegarder");
             } else {
-                // INSERT
-                budget_previsionnel budget = new budget_previsionnel(
-                    mois, annee, montant, typeBudget, categorie, FRANCHISE_ID
-                );
                 serviceBudget.add(budget);
-                afficherMessageSucces("Budget créé avec succès !");
+                afficherMessageSucces("Budget ajouté avec succès.");
             }
 
             rafraichirTable();
             nettoyerFormulaire();
-
         } catch (Exception e) {
-            afficherMessageErreur("Erreur : " + e.getMessage());
-            e.printStackTrace();
+            afficherMessageErreur("Erreur lors de la sauvegarde : " + e.getMessage());
         }
     }
 
-    /**
-     * Valide le formulaire de budget
-     * Retourne true si valide, false sinon
-     */
-    private boolean validerFormulaireBudget() {
-        // Vérifier Mois
-        if (combMois.getValue() == null) {
-            afficherMessageErreur("Veuillez sélectionner un mois");
+    // Ajout de la validation de saisie
+    private boolean validerSaisie() {
+        if (cbMois.getValue() == null || cbAnnee.getValue() == null || cbTypeBudget.getValue() == null) {
+            afficherMessageErreur("Veuillez sélectionner le mois, l'année et le type de budget.");
             return false;
         }
 
-        // Vérifier Année
-        if (cbAnnee.getValue() == null) {
-            afficherMessageErreur("Veuillez sélectionner une année");
+        if (cbTypeBudget.getValue() == budget_previsionnel.TypeBudget.LIMITE_DEPENSE && cbCategorie.getValue() == null) {
+            afficherMessageErreur("Veuillez sélectionner une catégorie pour le type de budget 'LIMITE_DEPENSE'.");
             return false;
         }
 
-        // Vérifier Type Budget
-        if (cbTypeBudget.getValue() == null) {
-            afficherMessageErreur("Veuillez sélectionner un type de budget");
-            return false;
-        }
-
-        // Vérifier Catégorie (sauf si OBJECTIF_REVENU, car elle est désactivée)
-        budget_previsionnel.TypeBudget typeBudget = cbTypeBudget.getValue();
-        if (typeBudget == budget_previsionnel.TypeBudget.LIMITE_DEPENSE) {
-            if (cbCategorie.getValue() == null) {
-                afficherMessageErreur("Veuillez sélectionner une catégorie");
-                return false;
-            }
-        }
-
-        // Vérifier Montant
-        String montantText = txtMontant.getText();
-        if (montantText == null || montantText.isEmpty()) {
-            afficherMessageErreur("Veuillez entrer un montant");
+        if (txtMontant.getText().isEmpty()) {
+            afficherMessageErreur("Veuillez entrer un montant.");
             return false;
         }
 
         try {
-            double montant = Double.parseDouble(montantText);
+            double montant = Double.parseDouble(txtMontant.getText());
             if (montant <= 0) {
-                afficherMessageErreur("Le montant doit être strictement positif");
+                afficherMessageErreur("Le montant doit être supérieur à 0.");
                 return false;
             }
         } catch (NumberFormatException e) {
-            afficherMessageErreur("Montant invalide : doit être un nombre valide");
+            afficherMessageErreur("Le montant doit être un nombre valide.");
             return false;
         }
 
@@ -238,7 +210,7 @@ public class GestionBudgetsController implements Initializable {
         if (b == null) return;
 
         idBudgetAModifier = b.getId();
-        combMois.setValue(b.getMois());
+        cbMois.setValue(b.getMois());
         cbAnnee.setValue(b.getAnnee());
         cbTypeBudget.setValue(b.getType_budget());
         cbCategorie.setValue(b.getCategorie());
@@ -299,7 +271,7 @@ public class GestionBudgetsController implements Initializable {
 
 
     private void nettoyerFormulaire() {
-        combMois.getSelectionModel().selectFirst();
+        cbMois.getSelectionModel().selectFirst();
         cbAnnee.getSelectionModel().selectFirst();
         cbTypeBudget.getSelectionModel().selectFirst();
         mettreAJourCategories();
@@ -307,6 +279,14 @@ public class GestionBudgetsController implements Initializable {
         chkReseau.setSelected(false);
         idBudgetAModifier = null;
         btnSauvegarder.setText("Sauvegarder");
+    }
+
+    private void viderFormulaire() {
+        cbMois.getSelectionModel().clearSelection();
+        cbAnnee.getSelectionModel().clearSelection();
+        cbTypeBudget.getSelectionModel().clearSelection();
+        cbCategorie.getSelectionModel().clearSelection();
+        txtMontant.clear();
     }
 
     /**
@@ -346,19 +326,30 @@ public class GestionBudgetsController implements Initializable {
             .orElse(false);
     }
 
+    @FXML
+    private void initialize() {
+        cbMois.getItems().addAll(IntStream.rangeClosed(1, 12).boxed().collect(Collectors.toList()));
+        btnVider.setOnAction(event -> viderFormulaire());
+    }
+
     private void changerPage(ActionEvent event, String fxmlPath) {
         try {
             URL fxmlUrl = getClass().getResource(fxmlPath);
-            if (fxmlUrl == null) return;
+            if (fxmlUrl == null) {
+                afficherMessageErreur("Fichier FXML introuvable : " + fxmlPath);
+                return;
+            }
 
             Parent root = FXMLLoader.load(fxmlUrl);
             Scene scene = new Scene(root);
 
-            try {
-                String css = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css").toExternalForm();
+            // Ajout d'une vérification pour éviter le NullPointerException
+            URL cssUrl = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css");
+            if (cssUrl != null) {
+                String css = cssUrl.toExternalForm();
                 scene.getStylesheets().add(css);
-            } catch (Exception e) {
-                System.out.println("CSS non chargée");
+            } else {
+                Logger.getLogger(GestionBudgetsController.class.getName()).log(Level.WARNING, "CSS non chargée");
             }
 
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
@@ -366,10 +357,7 @@ public class GestionBudgetsController implements Initializable {
             stage.show();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(GestionBudgetsController.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 }
-
-
-

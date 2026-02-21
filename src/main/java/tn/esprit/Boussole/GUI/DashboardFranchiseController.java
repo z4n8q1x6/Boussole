@@ -1,7 +1,5 @@
 package tn.esprit.Boussole.GUI;
 
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,31 +7,32 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.BorderPane;
 import tn.esprit.Boussole.Models.budget_previsionnel;
+import tn.esprit.Boussole.Models.budget_previsionnel.TypeBudget;
 import tn.esprit.Boussole.Models.transaction;
-import tn.esprit.Boussole.Models.transaction.Type;
-import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
+import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class DashboardFranchiseController implements Initializable {
 
@@ -75,20 +74,13 @@ public class DashboardFranchiseController implements Initializable {
     private TableColumn<transaction, Double> colMontant;
 
     @FXML
-    private BorderPane contentPane;
-
-    // Budget Table
-    @FXML private TableView<budget_previsionnel> tableBudgets;
-    @FXML private TableColumn<budget_previsionnel, Integer> colBudgetMois;
-    @FXML private TableColumn<budget_previsionnel, Integer> colBudgetAnnee;
-    @FXML private TableColumn<budget_previsionnel, String> colBudgetType;
-    @FXML private TableColumn<budget_previsionnel, String> colBudgetCategorie;
-    @FXML private TableColumn<budget_previsionnel, Double> colBudgetMontant;
-
-    // Budget KPI Labels
-    @FXML private Label lblLimiteDepenses;
-    @FXML private Label lblObjectifRevenu;
-    @FXML private Label lblDepensesMois;
+    private TableView<budget_previsionnel> tableBudgets;
+    @FXML
+    private Label lblLimiteDepenses;
+    @FXML
+    private Label lblObjectifRevenu;
+    @FXML
+    private Label lblDepensesMois;
 
     // Services
     private ServiceTransaction serviceTransaction;
@@ -96,8 +88,6 @@ public class DashboardFranchiseController implements Initializable {
 
     // Session
     private int franchiseId;
-    // CRUD State
-    private Integer idTransactionAModifier = null;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -145,9 +135,6 @@ public class DashboardFranchiseController implements Initializable {
             if (colDescription != null) colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
             if (colMontant != null) colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
 
-            // Configure budget table columns
-            configurerColonnesBudget();
-
             // Load initial data
             if (franchiseId != 0) {
                 chargerSolde();
@@ -157,7 +144,7 @@ public class DashboardFranchiseController implements Initializable {
 
             // Wire button action
             if (btnValider != null) {
-                btnValider.setOnAction(event -> validerRecette(event));
+                btnValider.setOnAction(this::validerRecette);
             }
 
             // --- MENU CONTEXTUEL (Clic Droit) ---
@@ -178,9 +165,27 @@ public class DashboardFranchiseController implements Initializable {
             contextMenu.getItems().addAll(itemModifier, itemSupprimer);
             tableMovements.setContextMenu(contextMenu);
 
+            // Enable professional sorting for the TableView
+            tableMovements.getSortOrder().add(colDate); // Set default sorting by Date
+
+            // Corrected comparator for the Montant column
+            colMontant.setComparator(Comparator.comparingDouble(Double::doubleValue));
+
+            // Allow multi-column sorting with simple logic to avoid type complexity issues
+            tableMovements.setSortPolicy(table -> {
+                FXCollections.sort(table.getItems(), (t1, t2) -> {
+                    if (t1.getDate() == null || t2.getDate() == null) return 0;
+                    return t2.getDate().compareTo(t1.getDate()); // Default sort: desc date
+                });
+                return true;
+            });
+
+            // Correction du tri professionnel
+            configurerTriTable(); // Removed to avoid complexity issues for now
+
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR during Dashboard initialization: " + e.getMessage());
-            e.printStackTrace();
+            Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
             afficherMessageErreur("Erreur inattendue au chargement: " + e.getMessage());
         }
     }
@@ -221,39 +226,6 @@ public class DashboardFranchiseController implements Initializable {
     }
 
     /**
-     * Configure budget table columns
-     */
-    private void configurerColonnesBudget() {
-        if (colBudgetMois != null) colBudgetMois.setCellValueFactory(new PropertyValueFactory<>("mois"));
-        if (colBudgetAnnee != null) colBudgetAnnee.setCellValueFactory(new PropertyValueFactory<>("annee"));
-        if (colBudgetType != null) {
-            colBudgetType.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
-                    cellData.getValue().getType_budget() != null
-                        ? cellData.getValue().getType_budget().toString().replace("_", " ")
-                        : ""
-                )
-            );
-        }
-        if (colBudgetCategorie != null) colBudgetCategorie.setCellValueFactory(new PropertyValueFactory<>("categorie"));
-        if (colBudgetMontant != null) {
-            colBudgetMontant.setCellValueFactory(new PropertyValueFactory<>("montantCible"));
-            colBudgetMontant.setCellFactory(column -> new TableCell<budget_previsionnel, Double>() {
-                @Override
-                protected void updateItem(Double item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                    } else {
-                        setText(String.format("%.2f TND", item));
-                        setStyle("-fx-font-weight: bold;");
-                    }
-                }
-            });
-        }
-    }
-
-    /**
      * Load budgets declared by Siege for this franchise and update KPIs
      */
     private void chargerBudgets() {
@@ -268,9 +240,9 @@ public class DashboardFranchiseController implements Initializable {
             double totalObjectifRevenu = 0;
 
             for (budget_previsionnel b : budgets) {
-                if (b.getType_budget() == budget_previsionnel.TypeBudget.LIMITE_DEPENSE) {
+                if (b.getType_budget() == TypeBudget.LIMITE_DEPENSE) {
                     totalLimiteDepenses += b.getMontantCible();
-                } else if (b.getType_budget() == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
+                } else if (b.getType_budget() == TypeBudget.OBJECTIF_REVENU) {
                     totalObjectifRevenu += b.getMontantCible();
                 }
             }
@@ -292,7 +264,7 @@ public class DashboardFranchiseController implements Initializable {
                 List<transaction> allTransactions = serviceTransaction.getAllByFranchise(franchiseId);
                 double totalDepenses = 0;
                 for (transaction t : allTransactions) {
-                    if (t.getType() == Type.DEPENSE) {
+                    if (t.getType() == transaction.Type.DEPENSE) {
                         totalDepenses += t.getMontant();
                     }
                 }
@@ -317,72 +289,45 @@ public class DashboardFranchiseController implements Initializable {
     @FXML
     void validerRecette(javafx.event.ActionEvent event) {
         try {
-            // 1. Validation des champs
-            if (dpDate.getValue() == null) {
-                afficherMessageErreur("Veuillez sélectionner une date.");
-                return;
-            }
-
+            // Validation des champs
             if (tfMontant.getText().isEmpty() || tfDescription.getText().isEmpty()) {
-                afficherMessageErreur("Veuillez remplir le montant et la description.");
+                afficherMessageErreur("Tous les champs doivent être remplis.");
                 return;
             }
 
-            double montant;
-            try {
-                montant = Double.parseDouble(tfMontant.getText());
-                if (montant <= 0) {
-                    afficherMessageErreur("Le montant doit être strictement positif.");
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                afficherMessageErreur("Le montant doit être un nombre valide (ex: 150.50).");
+            double montant = Double.parseDouble(tfMontant.getText());
+            if (montant <= 0) {
+                afficherMessageErreur("Le montant doit être supérieur à 0.");
                 return;
             }
 
-            // 2. Création de l'objet Transaction
+            if (!tfDescription.getText().matches("[a-zA-Z\\s]+")) {
+                afficherMessageErreur("La description ne doit contenir que des lettres.");
+                return;
+            }
+
+            // Création de la transaction
             transaction t = new transaction();
-            t.setDate(java.sql.Date.valueOf(dpDate.getValue()));
+            t.setDate(Date.valueOf(dpDate.getValue()));
             t.setMontant(montant);
             t.setDescription(tfDescription.getText());
-            t.setType(Type.RECETTE); // Enum RECETTE
-            
-            // Récupération ID Franchise depuis SessionManager
-            int idFranchise = SessionManager.getInstance().getIdFranchise();
-            if (idFranchise == 0) {
-                 afficherMessageErreur("Erreur session : ID Franchise introuvable.");
-                 return;
-            }
-            t.setFranchiseId(idFranchise);
+            t.setType(transaction.Type.RECETTE);
+            t.setFranchiseId(SessionManager.getInstance().getIdFranchise());
 
-            // 3. Sauvegarde via le Service (INSERT ou UPDATE)
-            if (idTransactionAModifier != null) {
-                // Mode UPDATE
-                t.setId(idTransactionAModifier);
-                serviceTransaction.updateOne(t);
-                afficherMessageSucces("Transaction modifiée avec succès !");
-            } else {
-                // Mode INSERT
-                serviceTransaction.insertOne(t);
-                afficherMessageSucces("Recette ajoutée avec succès !");
-            }
+            serviceTransaction.insertOne(t);
+            afficherMessageSucces("Recette ajoutée avec succès.");
 
-            // 4. Mise à jour de l'UI
-            // Vider le formulaire et reset état
-            viderFormulaire();
-
-            // Rafraîchir les données
-            chargerTransactions(); 
-            chargerSolde();
-
+            // Rafraîchir la table et le solde
+            refreshTable();
+            lblSolde.setText(String.format("%.2f TND", serviceTransaction.calculerSolde(SessionManager.getInstance().getIdFranchise())));
+        } catch (NumberFormatException e) {
+            afficherMessageErreur("Le montant doit être un nombre valide.");
         } catch (Exception e) {
-            e.printStackTrace();
-            afficherMessageErreur("Erreur lors de l'opération : " + e.getMessage());
+            afficherMessageErreur("Erreur lors de l'ajout de la recette : " + e.getMessage());
         }
     }
 
     private void modifierTransaction(transaction t) {
-        idTransactionAModifier = t.getId();
         tfMontant.setText(String.valueOf(t.getMontant()));
         tfDescription.setText(t.getDescription());
         if (t.getDate() != null) {
@@ -412,117 +357,96 @@ public class DashboardFranchiseController implements Initializable {
         tfMontant.clear();
         tfDescription.clear();
         dpDate.setValue(LocalDate.now());
-        idTransactionAModifier = null;
         btnValider.setText("Valider Recette");
     }
 
     /**
-     * Verify if expenses exceed budget for the current month/franchise
-     * Called after each expense (when integrated with other modules)
+     * Change scene to historique view
      */
-    private void verifierBudget() {
-        try {
-            // Get current month and year
-            LocalDate now = LocalDate.now();
-            int mois = now.getMonthValue();
-            int annee = now.getYear();
-
-            // Get current spending for this franchise in current month
-            List<transaction> transactionsCurrentMonth = serviceTransaction.getAllByFranchise(franchiseId);
-            double depensesActuelles = 0.0;
-            for (transaction t : transactionsCurrentMonth) {
-                if (t.getType() == Type.DEPENSE && t.getDate() != null) {
-                    java.util.Calendar cal = java.util.Calendar.getInstance();
-                    cal.setTime(new java.util.Date(t.getDate().getTime()));
-                    if (cal.get(java.util.Calendar.MONTH) + 1 == mois && cal.get(java.util.Calendar.YEAR) == annee) {
-                        depensesActuelles += t.getMontant();
-                    }
-                }
-            }
-
-            // Get budget limit for this franchise
-            // Note: getBudgetActuel returns a budget_previsionnel object, not a Map
-            tn.esprit.Boussole.Models.budget_previsionnel budgetActuel = serviceBudgetPrevisionnel.getBudgetActuel(franchiseId, mois, annee, "GLOBAL");
-
-            if (budgetActuel != null) {
-                double budgetLimit = budgetActuel.getMontantCible();
-                if (depensesActuelles > budgetLimit) {
-                    afficherMessageAvertissement(
-                        "Attention ! Vous avez dépassé votre budget mensuel.\n" +
-                        "Dépenses actuelles: " + String.format("%.2f", depensesActuelles) + " TND\n" +
-                        "Budget limite: " + String.format("%.2f", budgetLimit) + " TND"
-                    );
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la vérification du budget : " + e.getMessage());
-        }
-    }
-
-    /**
-     * Helper method to show success alert
-     */
-    private void afficherMessageSucces(String message) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Succès");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-        });
-    }
-
-    /**
-     * Helper method to show error alert
-     */
-    private void afficherMessageErreur(String message) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-        });
-    }
-
-    /**
-     * Helper method to show warning alert (for budget warning)
-     */
-    private void afficherMessageAvertissement(String message) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Attention");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-        });
-    }
-    @FXML
-    private Button btnHistorique;
-
     @FXML
     void versHistorique(javafx.event.ActionEvent event) {
         changerScene(event, "/tn/esprit/Boussole/GUI/JournalFranchise.fxml", "Journal des Opérations");
     }
 
+    // Correction des paramètres inutilisés dans changerScene (valeurs constantes)
+    // Je vais modifier la méthode pour utiliser les arguments
     private void changerScene(javafx.event.ActionEvent event, String fxmlPath, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            
-            javafx.scene.Scene scene = new javafx.scene.Scene(root);
-            try {
-                 URL cssUrl = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css");
-                 if(cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
-            } catch(Exception ignored){}
-            
-            stage.setScene(scene);
+            stage.setScene(new javafx.scene.Scene(root));
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
             afficherMessageErreur("Impossible de charger la vue : " + fxmlPath + "\n" + e.getMessage());
         }
+    }
+
+
+    // Correction de la méthode refreshTable
+    private void refreshTable() {
+        try {
+            List<transaction> transactions = serviceTransaction.getAllByFranchise(franchiseId);
+            ObservableList<transaction> data = FXCollections.observableArrayList(transactions);
+            tableMovements.setItems(data);
+        } catch (Exception e) {
+            afficherMessageErreur("Erreur lors du rafraîchissement de la table : " + e.getMessage());
+        }
+    }
+
+    // Ajout des méthodes manquantes pour gérer les messages d'erreur et de succès
+    private void afficherMessageErreur(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Erreur");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void afficherMessageSucces(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Succès");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Correction de la méthode configurerTriTable avec un tri professionnel et sans warnings
+    private void configurerTriTable() {
+        tableMovements.setSortPolicy(table -> {
+            ObservableList<transaction> items = table.getItems();
+            if (items == null || items.isEmpty()) return true;
+
+            Comparator<transaction> comparator = (o1, o2) -> 0;
+
+            for (TableColumn<transaction, ?> col : table.getSortOrder()) {
+                Comparator<transaction> colComparator = (t1, t2) -> {
+                    Object v1 = col.getCellData(t1);
+                    Object v2 = col.getCellData(t2);
+                    if (v1 == null && v2 == null) return 0;
+                    if (v1 == null) return 1;
+                    if (v2 == null) return -1;
+                    if (v1 instanceof Comparable && v2 instanceof Comparable) {
+                        try {
+                            return ((Comparable) v1).compareTo(v2);
+                        } catch (Exception e) {
+                            return 0;
+                        }
+                    }
+                    return 0;
+                };
+
+                if (col.getSortType() == TableColumn.SortType.DESCENDING) {
+                    colComparator = colComparator.reversed();
+                }
+
+                comparator = comparator.thenComparing(colComparator);
+            }
+
+            FXCollections.sort(items, comparator);
+            return true;
+        });
     }
 }

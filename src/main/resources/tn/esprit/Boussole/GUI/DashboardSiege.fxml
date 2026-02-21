@@ -19,7 +19,7 @@
             <children>
                 <Label text="Boussole" style="-fx-text-fill: white; -fx-font-size:18px; -fx-font-weight:bold;" />
 
-                <Button fx:id="btnDashboard" text="Tableau de Bord" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
+                <Button fx:id="btnDashboard" text="Pilotage Financier" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
                 <Button fx:id="btnBudgets" text="Budgets" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
                 <Button fx:id="btnBilans" text="Bilans" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-padding:8 12 8 12; -fx-border-color: transparent;" />
 

@@ -108,31 +108,9 @@
                             </children>
                         </VBox>
 
-                        <!-- Centre: Budgets + Mouvements -->
+                        <!-- Centre: Mouvements -->
                         <VBox spacing="15" HBox.hgrow="ALWAYS">
                             <children>
-                                <!-- Budgets déclarés par le Siège -->
-                                <VBox spacing="8">
-                                    <children>
-                                        <Label text="Budgets Déclarés par le Siège" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0b3d91;" />
-                                        <TableView fx:id="tableBudgets" prefHeight="150" style="-fx-background-color: white; -fx-background-radius:8; -fx-effect: dropshadow(two-pass-box, rgba(10,25,47,0.06), 8, 0, 0, 3);">
-                                            <columns>
-                                                <TableColumn prefWidth="60" text="Mois" fx:id="colBudgetMois" />
-                                                <TableColumn prefWidth="60" text="Année" fx:id="colBudgetAnnee" />
-                                                <TableColumn prefWidth="100" text="Type" fx:id="colBudgetType" />
-                                                <TableColumn prefWidth="140" text="Catégorie" fx:id="colBudgetCategorie" />
-                                                <TableColumn prefWidth="120" text="Montant Cible" fx:id="colBudgetMontant" />
-                                            </columns>
-                                            <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                                            </columnResizePolicy>
-                                            <placeholder>
-                                                <Label text="Aucun budget déclaré" style="-fx-text-fill: #66788a;"/>
-                                            </placeholder>
-                                        </TableView>
-                                    </children>
-                                </VBox>
-
                                 <!-- Derniers Mouvements -->
                                 <VBox spacing="8" VBox.vgrow="ALWAYS">
                                     <children>

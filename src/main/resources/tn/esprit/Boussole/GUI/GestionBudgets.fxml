@@ -47,7 +47,7 @@
                                 <VBox spacing="5" prefWidth="150">
                                     <children>
                                         <Label text="Mois" style="-fx-font-size:12px; -fx-text-fill: #66788a;" />
-                                        <ComboBox fx:id="combMois" style="-fx-font-size:12px;" />
+                                        <ComboBox fx:id="cbMois" style="-fx-font-size:12px;" />
                                     </children>
                                 </VBox>
                                 <VBox spacing="5" prefWidth="150">
@@ -84,7 +84,12 @@
 
                         <CheckBox fx:id="chkReseau" text="Appliquer à tout le réseau" style="-fx-font-size:12px;" />
 
-                        <Button fx:id="btnSauvegarder" text="Sauvegarder" style="-fx-padding:8 20 8 20; -fx-font-size:14px; -fx-background-color: #0b3d91; -fx-text-fill: white; -fx-cursor: hand;" />
+                        <HBox spacing="15">
+                            <children>
+                                <Button fx:id="btnSauvegarder" text="Sauvegarder" style="-fx-padding:8 20 8 20; -fx-font-size:14px; -fx-background-color: #0b3d91; -fx-text-fill: white; -fx-cursor: hand;" />
+                                <Button fx:id="btnVider" text="Vider" style="-fx-padding:8 20 8 20; -fx-font-size:14px; -fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-cursor: hand;" />
+                            </children>
+                        </HBox>
                     </children>
                 </VBox>
 
