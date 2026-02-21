@@ -15,6 +15,7 @@ target/
 *.ipr
 .env
 /tokens/
+src/main/resources/credentials.json
 
 ### Eclipse ###
 .apt_generated
