@@ -1,26 +1,27 @@
-/* style.css - Version corrigée */
+/* style.css - Thème sombre pour Boussole */
 
 .root {
     -fx-font-family: 'Segoe UI', 'System', sans-serif;
-    -fx-background-color: #f4f7fc;
+    -fx-background-color: #0B0F1A;
 }
 
 /* ========== BARRE DE NAVIGATION ========== */
 .nav-panel {
-    -fx-background-color: linear-gradient(to bottom, #1a2634, #2c3e50);
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
+    -fx-background-color: linear-gradient(to bottom, #0F172A, #020617);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
 }
 
 .nav-header {
-    -fx-text-fill: #8a9cb0;
+    -fx-text-fill: #64748B;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 25 20 5 20;
+    -fx-text-transform: uppercase;
 }
 
 .nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #e0e7f0;
+    -fx-text-fill: #CBD5E1;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 12 15 12 25;
@@ -30,35 +31,46 @@
 }
 
 .nav-button:hover {
-    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-color: #1E293B;
     -fx-text-fill: white;
 }
 
 .nav-button:selected {
-    -fx-background-color: #3498db;
+    -fx-background-color: #0EA5E9;
     -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(14,165,233,0.3), 5, 0, 0, 0);
 }
 
 .nav-button:disabled {
     -fx-opacity: 0.4;
+    -fx-text-fill: #64748B;
 }
 
+.nav-button Tooltip {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+}
+
+/* Logo */
 .logo {
     -fx-text-fill: white;
     -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-padding: 0 0 20 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 0);
 }
 
+/* Version */
 .version-label {
-    -fx-text-fill: #5d6d7e;
+    -fx-text-fill: #475569;
     -fx-font-size: 10px;
     -fx-padding: 10 0 10 20;
 }
 
 /* ========== CONTENU PRINCIPAL ========== */
 .content-area {
-    -fx-background-color: #f4f7fc;
+    -fx-background-color: #0B0F1A;
     -fx-padding: 20;
 }
 
@@ -66,253 +78,338 @@
 .title-label {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: white;
     -fx-padding: 0 0 20 0;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 600;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 15 0;
 }
 
 /* ========== TABLEAUX ========== */
 .table-view {
-    -fx-background-color: white;
-    -fx-border-color: #e0e7f0;
+    -fx-background-color: transparent;
+    -fx-border-color: #334155;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #f8fafd;
+    -fx-background-color: #1E293B;
     -fx-background-radius: 8 8 0 0;
-    -fx-border-color: #e0e7f0;
+    -fx-border-color: #334155;
     -fx-border-width: 0 0 1 0;
 }
 
 .table-view .column-header {
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #2c3e50;
-    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
     -fx-font-size: 13px;
-    -fx-padding: 10 5;
+    -fx-padding: 12 5;
 }
 
 .table-row-cell {
-    -fx-background-color: white;
-    -fx-border-color: #f0f3f8;
+    -fx-background-color: #0F172A;
+    -fx-border-color: #1E293B;
     -fx-border-width: 0 0 1 0;
-    -fx-cell-size: 40px;
+    -fx-cell-size: 45px;
 }
 
 .table-row-cell:hover {
-    -fx-background-color: #f8fafd;
+    -fx-background-color: #1E293B;
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #e8f0fe;
+    -fx-background-color: #0EA5E9;
 }
 
 .table-row-cell:selected .text {
-    -fx-fill: #2c3e50;
+    -fx-fill: white;
     -fx-font-weight: 500;
 }
 
 .table-cell {
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 8 12;
-    -fx-text-fill: #34495e;
+    -fx-text-fill: #CBD5E1;
 }
 
 /* ========== FORMULAIRES ========== */
 .form-panel {
-    -fx-background-color: white;
-    -fx-border-color: #e0e7f0;
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
     -fx-border-width: 1;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
     -fx-padding: 20;
 }
 
 .form-title {
-    -fx-font-weight: bold;
+    -fx-font-weight: 600;
     -fx-font-size: 16px;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: white;
     -fx-padding: 0 0 15 0;
-    -fx-border-color: #e0e7f0;
+    -fx-border-color: #334155;
     -fx-border-width: 0 0 1 0;
 }
 
 .form-label {
     -fx-font-weight: 500;
-    -fx-text-fill: #5d6d7e;
+    -fx-text-fill: #94A3B8;
     -fx-font-size: 13px;
 }
 
 /* ========== CHAMPS DE SAISIE ========== */
-.text-field, .combo-box {
-    -fx-background-color: #f8fafd;
+.text-field, .combo-box, .date-picker {
+    -fx-background-color: #0B0F1A;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #475569;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
-    -fx-border-color: #e0e7f0;
+    -fx-border-color: #334155;
     -fx-border-width: 1;
     -fx-padding: 8;
     -fx-font-size: 13px;
 }
 
-.text-field:focused, .combo-box:focused {
-    -fx-border-color: #3498db;
-    -fx-background-color: white;
+.text-field:focused, .combo-box:focused, .date-picker:focused {
+    -fx-border-color: #0EA5E9;
+    -fx-effect: dropshadow(three-pass-box, rgba(14,165,233,0.2), 5, 0, 0, 0);
 }
 
-.text-field:disabled {
-    -fx-background-color: #f0f3f8;
-    -fx-text-fill: #95a5a6;
+.text-field:disabled, .combo-box:disabled {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #64748B;
 }
 
 .combo-box .list-cell {
+    -fx-text-fill: white;
     -fx-padding: 5 8;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: white;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #0EA5E9;
 }
 
 /* ========== BOUTONS ========== */
 .action-button {
-    -fx-background-color: #3498db;
+    -fx-background-color: #0EA5E9;
     -fx-text-fill: white;
-    -fx-font-weight: bold;
+    -fx-font-weight: 600;
     -fx-font-size: 13px;
     -fx-padding: 10 20;
     -fx-background-radius: 6;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(14,165,233,0.3), 5, 0, 0, 0);
 }
 
 .action-button:hover {
-    -fx-background-color: #2980b9;
+    -fx-background-color: #0284C7;
+    -fx-effect: dropshadow(three-pass-box, rgba(14,165,233,0.4), 8, 0, 0, 0);
+}
+
+.action-button:pressed {
+    -fx-background-color: #0369A1;
 }
 
 .edit-button {
-    -fx-background-color: #f39c12;
+    -fx-background-color: #F59E0B;
     -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-padding: 10 20;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-}
-
-.edit-button:hover {
-    -fx-background-color: #e67e22;
-}
-
-.delete-button {
-    -fx-background-color: #e74c3c;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-padding: 10 20;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-}
-
-.delete-button:hover {
-    -fx-background-color: #c0392b;
-}
-
-.clear-button {
-    -fx-background-color: #95a5a6;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-padding: 10 20;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-}
-
-.clear-button:hover {
-    -fx-background-color: #7f8c8d;
-}
-
-/* Boutons dans les lignes du tableau */
-.table-action-button {
-    -fx-background-color: #ecf0f1;
-    -fx-text-fill: #2c3e50;
+    -fx-font-weight: 600;
     -fx-font-size: 12px;
-    -fx-padding: 5 8;
+    -fx-padding: 5 10;
     -fx-background-radius: 4;
     -fx-cursor: hand;
 }
 
-.table-action-button:hover {
-    -fx-background-color: #bdc3c7;
+.edit-button:hover {
+    -fx-background-color: #D97706;
 }
 
-/* ========== GRILLES ========== */
-.grid-pane {
-    -fx-hgap: 15;
-    -fx-vgap: 10;
+.delete-button {
+    -fx-background-color: #EF4444;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-padding: 5 10;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.delete-button:hover {
+    -fx-background-color: #DC2626;
+}
+
+.clear-button {
+    -fx-background-color: #64748B;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-padding: 5 15;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.clear-button:hover {
+    -fx-background-color: #475569;
+}
+
+/* ========== CARTES ========== */
+.stat-card {
+    -fx-background-color: #1E293B;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
+    -fx-padding: 20;
+    -fx-min-width: 180;
+    -fx-alignment: CENTER;
+}
+
+.stat-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0);
+}
+
+.stat-icon {
+    -fx-font-size: 32px;
+    -fx-text-fill: #0EA5E9;
+}
+
+.stat-title {
+    -fx-font-size: 13px;
+    -fx-text-fill: #94A3B8;
+    -fx-padding: 10 0 5 0;
+}
+
+.stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* ========== LISTVIEW (PANIER) ========== */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #334155;
+    -fx-border-radius: 5;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 5;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #0EA5E9;
+}
+
+.list-cell:filled:selected .text {
+    -fx-fill: white;
+}
+
+/* ========== LABELS SPÉCIFIQUES ========== */
+.success-label {
+    -fx-text-fill: #10B981;
+    -fx-font-weight: bold;
+}
+
+.warning-label {
+    -fx-text-fill: #F59E0B;
+    -fx-font-weight: bold;
+}
+
+.danger-label {
+    -fx-text-fill: #EF4444;
+    -fx-font-weight: bold;
+}
+
+.info-label {
+    -fx-text-fill: #0EA5E9;
+    -fx-font-weight: bold;
 }
 
 /* ========== SCROLLBAR ========== */
 .scroll-bar:vertical {
-    -fx-background-color: #f0f3f8;
+    -fx-background-color: #0F172A;
     -fx-pref-width: 12;
 }
 
 .scroll-bar:vertical .thumb {
-    -fx-background-color: #bdc3c7;
+    -fx-background-color: #334155;
     -fx-background-radius: 6;
 }
 
 .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #95a5a6;
+    -fx-background-color: #475569;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: #0F172A;
+    -fx-pref-height: 12;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #334155;
+    -fx-background-radius: 6;
 }
 
 /* ========== SÉPARATEURS ========== */
 .separator {
-    -fx-background-color: #34495e;
-    -fx-opacity: 0.3;
+    -fx-background-color: #334155;
 }
 
-/* ========== MESSAGES D'ALERTE ========== */
-.alert {
-    -fx-font-family: 'Segoe UI', 'System', sans-serif;
+.separator .line {
+    -fx-border-color: #334155;
+    -fx-border-width: 1;
 }
 
-.alert .header-panel {
-    -fx-background-color: #f8fafd;
+/* ========== ALERTES / DIALOGUES ========== */
+.dialog-pane {
+    -fx-background-color: #1E293B;
 }
 
-.alert .content {
-    -fx-font-size: 13px;
-    -fx-padding: 10;
+.dialog-pane .header-panel {
+    -fx-background-color: #0F172A;
 }
 
-/* ========== COMBOBOX PERSONNALISÉE ========== */
-.combo-box-popup .list-view {
-    -fx-background-color: white;
-    -fx-border-color: #e0e7f0;
-    -fx-border-radius: 4;
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }
 
-.combo-box-popup .list-cell {
-    -fx-padding: 8 12;
-    -fx-text-fill: #2c3e50;
+.dialog-pane .content {
+    -fx-text-fill: #CBD5E1;
 }
 
-.combo-box-popup .list-cell:hover {
-    -fx-background-color: #f0f7ff;
-}
-
-.combo-box-popup .list-cell:selected {
-    -fx-background-color: #3498db;
+.dialog-pane .button-bar .button {
+    -fx-background-color: #334155;
     -fx-text-fill: white;
 }
 
-/* ========== LABELS DANS LES TABLEAUX ========== */
-.table-column {
-    -fx-alignment: CENTER_LEFT;
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #475569;
 }
 
-/* Style pour les colonnes numériques */
-.table-column.number-column {
-    -fx-alignment: CENTER_RIGHT;
+/* ========== IMAGEVIEW ========== */
+.image-view {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 0);
 }

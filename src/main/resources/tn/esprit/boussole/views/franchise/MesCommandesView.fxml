@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.MesCommandesController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <children>
+        <!-- En-tête avec titre et filtres -->
+        <VBox spacing="15.0">
+            <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="📦 Mes Commandes" />
+
+                <!-- Statistiques rapides -->
+                <HBox spacing="20.0">
+                    <children>
+                        <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
+                            <children>
+                                <Label style="-fx-text-fill: #94A3B8;" text="Total commandes" />
+                                <Label fx:id="totalCommandesLabel" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
+                            </children>
+                        </VBox>
+
+                        <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
+                            <children>
+                                <Label style="-fx-text-fill: #94A3B8;" text="Total dépensé" />
+                                <Label fx:id="totalDepenseLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 24px; -fx-font-weight: bold;" text="0 DT" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <!-- Filtres -->
+                <HBox spacing="15.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label style="-fx-text-fill: #94A3B8;" text="Filtrer par statut:" />
+                        <ComboBox fx:id="filtreStatutCombo" prefWidth="150" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155;" />
+
+                        <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="🔄 Rafraîchir" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+
+        <!-- Tableau des commandes -->
+        <TableView fx:id="commandeTable" style="-fx-background-color: transparent; -fx-border-color: #334155; -fx-border-radius: 5;" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colDate" prefWidth="180" text="Date" />
+                <TableColumn fx:id="colTotal" prefWidth="120" text="Total" />
+                <TableColumn fx:id="colStatut" prefWidth="120" text="Statut" />
+                <TableColumn fx:id="colActions" prefWidth="100" text="Actions" />
+            </columns>
+        </TableView>
+
+        <!-- Boutons de filtre rapide -->
+        <HBox spacing="10.0" alignment="CENTER">
+            <children>
+                <Button onAction="#handleEnAttente" style="-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="⏳ En attente" />
+                <Button onAction="#handleValidees" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="✅ Validées" />
+                <Button onAction="#handleRefusees" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="❌ Refusées" />
+                <Button onAction="#handleVoirToutes" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="📋 Toutes" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

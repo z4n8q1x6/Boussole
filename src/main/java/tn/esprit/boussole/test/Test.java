@@ -4,16 +4,22 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tn.esprit.boussole.gui.common.NavbarController;
 
 public class Test extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        // Fenêtre plus grande : 1300x800
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/MainView.fxml"));
-        Scene scene = new Scene(loader.load(), 1300, 800);
+        // Choisir le type d'utilisateur : "Siege" ou "Franchise"
+        String userType = "Siege"; // Changez ici pour tester
 
-        stage.setTitle("Boussole - Gestion Commerciale");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/common/NavBarView.fxml"));
+        Scene scene = new Scene(loader.load(), 1400, 800);
+
+        NavbarController controller = loader.getController();
+        controller.setUserType(userType);
+
+        stage.setTitle("Boussole - " + (userType.equals("Siege") ? "Siège" : "Franchise"));
         stage.setScene(scene);
         stage.show();
     }
@@ -21,4 +27,4 @@ public class Test extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-}   
+}
