@@ -1,11 +1,22 @@
 package tn.esprit.boussole.gui;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.oauth2.Oauth2;
+import com.google.api.services.oauth2.model.Userinfo;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -16,18 +27,19 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.boussole.utils.MyBdConnexion;
 import tn.esprit.boussole.service.AuthService;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
@@ -38,14 +50,15 @@ public class loginController {
     @FXML private ImageView backgroundImage;
     @FXML private Canvas particleCanvas;
 
-    @FXML private VBox brandingVBox; // Partie Gauche (Logo)
-    @FXML private VBox loginFormVBox; // Partie Droite (Formulaire)
+    @FXML private VBox brandingVBox;
+    @FXML private VBox loginFormVBox;
 
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private CheckBox rememberMeCheckbox;
     @FXML private Button loginButton;
     @FXML private Button googleLoginButton;
+    @FXML private Button faceAuthButton;
     @FXML private Hyperlink forgotPasswordLink;
 
     private final Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
@@ -55,15 +68,18 @@ public class loginController {
     private List<Particle> particles;
     private final Random random = new Random();
 
+    // Configuration Google OAuth2
+    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+
     @FXML
     public void initialize() {
-        // 1. Animation d'entrée "Porte qui se ferme" (Inverse de la sortie)
-        // On place les éléments hors de l'écran initialement
+        // Animation d'entrée
         if (brandingVBox != null) brandingVBox.setTranslateX(-500);
         if (loginFormVBox != null) loginFormVBox.setTranslateX(500);
 
         Platform.runLater(() -> {
-            // Animation : Ils reviennent à leur place (0)
             if (brandingVBox != null) {
                 TranslateTransition slideInLeft = new TranslateTransition(Duration.seconds(0.8), brandingVBox);
                 slideInLeft.setToX(0);
@@ -76,17 +92,15 @@ public class loginController {
             }
         });
 
-        // Animation Ken Burns et Initialisation des particules
         setupVisuals();
 
-        // Chargement de l'email mémorisé
         String remembered = prefs.get("rememberedEmail", "");
         if (!remembered.isEmpty()) {
             emailField.setText(remembered);
-            rememberMeCheckbox.setSelected(true);
         }
 
         loginButton.setOnAction(e -> handleLogin());
+        faceAuthButton.setOnAction(e -> handleFaceAuth());
         forgotPasswordLink.setOnAction(e -> handleForgotPassword());
 
         if (googleLoginButton != null) {
@@ -116,21 +130,169 @@ public class loginController {
 
         if (!info.isActif) {
             showAlert(Alert.AlertType.ERROR, "Compte Verrouillé",
-                    "Bonjour " + info.prenom + ",\n\nVotre compte est actuellement désactivé. " +
-                            "Veuillez contacter l'administrateur pour plus d'informations.");
+                    "Bonjour " + info.prenom + ",\n\nVotre compte est actuellement désactivé.");
             passwordField.clear();
             return;
         }
 
-        String token = authService.generateToken(email, info.role == null ? "" : info.role);
+        proceedToLogin(info);
+    }
+
+    @FXML
+    private void handleFaceAuth() {
+        String email = emailField.getText().trim();
+        if (email.isEmpty() || !email.contains("@")) {
+            showAlert(Alert.AlertType.WARNING, "Email manquant", "Veuillez entrer votre email avant de lancer la reconnaissance faciale.");
+            return;
+        }
+
+        AuthInfo info = fetchAuthInfo(email);
+        if (info == null) {
+            showAlert(Alert.AlertType.ERROR, "Utilisateur inconnu", "Aucun compte n'est associé à cet email.");
+            return;
+        }
+
+        Alert infoAlert = new Alert(Alert.AlertType.INFORMATION, "Lancement de la reconnaissance faciale...");
+        infoAlert.setTitle("Reconnaissance faciale");
+        infoAlert.setHeaderText("Veuillez regarder la caméra.");
+        infoAlert.show();
+
+        new Thread(() -> {
+            try {
+                String pythonPath = "python";
+                String scriptPath = new File("python_scripts/face_auth.py").getAbsolutePath();
+
+                ProcessBuilder pb = new ProcessBuilder(pythonPath, scriptPath, email);
+                pb.redirectErrorStream(true);
+
+                Process process = pb.start();
+
+                StringBuilder output = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println("Python script: " + line);
+                        output.append(line);
+                    }
+                }
+
+                process.waitFor();
+                String finalOutput = output.toString();
+
+                Platform.runLater(() -> {
+                    infoAlert.close();
+                    if (finalOutput.contains("AUTH_SUCCESS")) {
+                        showAlert(Alert.AlertType.INFORMATION, "Succès", "Visage reconnu ! Connexion en cours...");
+                        proceedToLogin(info);
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Échec", "La reconnaissance faciale a échoué.");
+                    }
+                });
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    infoAlert.close();
+                    showAlert(Alert.AlertType.ERROR, "Erreur d'exécution", "Impossible de lancer le script.");
+                });
+            }
+        }).start();
+    }
+
+    @FXML
+    private void handleGoogleLogin() {
+        new Thread(() -> {
+            try {
+                InputStream in = loginController.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+                if (in == null) {
+                    Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur Config", "Fichier credentials.json introuvable."));
+                    return;
+                }
+
+                GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new InputStreamReader(in));
+
+                GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                        GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), clientSecrets, SCOPES)
+                        .setDataStoreFactory(new com.google.api.client.util.store.FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                        .setAccessType("offline")
+                        .build();
+
+                LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+                Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+                fetchGoogleUserInfo(credential);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur Google", "Échec de la connexion Google : " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    private void fetchGoogleUserInfo(Credential credential) {
+        try {
+            Oauth2 oauth2 = new Oauth2.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                    .setApplicationName("Boussole")
+                    .build();
+
+            Userinfo userInfo = oauth2.userinfo().get().execute();
+            String email = userInfo.getEmail();
+            String nom = userInfo.getFamilyName();
+            String prenom = userInfo.getGivenName();
+
+            System.out.println("Connexion Google réussie : " + email);
+
+            Platform.runLater(() -> handleUserDatabaseLogin(email, nom, prenom));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur API", "Impossible de récupérer les infos Google."));
+        }
+    }
+
+    private void handleUserDatabaseLogin(String email, String nom, String prenom) {
+        AuthInfo info = fetchAuthInfo(email);
+
+        if (info != null) {
+            if (!info.isActif) {
+                showAlert(Alert.AlertType.ERROR, "Compte Verrouillé", "Votre compte est désactivé.");
+                return;
+            }
+            proceedToLogin(info);
+        } else {
+            createGoogleUser(email, nom, prenom);
+            info = fetchAuthInfo(email);
+            if (info != null) {
+                proceedToLogin(info);
+            }
+        }
+    }
+
+    private void createGoogleUser(String email, String nom, String prenom) {
+        String sql = "INSERT INTO utilisateur (email, nom, prenom, role, actif, mot_de_passe, date_creation) VALUES (?, ?, ?, 'USER', 1, 'GOOGLE_AUTH', NOW())";
+        Connection conn = MyBdConnexion.getinstance().getCnx();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, nom != null ? nom : "GoogleUser");
+            ps.setString(3, prenom != null ? prenom : "");
+            ps.executeUpdate();
+            System.out.println("Nouvel utilisateur Google créé : " + email);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur DB", "Impossible de créer le compte Google.");
+        }
+    }
+
+    private void proceedToLogin(AuthInfo info) {
+        String token = authService.generateToken(info.email, info.role == null ? "" : info.role);
 
         Preferences session = Preferences.userRoot().node(loginController.class.getName());
         session.put("jwt", token);
-        session.put("email", email);
+        session.put("email", info.email);
         session.put("role", info.role == null ? "" : info.role);
         session.put("prenom", info.prenom == null ? "" : info.prenom);
 
-        if (rememberMeCheckbox.isSelected()) prefs.put("rememberedEmail", email);
+        if (rememberMeCheckbox.isSelected()) prefs.put("rememberedEmail", info.email);
         else prefs.remove("rememberedEmail");
 
         showSuccessAlert(info.prenom);
@@ -144,6 +306,7 @@ public class loginController {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new AuthInfo(
+                            email,
                             rs.getString("mot_de_passe"),
                             rs.getString("role"),
                             rs.getString("prenom"),
@@ -159,10 +322,11 @@ public class loginController {
     }
 
     private static class AuthInfo {
-        final String storedPassword, role, prenom;
+        final String email, storedPassword, role, prenom;
         final boolean isActif;
 
-        AuthInfo(String storedPassword, String role, String prenom, boolean isActif) {
+        AuthInfo(String email, String storedPassword, String role, String prenom, boolean isActif) {
+            this.email = email;
             this.storedPassword = storedPassword;
             this.role = role;
             this.prenom = prenom;
@@ -202,10 +366,28 @@ public class loginController {
             String fxml = (role != null && role.equalsIgnoreCase("SIEGE")) ? "/dash.fxml" : "/dashUser.fxml";
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setMaximized(true);
-            stage.show();
+            
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            if (stage != null) {
+                // 1. Configurer la scène
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+
+                // 2. Forcer la taille de l'écran (Workaround pour le bug de redimensionnement)
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                stage.setX(screenBounds.getMinX());
+                stage.setY(screenBounds.getMinY());
+                stage.setWidth(screenBounds.getWidth());
+                stage.setHeight(screenBounds.getHeight());
+
+                // 3. Appliquer Maximized avec une "secousse"
+                stage.setMaximized(false);
+                stage.setMaximized(true);
+
+                stage.show();
+            } else {
+                System.err.println("Erreur critique : Impossible de récupérer la fenêtre principale.");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -216,7 +398,7 @@ public class loginController {
         if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
             try {
                 Class<?> bc = Class.forName("org.mindrot.jbcrypt.BCrypt");
-                Method checkpw = bc.getMethod("checkpw", String.class, String.class);
+                java.lang.reflect.Method checkpw = bc.getMethod("checkpw", String.class, String.class);
                 return (Boolean) checkpw.invoke(null, plain, stored);
             } catch (Exception ex) { return false; }
         }
@@ -224,7 +406,6 @@ public class loginController {
     }
 
     private void setupVisuals() {
-        // Animation Ken Burns
         if (backgroundImage != null) {
             backgroundImage.fitWidthProperty().bind(rootPane.widthProperty());
             backgroundImage.fitHeightProperty().bind(rootPane.heightProperty());
@@ -233,7 +414,6 @@ public class loginController {
             st.setCycleCount(Animation.INDEFINITE); st.setAutoReverse(true); st.play();
         }
 
-        // Initialisation des particules
         if (particleCanvas != null) {
             particleCanvas.widthProperty().bind(rootPane.widthProperty());
             particleCanvas.heightProperty().bind(rootPane.heightProperty());
@@ -243,7 +423,6 @@ public class loginController {
             gc = particleCanvas.getGraphicsContext2D();
             particles = new ArrayList<>();
 
-            // Utilisation de Platform.runLater pour attendre que le Canvas ait une taille
             Platform.runLater(() -> {
                 for (int i = 0; i < 80; i++) {
                     particles.add(new Particle());
@@ -274,36 +453,28 @@ public class loginController {
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(type);
+        a.setTitle(title); a.setHeaderText(null); a.setContentText(content);
+        a.showAndWait();
     }
 
     private void handleForgotPassword() {
-        // Animation "Porte qui s'ouvre" (Sortie)
         ParallelTransition pt = new ParallelTransition();
-
         if (brandingVBox != null) {
             TranslateTransition slideLeft = new TranslateTransition(Duration.seconds(0.8), brandingVBox);
-            slideLeft.setToX(-brandingVBox.getWidth() - 200); // Sort vers la gauche
+            slideLeft.setToX(-brandingVBox.getWidth() - 200);
             pt.getChildren().add(slideLeft);
         }
-
         if (loginFormVBox != null) {
             TranslateTransition slideRight = new TranslateTransition(Duration.seconds(0.8), loginFormVBox);
-            slideRight.setToX(loginFormVBox.getWidth() + 200); // Sort vers la droite
+            slideRight.setToX(loginFormVBox.getWidth() + 200);
             pt.getChildren().add(slideRight);
         }
-
         if (pt.getChildren().isEmpty()) {
-            // Fallback si les VBox ne sont pas liées
             FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), rootPane);
             fadeOut.setToValue(0);
             pt.getChildren().add(fadeOut);
         }
-
         pt.setOnFinished(e -> {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/forgotPassword.fxml"));
@@ -319,19 +490,14 @@ public class loginController {
         pt.play();
     }
 
-    private void handleGoogleLogin() { /* Logique à implémenter */ }
-
     private class Particle {
         double x, y, vx, vy, radius, opacity;
 
         public Particle() {
-            // Initialisation différée via Platform.runLater dans setupVisuals
-            // garantit que particleCanvas.getWidth() > 0
             if (particleCanvas != null && particleCanvas.getWidth() > 0) {
                 this.x = random.nextDouble() * particleCanvas.getWidth();
                 this.y = random.nextDouble() * particleCanvas.getHeight();
             } else {
-                // Fallback au cas où
                 this.x = random.nextDouble() * 800;
                 this.y = random.nextDouble() * 600;
             }
@@ -339,16 +505,15 @@ public class loginController {
         }
 
         void initProperties() {
-            this.vx = (random.nextDouble() - 0.5) * 0.5; 
-            this.vy = (random.nextDouble() - 0.5) * 0.5; 
-            this.radius = random.nextDouble() * 3 + 1; 
-            this.opacity = random.nextDouble() * 0.5 + 0.2; 
+            this.vx = (random.nextDouble() - 0.5) * 0.5;
+            this.vy = (random.nextDouble() - 0.5) * 0.5;
+            this.radius = random.nextDouble() * 3 + 1;
+            this.opacity = random.nextDouble() * 0.5 + 0.2;
         }
 
         void update() {
             x += vx;
             y += vy;
-            
             if (particleCanvas != null) {
                 double w = particleCanvas.getWidth();
                 double h = particleCanvas.getHeight();

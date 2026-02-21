@@ -1,5 +1,6 @@
 package tn.esprit.boussole.gui;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,10 +28,10 @@ public class addUserController {
     @FXML private Button btnCreate;
 
     private Runnable onUserCreated;
-
+    Dotenv dotenv = Dotenv.load();
     // CONFIGURATION GMAIL
-    private final String MON_EMAIL = "sgatnisarah0@gmail.com";
-    private final String MA_CLE_GOOGLE = "sued zicz pcnp icqp";
+    private final String MON_EMAIL = dotenv.get("EMAIL_USER");
+    private final String MA_CLE_GOOGLE = dotenv.get("EMAIL_PASSWORD");
 
     @FXML
     public void initialize() {
