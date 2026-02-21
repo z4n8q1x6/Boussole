@@ -1,4 +1,4 @@
-package tn.esprit.boussole.services;
+package tn.esprit.boussole.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

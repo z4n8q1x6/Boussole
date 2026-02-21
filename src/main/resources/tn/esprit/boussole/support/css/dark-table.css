@@ -1,0 +1,278 @@
+/* Table background */
+/* Table background */
+.table-view {
+  -fx-background-color: transparent;
+  -fx-control-inner-background: #0c0f1a;
+}
+
+/* Column header */
+.table-view .column-header-background {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Column header text */
+.table-view .column-header .label {
+  -fx-text-fill: #8892a4;
+  -fx-font-weight: bold;
+}
+
+/* Rows */
+.table-row-cell {
+  -fx-background-color: transparent;
+  -fx-border-color: rgba(255, 255, 255, 0.04);
+  -fx-border-width: 0 0 1 0;
+}
+
+/* Row hover */
+.table-row-cell:hover {
+  -fx-background-color: rgba(0, 229, 204, 0.08);
+}
+
+/* Selected row */
+.table-row-cell:selected {
+  -fx-background-color: rgba(0, 229, 204, 0.18);
+}
+
+/* Cell text */
+.table-cell {
+  -fx-text-fill: #e8edf5;
+}
+
+/* Empty rows */
+.table-row-cell:empty {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+}
+
+/* Scrollbar background */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+  -fx-background-color: transparent;
+}
+
+/* Scrollbar track */
+.scroll-bar .track {
+  -fx-background-color: transparent;
+}
+
+/* Scrollbar thumb */
+.scroll-bar .thumb {
+  -fx-background-color: #1c2138;
+  -fx-background-radius: 8;
+}
+
+/* Scrollbar thumb hover */
+.scroll-bar .thumb:hover {
+  -fx-background-color: #00e5cc;
+}
+
+/* Scrollbar arrows */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+  -fx-background-color: transparent;
+}
+/* Column header background strip */
+.table-view .column-header-background {
+  -fx-background-color: #131929;
+}
+
+/* Individual column header */
+.table-view .column-header {
+  -fx-background-color: transparent;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+  -fx-border-width: 0 1 0 0;
+}
+
+/* Header label text */
+.table-view .column-header .label {
+  -fx-text-fill: #8892a4;
+  -fx-font-weight: bold;
+  -fx-font-size: 13px;
+  -fx-alignment: CENTER;
+}
+
+/* Remove the filler (empty space after last column) */
+.table-view .column-header-background .filler {
+  -fx-background-color: #131929;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+  -fx-border-width: 0 0 1 0;
+}
+.table-view {
+  -fx-background-color: transparent;
+  -fx-control-inner-background: #0c0f1a;
+}
+
+/* Column header */
+.table-view .column-header-background {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Column header text */
+.table-view .column-header .label {
+  -fx-text-fill: #8892a4;
+  -fx-font-weight: bold;
+}
+
+/* Rows */
+.table-row-cell {
+  -fx-background-color: transparent;
+  -fx-border-color: rgba(255, 255, 255, 0.04);
+  -fx-border-width: 0 0 1 0;
+}
+
+/* Row hover */
+.table-row-cell:hover {
+  -fx-background-color: rgba(0, 229, 204, 0.08);
+}
+
+/* Selected row */
+.table-row-cell:selected {
+  -fx-background-color: rgba(0, 229, 204, 0.18);
+}
+
+/* Cell text */
+.table-cell {
+  -fx-text-fill: #e8edf5;
+}
+
+/* Empty rows */
+.table-row-cell:empty {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+}
+
+/* Scrollbar background */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+  -fx-background-color: transparent;
+}
+
+/* Scrollbar track */
+.scroll-bar .track {
+  -fx-background-color: transparent;
+}
+
+/* Scrollbar thumb */
+.scroll-bar .thumb {
+  -fx-background-color: #1c2138;
+  -fx-background-radius: 8;
+}
+
+/* Scrollbar thumb hover */
+.scroll-bar .thumb:hover {
+  -fx-background-color: #00e5cc;
+}
+
+/* Scrollbar arrows */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+  -fx-background-color: transparent;
+}
+/* Column header background strip */
+.table-view .column-header-background {
+  -fx-background-color: #131929;
+}
+
+/* Individual column header */
+.table-view .column-header {
+  -fx-background-color: transparent;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+  -fx-border-width: 0 1 0 0;
+}
+
+/* Header label text */
+.table-view .column-header .label {
+  -fx-text-fill: #8892a4;
+  -fx-font-weight: bold;
+  -fx-font-size: 13px;
+  -fx-alignment: CENTER;
+}
+
+/* Remove the filler (empty space after last column) */
+.table-view .column-header-background .filler {
+  -fx-background-color: #131929;
+  -fx-border-color: rgba(255, 255, 255, 0.06);
+  -fx-border-width: 0 0 1 0;
+}
+
+/* SplitPane inner panels */
+.split-pane > .split-pane-divider {
+  -fx-background-color: rgba(255, 255, 255, 0.06);
+  -fx-padding: 0 1 0 1;
+}
+
+.split-pane {
+  -fx-background-color: transparent;
+}
+
+.split-pane > * {
+  -fx-background-color: #06080f;
+}
+
+/* TextArea inner content */
+.text-area .content {
+  -fx-background-color: #0c0f1a;
+}
+
+.text-area > .scroll-pane {
+  -fx-background-color: #0c0f1a;
+}
+
+.text-area > .scroll-pane > .viewport {
+  -fx-background-color: #0c0f1a;
+}
+
+.text-area > .scroll-pane > .scroll-bar {
+  -fx-background-color: #0c0f1a;
+}
+
+/* ComboBox main button */
+.combo-box {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+}
+
+/* Selected text */
+.combo-box .list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: #e8edf5;
+}
+
+/* Arrow button */
+.combo-box .arrow-button {
+  -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+  -fx-background-color: #8892a4;
+}
+
+/* Dropdown popup background */
+.combo-box-popup .list-view {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+}
+
+/* Dropdown items */
+.combo-box-popup .list-view .list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: #e8edf5;
+  -fx-padding: 8 12;
+}
+
+/* Dropdown item hover */
+.combo-box-popup .list-view .list-cell:hover {
+  -fx-background-color: rgba(0, 229, 204, 0.1);
+}
+
+/* Dropdown item selected */
+.combo-box-popup .list-view .list-cell:selected {
+  -fx-background-color: rgba(0, 229, 204, 0.2);
+  -fx-text-fill: #00e5cc;
+}

@@ -1,24 +1,26 @@
-package tn.esprit.boussole.controllers;
+package tn.esprit.boussole.gui;
 
+import java.io.IOException;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
-import tn.esprit.boussole.services.ReclamationService;
+import tn.esprit.boussole.service.ReclamationService;
 import tn.esprit.boussole.utils.AlertUtil;
-import tn.esprit.boussole.utils.UIUtils;
 
 public class ReclamationController {
   private final ReclamationService service = new ReclamationService();
-  @FXML private TextField sujetField;
-  @FXML private TextArea descriptionArea;
-  @FXML private Label errorLabel;
 
   @FXML private TableView<Reclamation> table;
   @FXML private TableColumn<Reclamation, String> colSujet;
   @FXML private TableColumn<Reclamation, String> colDescription;
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
+  @FXML private Button btnNewReclamation;
 
   // temp (for testing)
   private int franchise_id = 2;
@@ -29,22 +31,6 @@ public class ReclamationController {
     colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
     colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
-    // remove error message when start typing
-    sujetField
-        .textProperty()
-        .addListener(
-            (obs, oldVal, newVal) -> {
-              errorLabel.setVisible(false);
-              sujetField.setStyle("-fx-border-color: #cbd5e0;");
-            });
-
-    descriptionArea
-        .textProperty()
-        .addListener(
-            (obs, oldVal, newVal) -> {
-              errorLabel.setVisible(false);
-              descriptionArea.setStyle("-fx-border-color: #cbd5e0;");
-            });
 
     // makes description column scrollable
     colDescription.setCellFactory(
@@ -83,32 +69,22 @@ public class ReclamationController {
   }
 
   @FXML
-  public void insert() {
-    Reclamation reclamation = new Reclamation();
-    if (sujetField.getText().trim().isEmpty() || descriptionArea.getText().trim().isEmpty()) {
-      errorLabel.setVisible(true);
-      errorLabel.setManaged(true);
-      // Highlight the fields in red
-      sujetField.setStyle("-fx-border-color: #e74c3c;");
-      descriptionArea.setStyle("-fx-border-color: #e74c3c;");
-      return;
+  private void handleAddReclamation() {
+    FXMLLoader loader =
+        new FXMLLoader(getClass().getResource("/tn/esprit/boussole/support/addReclamation.fxml"));
+    try {
+      Parent root = loader.load();
+      AddReclamationController controller = loader.getController();
+      controller.setFranchiseId(franchise_id);
+      Stage stage = new Stage();
+      stage.setTitle("Ajouter une réclamation");
+      stage.setScene(new Scene(root));
+      stage.showAndWait();
+    } catch (IOException e) {
+      System.err.println("Error loading FXML:");
+      e.printStackTrace();
     }
-    errorLabel.setVisible(false);
-    errorLabel.setManaged(false);
-    // Reset styles
-    sujetField.setStyle("-fx-border-color: #cbd5e0;");
-    descriptionArea.setStyle("-fx-border-color: #cbd5e0;");
-
-    reclamation.setSujet(sujetField.getText());
-    reclamation.setDescription(descriptionArea.getText());
-    reclamation.setFranchiseId(franchise_id);
-    if (service.add(reclamation)) {
-      display();
-      UIUtils.clear(sujetField, descriptionArea);
-      System.out.println("Reclamation added successfully.");
-    } else {
-      System.out.println("Failed to add reclamation.");
-    }
+    display();
   }
 
   public void display() {

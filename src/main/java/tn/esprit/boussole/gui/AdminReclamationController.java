@@ -1,12 +1,16 @@
-package tn.esprit.boussole.controllers;
+package tn.esprit.boussole.gui;
 
+import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
-import tn.esprit.boussole.services.ReclamationService;
+import tn.esprit.boussole.service.ReclamationService;
 import tn.esprit.boussole.utils.AlertUtil;
 
 public class AdminReclamationController {
@@ -18,7 +22,6 @@ public class AdminReclamationController {
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
   @FXML private TableColumn<Reclamation, String> colFranchise;
-  @FXML private ComboBox<String> statusComboBox;
 
   public void initialize() {
     // connects the table columns to Reclamation model getters
@@ -26,7 +29,6 @@ public class AdminReclamationController {
     colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
     colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
-    statusComboBox.setItems(FXCollections.observableArrayList("EN_ATTENTE", "EN_COURS", "RESOLU"));
     colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
     colFranchise.setCellValueFactory(
         cellData -> {
@@ -69,21 +71,6 @@ public class AdminReclamationController {
   }
 
   @FXML
-  public void updateStatus() {
-
-    Reclamation selected = table.getSelectionModel().getSelectedItem();
-
-    if (selected != null) {
-      if (service.updateStatus(selected.getId(), statusComboBox.getValue())) {
-        display();
-        System.out.println("Reclamation updated successfully.");
-      }
-    } else if (selected == null) {
-      AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner une réclamation.");
-    }
-  }
-
-  @FXML
   public void delete() {
     Reclamation selected = table.getSelectionModel().getSelectedItem();
 
@@ -105,5 +92,30 @@ public class AdminReclamationController {
 
   public void display() {
     table.setItems(service.getAll());
+  }
+
+  @FXML
+  private void handleUpdate() {
+    Reclamation selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner une réclamation.");
+      return;
+    }
+    try {
+      FXMLLoader loader =
+          new FXMLLoader(
+              getClass().getResource("/tn/esprit/boussole/support/updateReclamation.fxml"));
+      Parent root = loader.load();
+      UpdateReclamationController controller = loader.getController();
+      controller.setReclamation(selected);
+      Stage stage = new Stage();
+      stage.setTitle("Ajouter une réclamation");
+      stage.setScene(new Scene(root));
+      stage.showAndWait();
+    } catch (IOException e) {
+      System.err.println("Error loading FXML:");
+      e.printStackTrace();
+    }
+    display();
   }
 }

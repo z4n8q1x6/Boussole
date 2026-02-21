@@ -3,73 +3,100 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.effect.DropShadow?>
-<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
 
-<VBox spacing="20" alignment="TOP_CENTER" prefHeight="750.0" prefWidth="950.0" 
-      style="-fx-background-color: #f0f4f7;"
-      fx:controller="tn.esprit.boussole.controllers.ReclamationController"
-      xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    
-    <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
-    </padding>
+<VBox spacing="18"
+  style="-fx-background-color: #06080F;"
+  xmlns="http://javafx.com/javafx/21"
+  xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="tn.esprit.boussole.gui.ReclamationController"
+  stylesheets="/tn/esprit/boussole/support/css/dark-table.css">
 
-    <children>
-        <VBox alignment="CENTER" spacing="5">
-            <Label text="Réclamations" 
-                   style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0E5384;" />
-            <Label text="Gérez et suivez vos réclamations en temps réel" 
-                   style="-fx-font-size: 14px; -fx-text-fill: #4593CB;" />
-        </VBox>
+  <padding>
+    <Insets top="25" right="25" bottom="25" left="25" />
+  </padding>
 
-        <TableView fx:id="table" VBox.vgrow="ALWAYS" 
-                   style="-fx-background-radius: 10; -fx-border-color: #4593CB; -fx-border-radius: 10; -fx-background-color: white;">
-            <columns>
-                <TableColumn fx:id="colSujet" text="Sujet" prefWidth="200" />
-                <TableColumn fx:id="colDescription" text="Description" prefWidth="400" />
-                <TableColumn fx:id="colStatut" text="Statut" prefWidth="120" />
-                <TableColumn fx:id="colDate" text="Date" prefWidth="150" />
-            </columns>
-            <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-            </columnResizePolicy>
-            <effect>
-                <DropShadow blurType="GAUSSIAN" height="10.0" radius="4.5" width="10.0" color="#0E538426" />
-            </effect>
-        </TableView>
+  <!-- Header with title and button -->
+  <HBox alignment="CENTER_LEFT">
 
-        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15; -fx-border-color: #4593CB; -fx-border-width: 0.5; -fx-border-radius: 15;">
-            <children>
-                <VBox spacing="5">
-                    <Label text="Sujet du problème" style="-fx-font-weight: bold; -fx-text-fill: #0E5384;"/>
-                    <TextField fx:id="sujetField" promptText="Ex: Problème de connexion" 
-                               style="-fx-padding: 10; -fx-background-radius: 5; -fx-border-color: #cbd5e0;"/>
-                </VBox>
+    <VBox spacing="4" HBox.hgrow="ALWAYS">
 
-                <VBox spacing="5">
-                    <Label text="Description détaillée" style="-fx-font-weight: bold; -fx-text-fill: #0E5384;"/>
-                    <TextArea fx:id="descriptionArea" promptText="Décrivez votre problème ici..." 
-                              prefHeight="200.0" wrapText="true" 
-                              style="-fx-padding: 10; -fx-background-radius: 8; -fx-border-color: #cbd5e0; -fx-border-radius: 8;"/>
-                </VBox>
-            </children>
-        </VBox>
-<Label fx:id="errorLabel" text="Veuillez remplir tous les champs !" 
-       visible="false" managed="false"
-       style="-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 13px;" />
+      <Label text="Réclamations"
+        textFill="#E8EDF5">
+        <font>
+          <Font name="System Bold" size="22" />
+        </font>
+      </Label>
 
-<HBox spacing="15" alignment="CENTER_RIGHT">
-    </HBox>
+      <Label text="Gérez et suivez les réclamations"
+        textFill="#8e9aaf" />
 
-        <HBox spacing="15" alignment="CENTER_RIGHT">
-            <Button text="Supprimer" 
-                    onAction="#delete"
-                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;" />
-            
-            <Button text="Envoyer la Réclamation" 
-                    onAction="#insert"
-                    style="-fx-background-color: #0E5384; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 40; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;" />
-        </HBox>
-    </children>
+    </VBox>
+
+    <Button fx:id="btnAdd"
+      text="+ Nouvelle Réclamation"
+      onAction="#handleAddReclamation"
+      prefHeight="40"
+      style="
+                    -fx-background-color: #00E5CC;
+                    -fx-text-fill: #06080F;
+                    -fx-font-weight: bold;
+                    -fx-background-radius: 8;
+                    -fx-padding: 0 18;
+                    -fx-cursor: hand;
+                " />
+
+  </HBox>
+
+
+  <!-- Card container -->
+  <VBox spacing="10"
+    style="
+              -fx-background-color: #0C0F1A;
+              -fx-background-radius: 12;
+              -fx-border-color: rgba(255,255,255,0.06);
+              -fx-border-radius: 12;
+              -fx-padding: 15;
+          "
+    VBox.vgrow="ALWAYS">
+
+    <TableView fx:id="table"
+      VBox.vgrow="ALWAYS"
+      style="
+               -fx-background-color: transparent;
+               -fx-control-inner-background: #0C0F1A;
+               -fx-table-cell-border-color: rgba(255,255,255,0.05);
+               -fx-selection-bar: #00E5CC33;
+               -fx-selection-bar-non-focused: #00E5CC22;
+           ">
+
+      <columns>
+
+        <TableColumn fx:id="colSujet"
+          text="Sujet"
+          style="-fx-text-fill: #E8EDF5;" />
+
+        <TableColumn fx:id="colDescription"
+          text="Description"
+          style="-fx-text-fill: #E8EDF5;" />
+
+        <TableColumn fx:id="colStatut"
+          text="Statut"
+          style="-fx-text-fill: #E8EDF5;" />
+
+        <TableColumn fx:id="colDate"
+          text="Date"
+          style="-fx-text-fill: #E8EDF5;" />
+
+      </columns>
+
+      <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+      </columnResizePolicy>
+
+    </TableView>
+
+  </VBox>
+
+
 </VBox>

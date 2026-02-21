@@ -15,7 +15,7 @@ import org.openpdf.text.pdf.PdfPCell;
 import org.openpdf.text.pdf.PdfPTable;
 import org.openpdf.text.pdf.PdfWriter;
 import tn.esprit.boussole.models.AlerteIA;
-import tn.esprit.boussole.services.AlerteIAService;
+import tn.esprit.boussole.service.AlerteIAService;
 
 public class PDFGenerator {
 

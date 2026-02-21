@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane
+  prefHeight="320.0"
+  prefWidth="450.0"
+  style="-fx-background-color: #06080F;
+         -fx-background-radius: 15;
+         -fx-border-color: rgba(0, 229, 204, 0.3);
+         -fx-border-radius: 15;
+         -fx-border-width: 1;"
+  xmlns="http://javafx.com/javafx/21"
+  xmlns:fx="http://javafx.com/fxml/1"
+  stylesheets="/tn/esprit/boussole/support/css/updateReclamation.css"
+  fx:controller="tn.esprit.boussole.gui.UpdateReclamationController">
+
+  <children>
+
+    <VBox spacing="20"
+      AnchorPane.topAnchor="30"
+      AnchorPane.leftAnchor="40"
+      AnchorPane.rightAnchor="40"
+      AnchorPane.bottomAnchor="30">
+
+      <!-- Header -->
+      <VBox spacing="4">
+        <Label text="Modifier le Statut" textFill="#E8EDF5">
+          <font>
+            <Font name="System Bold" size="22" />
+          </font>
+        </Label>
+        <Label text="Mettez à jour le statut de la réclamation"
+          textFill="#3A4258" />
+      </VBox>
+
+      <!-- Sujet display -->
+      <VBox spacing="6">
+        <Label text="Réclamation" textFill="#8892A4" />
+        <Label fx:id="lblSujet"
+          textFill="#E8EDF5"
+          style="-fx-background-color: #0C0F1A;
+                 -fx-background-radius: 8;
+                 -fx-border-color: rgba(255,255,255,0.1);
+                 -fx-border-radius: 8;
+                 -fx-padding: 10;" />
+      </VBox>
+
+      <!-- Statut combo -->
+      <VBox spacing="6">
+        <Label text="Nouveau Statut" textFill="#8892A4" />
+        <ComboBox fx:id="comboStatut"
+          maxWidth="1.7976931348623157E308"
+          prefHeight="40"
+          style="-fx-background-color: #0C0F1A;
+                 -fx-text-fill: white;
+                 -fx-border-color: rgba(255,255,255,0.1);
+                 -fx-background-radius: 8;
+                 -fx-border-radius: 8;" />
+      </VBox>
+
+      <!-- Error -->
+      <Label fx:id="lblError"
+        visible="false"
+        managed="false"
+        textFill="#F43F5E"
+        style="-fx-font-weight: bold;" />
+
+      <!-- Buttons -->
+      <HBox alignment="CENTER_RIGHT" spacing="15">
+        <VBox.margin>
+          <Insets top="5" />
+        </VBox.margin>
+        <Button text="Annuler"
+          onAction="#handleCancel"
+          prefWidth="100" prefHeight="40"
+          style="-fx-background-color: transparent;
+                 -fx-text-fill: #8892A4;
+                 -fx-cursor: hand;
+                 -fx-border-color: rgba(255,255,255,0.1);
+                 -fx-border-radius: 8;" />
+        <Button fx:id="btnUpdate"
+          text="METTRE À JOUR"
+          onAction="#handleUpdate"
+          prefWidth="160" prefHeight="40"
+          style="-fx-background-color: #00E5CC;
+                 -fx-text-fill: #06080F;
+                 -fx-background-radius: 8;
+                 -fx-font-weight: bold;
+                 -fx-cursor: hand;" />
+      </HBox>
+
+    </VBox>
+
+  </children>
+
+</AnchorPane>
