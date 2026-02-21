@@ -45,13 +45,20 @@ public class Gemini {
             .temperature(1.75f)
             .build();
 
+    double totalCharges = 98500.00;
+    double totalRecettes = 74200.00;
+    // double totalCharges = 1250000.00;
+    // double totalRecettes = 1487500.50;
     String prompt =
-        """
-        Génère une alerte de sécurité avec ces champs:
-        - type_alerte: Une catégorie courte
-        - message: Une description détaillée
-        - score_gravite: Score de sévérité
-        """;
+        String.format(
+            """
+            Analyse ces données financières:
+            - Charges totales: %,.2f TND
+            - Recettes totales: %,.2f TND
+            - Résultat net: %,.2f TND
+            - Détecte les anomalies ou alertes critiques
+            """,
+            totalCharges, totalRecettes, (totalRecettes - totalCharges));
 
     AlerteIA alerteIA = new AlerteIA();
     String[] myModels = {"gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"};

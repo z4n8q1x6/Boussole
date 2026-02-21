@@ -18,7 +18,7 @@ public class AlerteIAService {
 
   public boolean add(AlerteIA alerteIA) {
     String sql =
-        "INSERT INTO alerteIAs (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?,"
+        "INSERT INTO alerteias (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?,"
             + " ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -36,7 +36,7 @@ public class AlerteIAService {
 
   public boolean delete(int id) {
     try {
-      String sql = "DELETE FROM alerteIAs WHERE id = ?";
+      String sql = "DELETE FROM alerteias WHERE id = ?";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setInt(1, id);
       preparedStatement.executeUpdate();
@@ -50,7 +50,7 @@ public class AlerteIAService {
   public ObservableList<AlerteIA> getByFranchise(int franchiseId) {
     ObservableList<AlerteIA> list = FXCollections.observableArrayList();
     try {
-      String sql = "SELECT * FROM alerteIAs WHERE franchise_id = ?";
+      String sql = "SELECT * FROM alerteias WHERE franchise_id = ?";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setInt(1, franchiseId);
       ResultSet rs = preparedStatement.executeQuery();
@@ -65,7 +65,7 @@ public class AlerteIAService {
         list.add(alerteIA);
       }
     } catch (SQLException e) {
-      System.err.println("Failed to display alerteIAs: " + e.getMessage());
+      System.err.println("Failed to display alerteias: " + e.getMessage());
     }
     return list;
   }
@@ -73,7 +73,7 @@ public class AlerteIAService {
   public ObservableList<AlerteIA> getAll() {
     ObservableList<AlerteIA> list = FXCollections.observableArrayList();
     try {
-      String sql = "SELECT * FROM alerteIAs";
+      String sql = "SELECT * FROM alerteias";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       ResultSet rs = preparedStatement.executeQuery();
       while (rs.next()) {
