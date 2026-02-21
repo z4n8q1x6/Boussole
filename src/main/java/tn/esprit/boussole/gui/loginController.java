@@ -1,11 +1,11 @@
 package tn.esprit.boussole.gui;
 
-import javafx.animation.AnimationTimer;
-import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -15,6 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.boussole.utils.MyBdConnexion;
@@ -35,10 +36,11 @@ public class loginController {
 
     @FXML private StackPane rootPane;
     @FXML private ImageView backgroundImage;
-    @FXML private VBox brandingVBox;
-    @FXML private VBox loginFormVBox;
     @FXML private Canvas particleCanvas;
-    
+
+    @FXML private VBox brandingVBox; // Partie Gauche (Logo)
+    @FXML private VBox loginFormVBox; // Partie Droite (Formulaire)
+
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private CheckBox rememberMeCheckbox;
@@ -48,87 +50,36 @@ public class loginController {
 
     private final Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
     private final AuthService authService = new AuthService();
-    
+
     private GraphicsContext gc;
     private List<Particle> particles;
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @FXML
     public void initialize() {
-        // Binding pour l'image de fond responsive
-        if (rootPane != null && backgroundImage != null) {
-            backgroundImage.fitWidthProperty().bind(rootPane.widthProperty());
-            backgroundImage.fitHeightProperty().bind(rootPane.heightProperty());
-            
-            // Animation Ken Burns (Zoom lent) sur l'image de fond
-            ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(20), backgroundImage);
-            scaleTransition.setFromX(1.0);
-            scaleTransition.setFromY(1.0);
-            scaleTransition.setToX(1.1);
-            scaleTransition.setToY(1.1);
-            scaleTransition.setCycleCount(ScaleTransition.INDEFINITE);
-            scaleTransition.setAutoReverse(true);
-            scaleTransition.play();
-        }
-        
-        // Animation d'entrée pour le branding (gauche)
-        if (brandingVBox != null) {
-            brandingVBox.setOpacity(0);
-            brandingVBox.setTranslateY(20);
-            
-            FadeTransition fade = new FadeTransition(Duration.seconds(1), brandingVBox);
-            fade.setFromValue(0);
-            fade.setToValue(1);
-            
-            TranslateTransition translate = new TranslateTransition(Duration.seconds(1), brandingVBox);
-            translate.setFromY(20);
-            translate.setToY(0);
-            
-            fade.play();
-            translate.play();
-        }
-        
-        // Animation d'entrée pour le formulaire (droite) - avec un léger délai
-        if (loginFormVBox != null) {
-            loginFormVBox.setOpacity(0);
-            loginFormVBox.setTranslateY(20);
-            
-            FadeTransition fade = new FadeTransition(Duration.seconds(1), loginFormVBox);
-            fade.setFromValue(0);
-            fade.setToValue(1);
-            fade.setDelay(Duration.seconds(0.3)); // Délai pour effet cascade
-            
-            TranslateTransition translate = new TranslateTransition(Duration.seconds(1), loginFormVBox);
-            translate.setFromY(20);
-            translate.setToY(0);
-            translate.setDelay(Duration.seconds(0.3));
-            
-            fade.play();
-            translate.play();
-        }
-        
-        // Initialisation des particules
-        if (particleCanvas != null) {
-            gc = particleCanvas.getGraphicsContext2D();
-            particles = new ArrayList<>();
-            for (int i = 0; i < 50; i++) { // 50 particules
-                particles.add(new Particle());
+        // 1. Animation d'entrée "Porte qui se ferme" (Inverse de la sortie)
+        // On place les éléments hors de l'écran initialement
+        if (brandingVBox != null) brandingVBox.setTranslateX(-500);
+        if (loginFormVBox != null) loginFormVBox.setTranslateX(500);
+
+        Platform.runLater(() -> {
+            // Animation : Ils reviennent à leur place (0)
+            if (brandingVBox != null) {
+                TranslateTransition slideInLeft = new TranslateTransition(Duration.seconds(0.8), brandingVBox);
+                slideInLeft.setToX(0);
+                slideInLeft.play();
             }
-            
-            // Lier la taille du canvas à la taille du rootPane
-            particleCanvas.widthProperty().bind(rootPane.widthProperty());
-            particleCanvas.heightProperty().bind(rootPane.heightProperty());
+            if (loginFormVBox != null) {
+                TranslateTransition slideInRight = new TranslateTransition(Duration.seconds(0.8), loginFormVBox);
+                slideInRight.setToX(0);
+                slideInRight.play();
+            }
+        });
 
-            // Lancer l'animation des particules
-            new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    updateParticles();
-                    drawParticles();
-                }
-            }.start();
-        }
+        // Animation Ken Burns et Initialisation des particules
+        setupVisuals();
 
+        // Chargement de l'email mémorisé
         String remembered = prefs.get("rememberedEmail", "");
         if (!remembered.isEmpty()) {
             emailField.setText(remembered);
@@ -137,38 +88,12 @@ public class loginController {
 
         loginButton.setOnAction(e -> handleLogin());
         forgotPasswordLink.setOnAction(e -> handleForgotPassword());
-        
+
         if (googleLoginButton != null) {
             googleLoginButton.setOnAction(e -> handleGoogleLogin());
         }
 
         setupButtonHoverEffects();
-    }
-    
-    private void updateParticles() {
-        gc.clearRect(0, 0, particleCanvas.getWidth(), particleCanvas.getHeight()); // Effacer le canvas
-        for (Particle p : particles) {
-            p.x += p.vx;
-            p.y += p.vy;
-            
-            // Revenir en haut si la particule sort par le bas
-            if (p.y > particleCanvas.getHeight()) {
-                p.y = -p.radius;
-                p.x = random.nextDouble() * particleCanvas.getWidth();
-            }
-            // Revenir à gauche si la particule sort par la droite
-            if (p.x > particleCanvas.getWidth()) {
-                p.x = -p.radius;
-                p.y = random.nextDouble() * particleCanvas.getHeight();
-            }
-        }
-    }
-    
-    private void drawParticles() {
-        for (Particle p : particles) {
-            gc.setFill(Color.rgb(255, 255, 255, p.opacity));
-            gc.fillOval(p.x, p.y, p.radius * 2, p.radius * 2);
-        }
     }
 
     @FXML
@@ -182,53 +107,108 @@ public class loginController {
         }
 
         AuthInfo info = fetchAuthInfo(email);
-        if (info == null) {
+
+        if (info == null || !verifyPassword(password, info.storedPassword)) {
             showAlert(Alert.AlertType.ERROR, "Erreur de connexion", "Email ou mot de passe incorrect.");
             passwordField.clear();
             return;
         }
 
-        if (!verifyPassword(password, info.storedPassword)) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de connexion", "Email ou mot de passe incorrect.");
+        if (!info.isActif) {
+            showAlert(Alert.AlertType.ERROR, "Compte Verrouillé",
+                    "Bonjour " + info.prenom + ",\n\nVotre compte est actuellement désactivé. " +
+                            "Veuillez contacter l'administrateur pour plus d'informations.");
             passwordField.clear();
             return;
         }
 
-        // Génère token et stocke session
         String token = authService.generateToken(email, info.role == null ? "" : info.role);
+
         Preferences session = Preferences.userRoot().node(loginController.class.getName());
         session.put("jwt", token);
         session.put("email", email);
         session.put("role", info.role == null ? "" : info.role);
+        session.put("prenom", info.prenom == null ? "" : info.prenom);
 
         if (rememberMeCheckbox.isSelected()) prefs.put("rememberedEmail", email);
         else prefs.remove("rememberedEmail");
 
-        showAlert(Alert.AlertType.INFORMATION, "Connexion réussie", "Bienvenue " + email + " !");
-        navigateToRoleInterface(info.role);
-    }
-    
-    private void handleGoogleLogin() {
-        showAlert(Alert.AlertType.INFORMATION, "Google Login", "Authentification Google en cours de développement...");
+        showSuccessAlert(info.prenom);
     }
 
     private AuthInfo fetchAuthInfo(String email) {
-        String sql = "SELECT mot_de_passe, role FROM utilisateur WHERE email = ? LIMIT 1";
+        String sql = "SELECT mot_de_passe, role, prenom, actif FROM utilisateur WHERE email = ? LIMIT 1";
         Connection conn = MyBdConnexion.getinstance().getCnx();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String pwd = rs.getString("mot_de_passe");
-                    String role = rs.getString("role");
-                    return new AuthInfo(pwd, role);
+                    return new AuthInfo(
+                            rs.getString("mot_de_passe"),
+                            rs.getString("role"),
+                            rs.getString("prenom"),
+                            rs.getBoolean("actif")
+                    );
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur DB", "Impossible de se connecter à la base de données.");
+            showAlert(Alert.AlertType.ERROR, "Erreur DB", "Impossible de contacter la base de données.");
         }
         return null;
+    }
+
+    private static class AuthInfo {
+        final String storedPassword, role, prenom;
+        final boolean isActif;
+
+        AuthInfo(String storedPassword, String role, String prenom, boolean isActif) {
+            this.storedPassword = storedPassword;
+            this.role = role;
+            this.prenom = prenom;
+            this.isActif = isActif;
+        }
+    }
+
+    private void showSuccessAlert(String prenom) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Succès");
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #111827; -fx-background-radius: 14;");
+        dialogPane.getButtonTypes().add(ButtonType.OK);
+        dialogPane.lookupButton(ButtonType.OK).setVisible(false);
+
+        VBox content = new VBox(20);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(30, 50, 30, 50));
+        Label icon = new Label("✅");
+        icon.setFont(Font.font(48));
+        Label message = new Label("Connexion réussie, " + (prenom != null ? prenom : "") + " !");
+        message.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        content.getChildren().addAll(icon, message);
+        dialogPane.setContent(content);
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(1.5));
+        delay.setOnFinished(e -> {
+            dialog.close();
+            navigateToRoleInterface(Preferences.userRoot().node(loginController.class.getName()).get("role", ""));
+        });
+        dialog.setOnShown(e -> delay.play());
+        dialog.showAndWait();
+    }
+
+    private void navigateToRoleInterface(String role) {
+        try {
+            String fxml = (role != null && role.equalsIgnoreCase("SIEGE")) ? "/dash.fxml" : "/dashUser.fxml";
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
+            Parent root = loader.load();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean verifyPassword(String plain, String stored) {
@@ -237,80 +217,60 @@ public class loginController {
             try {
                 Class<?> bc = Class.forName("org.mindrot.jbcrypt.BCrypt");
                 Method checkpw = bc.getMethod("checkpw", String.class, String.class);
-                Object result = checkpw.invoke(null, plain, stored);
-                return result instanceof Boolean && (Boolean) result;
-            } catch (ClassNotFoundException cnfe) {
-                // BCrypt absent
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return false;
-            }
+                return (Boolean) checkpw.invoke(null, plain, stored);
+            } catch (Exception ex) { return false; }
         }
         return plain.equals(stored);
     }
 
-    private void navigateToRoleInterface(String role) {
-        try {
-            String fxml;
-            if (role != null && role.equalsIgnoreCase("SIEGE")) {
-                fxml = "/dash.fxml"; // Dashboard Admin
-            } else {
-                fxml = "/dashUser.fxml"; // Dashboard Entreprise/Utilisateur
-            }
-            
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
-            Parent root = loader.load();
+    private void setupVisuals() {
+        // Animation Ken Burns
+        if (backgroundImage != null) {
+            backgroundImage.fitWidthProperty().bind(rootPane.widthProperty());
+            backgroundImage.fitHeightProperty().bind(rootPane.heightProperty());
+            ScaleTransition st = new ScaleTransition(Duration.seconds(20), backgroundImage);
+            st.setFromX(1.0); st.setFromY(1.0); st.setToX(1.1); st.setToY(1.1);
+            st.setCycleCount(Animation.INDEFINITE); st.setAutoReverse(true); st.play();
+        }
 
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            
-            // Forcer le plein écran ou maximisé
-            stage.setMaximized(true);
-            
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Navigation", "Impossible d'ouvrir l'interface.\n\nDétail: " + e.getMessage());
+        // Initialisation des particules
+        if (particleCanvas != null) {
+            particleCanvas.widthProperty().bind(rootPane.widthProperty());
+            particleCanvas.heightProperty().bind(rootPane.heightProperty());
+            particleCanvas.setMouseTransparent(true);
+            particleCanvas.toFront();
+
+            gc = particleCanvas.getGraphicsContext2D();
+            particles = new ArrayList<>();
+
+            // Utilisation de Platform.runLater pour attendre que le Canvas ait une taille
+            Platform.runLater(() -> {
+                for (int i = 0; i < 80; i++) {
+                    particles.add(new Particle());
+                }
+                AnimationTimer timer = new AnimationTimer() {
+                    @Override
+                    public void handle(long now) {
+                        updateParticles();
+                    }
+                };
+                timer.start();
+            });
         }
     }
 
-    @FXML
-    private void handleForgotPassword() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/forgotPassword.fxml"));
-            Parent root = loader.load();
-            
-            Stage stage = (Stage) forgotPasswordLink.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setMaximized(true); // Garder le plein écran
-            stage.show();
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page de récupération.");
+    private void updateParticles() {
+        if (gc == null || particleCanvas == null) return;
+        gc.clearRect(0, 0, particleCanvas.getWidth(), particleCanvas.getHeight());
+        for (Particle p : particles) {
+            p.update();
+            p.draw(gc);
         }
     }
-    
+
     private void setupButtonHoverEffects() {
-        if (loginButton != null) {
-            loginButton.setOnMouseEntered(e ->
-                    loginButton.setStyle("-fx-background-color: #0284C7; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;")
-            );
-            loginButton.setOnMouseExited(e ->
-                    loginButton.setStyle("-fx-background-color: #0EA5E9; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;")
-            );
-        }
-        
-        if (googleLoginButton != null) {
-            googleLoginButton.setOnMouseEntered(e ->
-                    googleLoginButton.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 10; -fx-text-fill: #020617; -fx-cursor: hand; -fx-font-weight: bold;")
-            );
-            googleLoginButton.setOnMouseExited(e ->
-                    googleLoginButton.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #020617; -fx-cursor: hand; -fx-font-weight: bold;")
-            );
-        }
+        loginButton.setOnMouseEntered(e -> loginButton.setStyle("-fx-background-color: #0284C7; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;"));
+        loginButton.setOnMouseExited(e -> loginButton.setStyle("-fx-background-color: #0EA5E9; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;"));
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
@@ -321,29 +281,88 @@ public class loginController {
         alert.showAndWait();
     }
 
-    private static class AuthInfo {
-        final String storedPassword;
-        final String role;
-        AuthInfo(String storedPassword, String role) {
-            this.storedPassword = storedPassword;
-            this.role = role;
+    private void handleForgotPassword() {
+        // Animation "Porte qui s'ouvre" (Sortie)
+        ParallelTransition pt = new ParallelTransition();
+
+        if (brandingVBox != null) {
+            TranslateTransition slideLeft = new TranslateTransition(Duration.seconds(0.8), brandingVBox);
+            slideLeft.setToX(-brandingVBox.getWidth() - 200); // Sort vers la gauche
+            pt.getChildren().add(slideLeft);
         }
+
+        if (loginFormVBox != null) {
+            TranslateTransition slideRight = new TranslateTransition(Duration.seconds(0.8), loginFormVBox);
+            slideRight.setToX(loginFormVBox.getWidth() + 200); // Sort vers la droite
+            pt.getChildren().add(slideRight);
+        }
+
+        if (pt.getChildren().isEmpty()) {
+            // Fallback si les VBox ne sont pas liées
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), rootPane);
+            fadeOut.setToValue(0);
+            pt.getChildren().add(fadeOut);
+        }
+
+        pt.setOnFinished(e -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/forgotPassword.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) forgotPasswordLink.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page.");
+            }
+        });
+        pt.play();
     }
-    
-    // Classe interne pour les particules
+
+    private void handleGoogleLogin() { /* Logique à implémenter */ }
+
     private class Particle {
-        double x, y;
-        double vx, vy;
-        double radius;
-        double opacity;
-        
+        double x, y, vx, vy, radius, opacity;
+
         public Particle() {
-            this.x = random.nextDouble() * particleCanvas.getWidth();
-            this.y = random.nextDouble() * particleCanvas.getHeight();
-            this.vx = (random.nextDouble() - 0.5) * 0.5; // Petite vitesse aléatoire
-            this.vy = (random.nextDouble() - 0.5) * 0.5;
-            this.radius = random.nextDouble() * 2 + 1; // Rayon entre 1 et 3
-            this.opacity = random.nextDouble() * 0.5 + 0.2; // Opacité entre 0.2 et 0.7
+            // Initialisation différée via Platform.runLater dans setupVisuals
+            // garantit que particleCanvas.getWidth() > 0
+            if (particleCanvas != null && particleCanvas.getWidth() > 0) {
+                this.x = random.nextDouble() * particleCanvas.getWidth();
+                this.y = random.nextDouble() * particleCanvas.getHeight();
+            } else {
+                // Fallback au cas où
+                this.x = random.nextDouble() * 800;
+                this.y = random.nextDouble() * 600;
+            }
+            initProperties();
+        }
+
+        void initProperties() {
+            this.vx = (random.nextDouble() - 0.5) * 0.5; 
+            this.vy = (random.nextDouble() - 0.5) * 0.5; 
+            this.radius = random.nextDouble() * 3 + 1; 
+            this.opacity = random.nextDouble() * 0.5 + 0.2; 
+        }
+
+        void update() {
+            x += vx;
+            y += vy;
+            
+            if (particleCanvas != null) {
+                double w = particleCanvas.getWidth();
+                double h = particleCanvas.getHeight();
+                if (x < -10) x = w + 10;
+                if (x > w + 10) x = -10;
+                if (y < -10) y = h + 10;
+                if (y > h + 10) y = -10;
+            }
+        }
+
+        void draw(GraphicsContext gc) {
+            gc.setGlobalAlpha(opacity);
+            gc.setFill(Color.WHITE);
+            gc.fillOval(x, y, radius, radius);
         }
     }
 }

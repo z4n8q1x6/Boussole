@@ -1,55 +1,50 @@
 package tn.esprit.boussole.gui;
 
+import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import tn.esprit.boussole.models.user;
 import tn.esprit.boussole.models.franchise;
 import tn.esprit.boussole.service.userService;
+import org.mindrot.jbcrypt.BCrypt;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
+import java.util.Properties;
+import java.util.Random;
 
 public class addUserController {
 
-    @FXML private TextField txtNom;
-    @FXML private TextField txtPrenom;
-    @FXML private TextField txtEmail;
-    @FXML private PasswordField txtPassword;
-    @FXML private TextField txtTelephone;
-    @FXML private TextField txtAdresse;
-    @FXML private TextField txtSolde;
-    @FXML private TextField txtNomEntreprise;
-    @FXML private TextField txtAdresseEntreprise;
+    @FXML private AnchorPane mainAnchorPane;
+    @FXML private TextField txtNom, txtPrenom, txtEmail, txtTelephone, txtSolde, txtNomEntreprise, txtAdresseEntreprise;
     @FXML private CheckBox checkActif;
-
-    @FXML private Button btnClose;
-    @FXML private Button btnCancel;
     @FXML private Button btnCreate;
 
     private Runnable onUserCreated;
 
+    // CONFIGURATION GMAIL
+    private final String MON_EMAIL = "sgatnisarah0@gmail.com";
+    private final String MA_CLE_GOOGLE = "sued zicz pcnp icqp";
+
     @FXML
     public void initialize() {
-        // Valeurs par défaut
-        txtSolde.setText("0.00");
-        checkActif.setSelected(true);
+        // Animation d'entrée
+        mainAnchorPane.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(600), mainAnchorPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
 
-        setupButtonHoverEffects();
-
-        // Validation de l'email en temps réel
-        txtEmail.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) validateEmail();
-        });
-
-        // Validation numérique pour le solde
-        txtSolde.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*(\\.\\d*)?")) txtSolde.setText(oldVal);
-        });
-        
-        // Validation pour le téléphone (uniquement des chiffres)
-        txtTelephone.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                txtTelephone.setText(oldVal);
+        // Validation numérique téléphone (8 chiffres)
+        txtTelephone.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("\\d*") || newVal.length() > 8) {
+                txtTelephone.setText(old);
             }
         });
     }
@@ -59,197 +54,135 @@ public class addUserController {
         if (!validateFields()) return;
 
         try {
-            // Création de l'objet user
+            userService service = new userService();
+
+            // 1. GÉNÉRATION DU MOT DE PASSE EN CLAIR
+            String motDePasseClair = genererMotDePasse(8);
+
+            // 2. HACHAGE POUR LA BDD
+            String motDePasseHache = BCrypt.hashpw(motDePasseClair, BCrypt.gensalt());
+
+            // Objet User
             user u = new user();
             u.setNom(txtNom.getText().trim());
             u.setPrenom(txtPrenom.getText().trim());
             u.setEmail(txtEmail.getText().trim());
-            u.setMotDePasse(txtPassword.getText()); // ⚠️ Hash en production avec BCrypt
-            u.setRole("ENTREPRISE"); // Rôle forcé
+            u.setMotDePasse(motDePasseHache);
+            u.setRole("ENTREPRISE");
             u.setActif(checkActif.isSelected());
             u.setDateCreation(LocalDateTime.now());
 
-            userService service = new userService();
-
-            // Créer franchise + user
+            // Objet Franchise
             franchise f = new franchise();
             f.setNom(txtNomEntreprise.getText().trim());
             f.setAdresse(txtAdresseEntreprise.getText().trim());
             f.setEmail(txtEmail.getText().trim());
             f.setTelephone(txtTelephone.getText().trim());
             f.setActif(checkActif.isSelected());
-            f.setSoldeActuel(Double.parseDouble(txtSolde.getText()));
+            try {
+                f.setSoldeActuel(Double.parseDouble(txtSolde.getText()));
+            } catch (NumberFormatException e) {
+                f.setSoldeActuel(0.0);
+            }
             f.setDateCreation(LocalDateTime.now());
 
+            // 3. SAUVEGARDE DB
             service.insertUserWithFranchise(u, f);
 
-            showAlert(Alert.AlertType.INFORMATION,
-                    "Succès",
-                    "L'entreprise " + f.getNom() + " et son responsable ont été créés avec succès !");
+            // 4. ENVOI DE L'EMAIL EN ARRIÈRE-PLAN
+            envoyerEmailBienvenue(u.getEmail(), u.getPrenom(), motDePasseClair);
 
-            // Appeler le callback pour rafraîchir la liste
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Compte créé ! Un email avec les identifiants a été envoyé.");
+
             if (onUserCreated != null) onUserCreated.run();
-
-            // Fermer la fenêtre
             closeWindow();
 
-        } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur",
-                    "Format numérique invalide pour le solde.");
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Détails : " + e.getMessage());
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur",
-                    "Impossible de créer l'entreprise : " + e.getMessage());
         }
+    }
+
+    private String genererMotDePasse(int longueur) {
+        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$";
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < longueur; i++) {
+            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
+        }
+        return sb.toString();
+    }
+
+    private void envoyerEmailBienvenue(String destinataire, String prenom, String mdp) {
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(MON_EMAIL, MA_CLE_GOOGLE);
+            }
+        });
+
+        // Utilisation d'un Thread pour ne pas bloquer l'interface
+        new Thread(() -> {
+            try {
+                Message message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(MON_EMAIL));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinataire));
+                message.setSubject("Bienvenue sur Boussole - Vos identifiants");
+
+                String corps = "Bonjour " + prenom + ",\n\n"
+                        + "Votre compte entreprise a été créé avec succès.\n"
+                        + "Voici vos identifiants pour vous connecter :\n\n"
+                        + "Email : " + destinataire + "\n"
+                        + "Mot de passe : " + mdp + "\n\n"
+                        + "L'équipe Boussole.";
+
+                message.setText(corps);
+                Transport.send(message);
+                System.out.println("✅ Email envoyé avec succès à " + destinataire);
+            } catch (MessagingException e) {
+                System.err.println("❌ Erreur Email : " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private boolean validateFields() {
-        // Validation du nom
-        if (txtNom.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Nom obligatoire", "Le nom du responsable est obligatoire.");
-            txtNom.requestFocus();
+        if (txtEmail.getText().isEmpty() || !txtEmail.getText().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-z]{2,}$")) {
+            showAlert(Alert.AlertType.WARNING, "Erreur", "Email invalide.");
             return false;
         }
-
-        // Validation du prénom
-        if (txtPrenom.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Prénom obligatoire", "Le prénom du responsable est obligatoire.");
-            txtPrenom.requestFocus();
+        if (txtNomEntreprise.getText().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Erreur", "Le nom de l'entreprise est obligatoire.");
             return false;
         }
-
-        // Validation de l'email
-        if (txtEmail.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Email obligatoire", "L'email est obligatoire.");
-            txtEmail.requestFocus();
+        if (txtTelephone.getText().length() != 8) {
+            showAlert(Alert.AlertType.WARNING, "Erreur", "Le téléphone doit contenir 8 chiffres.");
             return false;
         }
-
-        if (!isValidEmail(txtEmail.getText())) {
-            showAlert(Alert.AlertType.WARNING, "Email invalide", "Veuillez entrer une adresse email valide.");
-            txtEmail.requestFocus();
-            return false;
-        }
-
-        // Validation du mot de passe
-        if (txtPassword.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Mot de passe obligatoire", "Le mot de passe est obligatoire.");
-            txtPassword.requestFocus();
-            return false;
-        }
-
-        if (txtPassword.getText().length() < 6) {
-            showAlert(Alert.AlertType.WARNING, "Mot de passe faible",
-                    "Le mot de passe doit contenir au moins 6 caractères.");
-            txtPassword.requestFocus();
-            return false;
-        }
-        
-        // Validation du téléphone
-        String telephone = txtTelephone.getText().trim();
-        if (!telephone.isEmpty() && (telephone.length() != 8 || !telephone.matches("\\d+"))) {
-            showAlert(Alert.AlertType.WARNING, "Téléphone invalide", "Le numéro de téléphone doit contenir exactement 8 chiffres.");
-            txtTelephone.requestFocus();
-            return false;
-        }
-
-        // Validation du nom de l'entreprise
-        String nomEntreprise = txtNomEntreprise.getText().trim();
-        if (nomEntreprise.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Nom d'entreprise obligatoire",
-                    "Le nom de l'entreprise est obligatoire.");
-            txtNomEntreprise.requestFocus();
-            return false;
-        }
-        
-        // Vérifie qu'il n'y a pas de chiffres (lettres, espaces, symboles autorisés)
-        if (nomEntreprise.matches(".*\\d.*")) {
-             showAlert(Alert.AlertType.WARNING, "Nom d'entreprise invalide",
-                    "Le nom de l'entreprise ne doit pas contenir de chiffres.");
-            txtNomEntreprise.requestFocus();
-            return false;
-        }
-
         return true;
     }
 
-    private boolean isValidEmail(String email) {
-        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    }
-
-    private void validateEmail() {
-        if (!txtEmail.getText().isEmpty() && !isValidEmail(txtEmail.getText())) {
-            txtEmail.setStyle("-fx-border-color: #E74C3C; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;");
-        } else {
-            txtEmail.setStyle("-fx-border-color: #BDC3C7; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;");
-        }
-    }
-
-    @FXML
-    private void handleCancel() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Annuler");
-        alert.setHeaderText("Annuler la création");
-        alert.setContentText("Êtes-vous sûr de vouloir annuler ? Les données saisies seront perdues.");
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                closeWindow();
-            }
-        });
-    }
-
-    @FXML
-    private void handleClose() {
-        handleCancel();
-    }
+    @FXML private void handleCancel() { closeWindow(); }
 
     private void closeWindow() {
-        Stage stage = (Stage) btnClose.getScene().getWindow();
+        Stage stage = (Stage) btnCreate.getScene().getWindow();
         stage.close();
     }
 
-    private void setupButtonHoverEffects() {
-        // Effet hover pour le bouton Créer
-        btnCreate.setOnMouseEntered(e ->
-                btnCreate.setStyle("-fx-background-color: linear-gradient(to right, #2980B9, #21618C); " +
-                        "-fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;")
-        );
-        btnCreate.setOnMouseExited(e ->
-                btnCreate.setStyle("-fx-background-color: linear-gradient(to right, #3498DB, #2980B9); " +
-                        "-fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;")
-        );
-
-        // Effet hover pour le bouton Annuler
-        btnCancel.setOnMouseEntered(e ->
-                btnCancel.setStyle("-fx-background-color: #F8F9FA; -fx-background-radius: 8; " +
-                        "-fx-border-color: #7F8C8D; -fx-border-width: 2; -fx-border-radius: 8; -fx-cursor: hand;")
-        );
-        btnCancel.setOnMouseExited(e ->
-                btnCancel.setStyle("-fx-background-color: white; -fx-background-radius: 8; " +
-                        "-fx-border-color: #BDC3C7; -fx-border-width: 2; -fx-border-radius: 8; -fx-cursor: hand;")
-        );
-
-        // Effet hover pour le bouton Fermer
-        btnClose.setOnMouseEntered(e ->
-                btnClose.setStyle("-fx-background-color: #E74C3C; -fx-background-radius: 50; " +
-                        "-fx-text-fill: white; -fx-cursor: hand; -fx-font-size: 20px; -fx-font-weight: bold;")
-        );
-        btnClose.setOnMouseExited(e ->
-                btnClose.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 50; " +
-                        "-fx-text-fill: white; -fx-cursor: hand; -fx-font-size: 20px; -fx-font-weight: bold;")
-        );
-    }
-
     private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert a = new Alert(type);
+            a.setTitle(title); a.setHeaderText(null); a.setContentText(content);
+            a.showAndWait();
+        });
     }
 
-    public void setOnUserCreated(Runnable callback) {
-        this.onUserCreated = callback;
-    }
+    public void setOnUserCreated(Runnable callback) { this.onUserCreated = callback; }
 }

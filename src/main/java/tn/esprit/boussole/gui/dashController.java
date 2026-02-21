@@ -2,7 +2,6 @@ package tn.esprit.boussole.gui;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -10,135 +9,105 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import java.net.URL;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
 public class dashController {
 
-    @FXML private StackPane contentArea;
-    @FXML private Button btnDashboard;
-    @FXML private Button btnUsers;
-    @FXML private Button btnEntreprises;
-    @FXML private Button btnSettings;
-    @FXML private Button btnReports;
-    @FXML private Button btnLogout;
+    @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
     @FXML private Label lblUsername;
+    @FXML private StackPane contentArea;
+
+    private final String ACTIVE_STYLE = "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color: transparent transparent transparent #00E5CC; -fx-border-width: 0 0 0 3;";
+    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-border-width: 0;";
 
     @FXML
     public void initialize() {
-        // 1. Récupérer les infos de session
-        Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
-        String email = prefs.get("email", "Utilisateur");
-        String role = prefs.get("role", "");
-        
-        if (lblUsername != null) {
-            lblUsername.setText(email);
+        // 1. Session
+        Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
+        lblUsername.setText(prefs.get("email", "Administrateur"));
+
+        // 2. Actions des boutons
+        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
+        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
+        btnLogout.setOnAction(e -> handleLogout());
+
+        // 3. Hover effects (Optionnel si tu utilises un CSS externe, mais gardé ici pour ton code)
+        setupHoverEffects();
+
+        // 4. Page par défaut
+        handleMenuClick(btnUsers, "/users.fxml");
+    }
+
+    private void handleMenuClick(Button button, String fxmlPath) {
+        updateButtonStyle(button);
+        if (fxmlPath != null) {
+            loadView(fxmlPath);
+        } else {
+            showPlaceholder(button.getText());
         }
-
-        // 2. Charger la vue par défaut
-        loadView("/users.fxml");
-        setActiveButton(btnUsers);
-
-        // --- Configuration des actions des boutons ---
-
-        btnUsers.setOnAction(event -> {
-            loadView("/users.fxml");
-            setActiveButton(btnUsers);
-        });
-
-        btnEntreprises.setOnAction(event -> {
-            loadView("/entreprise.fxml");
-            setActiveButton(btnEntreprises);
-        });
-
-        btnDashboard.setOnAction(event -> setActiveButton(btnDashboard));
-        btnSettings.setOnAction(event -> setActiveButton(btnSettings));
-        btnReports.setOnAction(event -> setActiveButton(btnReports));
-
-        btnLogout.setOnAction(event -> handleLogout());
     }
 
     private void loadView(String fxmlPath) {
         try {
-            URL resource = getClass().getResource(fxmlPath);
+            // Sécurité : Vérifier si la ressource existe
+            var resource = getClass().getResource(fxmlPath);
             if (resource == null) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Fichier FXML introuvable : " + fxmlPath);
+                System.err.println("Erreur: Fichier " + fxmlPath + " introuvable dans resources.");
                 return;
             }
-            
-            FXMLLoader loader = new FXMLLoader(resource);
-            Parent view = loader.load();
+            Parent view = FXMLLoader.load(resource);
             contentArea.getChildren().setAll(view);
-            
         } catch (IOException e) {
-            e.printStackTrace(); // Garder la trace dans la console pour le débogage
-            showAlert(Alert.AlertType.ERROR, "Erreur de chargement", 
-                      "Impossible de charger la vue '" + fxmlPath + "'.\n\nDétail: " + e.getMessage() + 
-                      "\n\n(Vérifiez la console pour plus de détails)");
+            e.printStackTrace();
+            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath);
         }
     }
-    
-    private void setActiveButton(Button activeButton) {
-        // Réinitialiser le style de tous les boutons du menu
-        if (btnDashboard.getParent() instanceof VBox) {
-            VBox menuBox = (VBox) btnDashboard.getParent();
-            for (Node node : menuBox.getChildren()) {
-                if (node instanceof Button && node != btnLogout) {
-                     // Style par défaut (transparent)
-                     node.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand; -fx-border-width: 0;");
-                }
-            }
+
+    private void updateButtonStyle(Button activeButton) {
+        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings};
+        for (Button b : allButtons) {
+            b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
         }
-        
-        // Appliquer le style actif au bouton cliqué (bleu avec bordure gauche blanche)
-        activeButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-cursor: hand; -fx-border-color: white; -fx-border-width: 0 0 0 5;");
     }
 
     private void handleLogout() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Déconnexion");
-        alert.setHeaderText(null);
-        alert.setContentText("Voulez-vous vraiment vous déconnecter ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // 1. Effacer la session
-            Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
-            prefs.remove("jwt");
-            prefs.remove("email");
-            prefs.remove("role");
-
-            // 2. Rediriger vers la page de login
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
-                Parent root = loader.load();
-                
-                Stage stage = (Stage) btnLogout.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                
-                // Garder la fenêtre maximisée
-                stage.setMaximized(true);
-                
-                stage.show();
-                
-            } catch (IOException e) {
-                e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de revenir à l'écran de connexion.");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous vous déconnecter ?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                try {
+                    Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+                    Stage stage = (Stage) btnLogout.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                } catch (IOException e) {
+                    showAlert("Erreur", "Retour au login impossible.");
+                }
             }
-        }
+        });
     }
-    
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
+
+    private void showPlaceholder(String text) {
+        contentArea.getChildren().setAll(new Label("Page : " + text + " (Bientôt disponible)"));
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
-        alert.setHeaderText(null);
         alert.setContentText(content);
-        alert.showAndWait();
+        alert.show();
+    }
+
+    private void setupHoverEffects() {
+        // Implémentation simplifiée : change l'opacité au survol
+        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings};
+        for (Button b : allButtons) {
+            b.setOnMouseEntered(e -> { if(!b.getStyle().contains("0.12")) b.setOpacity(0.7); });
+            b.setOnMouseExited(e -> b.setOpacity(1.0));
+        }
     }
 }

@@ -1,0 +1,16 @@
+/* src/main/resources/styles/dash.css */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #CBD5F5;
+    -fx-font-size: 14px;
+    -fx-background-radius: 8;
+    -fx-padding: 0 0 0 20;
+}
+.menu-button:hover {
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+.menu-button-active {
+    -fx-background-color: #0EA5E9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}

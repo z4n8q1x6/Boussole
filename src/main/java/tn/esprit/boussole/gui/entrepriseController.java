@@ -3,30 +3,23 @@ package tn.esprit.boussole.gui;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.boussole.models.franchise;
 import tn.esprit.boussole.service.franchiseService;
+import tn.esprit.boussole.service.userService; // IMPORTANT : Ajout du service utilisateur
 
-import java.io.IOException;
-import java.net.URL;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 public class entrepriseController {
 
     @FXML private TableView<franchise> tableEntreprises;
-    @FXML private TableColumn<franchise, String> colNom;
-    @FXML private TableColumn<franchise, String> colEmail;
-    @FXML private TableColumn<franchise, String> colTelephone;
-    @FXML private TableColumn<franchise, String> colAdresse;
+    @FXML private TableColumn<franchise, String> colNom, colEmail, colTelephone, colAdresse;
     @FXML private TableColumn<franchise, Boolean> colActif;
     @FXML private TableColumn<franchise, Double> colSolde;
     @FXML private TableColumn<franchise, Void> colActions;
@@ -35,178 +28,180 @@ public class entrepriseController {
     @FXML private Label lblPagination;
 
     private ObservableList<franchise> entrepriseList = FXCollections.observableArrayList();
-    private franchiseService franchiseService;
+    private franchiseService franchiseService = new franchiseService();
+    private userService userService = new userService(); // IMPORTANT : Pour la synchronisation
 
     @FXML
     public void initialize() {
-        System.out.println("Initialisation de entrepriseController...");
-        franchiseService = new franchiseService();
+        // 1. Activer l'édition sur la table
+        tableEntreprises.setEditable(true);
 
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-        colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
-        colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse"));
-        colActif.setCellValueFactory(new PropertyValueFactory<>("actif"));
-        colSolde.setCellValueFactory(new PropertyValueFactory<>("soldeActuel"));
+        // 2. Configurer les colonnes texte
+        setupEditableColumns();
 
-        // Ajouter les boutons d'actions
-        addActionButtons();
+        // 3. Configurer le statut (Synchronisé avec les utilisateurs)
+        setupStatusColumn();
 
-        // Charger les entreprises
+        // 4. Configurer le solde
+        setupSoldeColumn();
+
+        // 5. Boutons d'actions
+        setupActionButtons();
+
+        // 6. Charger les données
         loadEntreprises();
     }
 
-    private void addActionButtons() {
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️");
-            private final Button deleteBtn = new Button("🗑️");
-            private final HBox pane = new HBox(10, editBtn, deleteBtn);
+    private void setupEditableColumns() {
+        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colNom.setCellFactory(TextFieldTableCell.forTableColumn());
+        colNom.setOnEditCommit(event -> {
+            franchise f = event.getRowValue();
+            f.setNom(event.getNewValue());
+            updateEntrepriseInDB(f);
+        });
 
-            {
-                pane.setAlignment(Pos.CENTER);
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colEmail.setCellFactory(TextFieldTableCell.forTableColumn());
+        colEmail.setOnEditCommit(event -> {
+            franchise f = event.getRowValue();
+            f.setEmail(event.getNewValue());
+            updateEntrepriseInDB(f);
+        });
 
-                editBtn.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; " +
-                        "-fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; " +
-                        "-fx-font-size: 12px; -fx-font-weight: bold;");
-                deleteBtn.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; " +
-                        "-fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; " +
-                        "-fx-font-size: 12px; -fx-font-weight: bold;");
+        colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
+        colTelephone.setCellFactory(TextFieldTableCell.forTableColumn());
+        colTelephone.setOnEditCommit(event -> {
+            franchise f = event.getRowValue();
+            f.setTelephone(event.getNewValue());
+            updateEntrepriseInDB(f);
+        });
 
-                editBtn.setOnAction(event -> {
-                    System.out.println("Clic sur le bouton Modifier");
-                    franchise selectedEntreprise = getTableView().getItems().get(getIndex());
-                    if (selectedEntreprise != null) {
-                        System.out.println("Entreprise sélectionnée : " + selectedEntreprise.getNom());
-                        handleEditEntreprise(selectedEntreprise);
-                    } else {
-                        System.err.println("Erreur : Aucune entreprise sélectionnée !");
-                    }
-                });
+        colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse"));
+        colAdresse.setCellFactory(TextFieldTableCell.forTableColumn());
+        colAdresse.setOnEditCommit(event -> {
+            franchise f = event.getRowValue();
+            f.setAdresse(event.getNewValue());
+            updateEntrepriseInDB(f);
+        });
+    }
 
-                deleteBtn.setOnAction(event -> {
-                    franchise selectedEntreprise = getTableView().getItems().get(getIndex());
-                    if (selectedEntreprise != null) {
-                        handleDeleteEntreprise(selectedEntreprise);
-                    }
-                });
-            }
-
+    private void setupStatusColumn() {
+        colActif.setCellValueFactory(new PropertyValueFactory<>("actif"));
+        colActif.setCellFactory(column -> new TableCell<>() {
             @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
+            protected void updateItem(Boolean active, boolean empty) {
+                super.updateItem(active, empty);
+                if (empty || active == null) {
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(active ? "ACTIF" : "INACTIF");
+                    badge.setPadding(new javafx.geometry.Insets(2, 10, 2, 10));
+
+                    String baseStyle = "-fx-background-radius: 20; -fx-font-weight: bold; -fx-font-size: 11px; -fx-cursor: hand;";
+                    badge.setStyle(active ?
+                            baseStyle + "-fx-background-color: rgba(16, 185, 129, 0.2); -fx-text-fill: #10B981;" :
+                            baseStyle + "-fx-background-color: rgba(244, 63, 94, 0.2); -fx-text-fill: #F43F5E;");
+
+                    badge.setOnMouseClicked(e -> {
+                        franchise f = getTableView().getItems().get(getIndex());
+                        f.setActif(!f.getActif());
+                        updateEntrepriseInDB(f); // Ici on déclenche la double mise à jour
+                        tableEntreprises.refresh();
+                    });
+
+                    setGraphic(badge);
+                    setAlignment(Pos.CENTER);
+                    setTooltip(new Tooltip("Cliquez pour changer le statut (bloque aussi les accès utilisateurs)"));
+                }
             }
         });
     }
 
+    private void setupSoldeColumn() {
+        colSolde.setCellValueFactory(new PropertyValueFactory<>("soldeActuel"));
+        colSolde.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colSolde.setOnEditCommit(event -> {
+            franchise f = event.getRowValue();
+            f.setSoldeActuel(event.getNewValue());
+            updateEntrepriseInDB(f);
+        });
+    }
+
+    private void setupActionButtons() {
+        colActions.setCellFactory(param -> new TableCell<>() {
+            private final Button deleteBtn = new Button("🗑️");
+            private final HBox container = new HBox(deleteBtn);
+            {
+                container.setAlignment(Pos.CENTER);
+                deleteBtn.setStyle("-fx-background-color: rgba(231, 76, 60, 0.15); -fx-text-fill: #E74C3C; -fx-cursor: hand; -fx-background-radius: 5;");
+                deleteBtn.setOnAction(e -> handleDeleteEntreprise(getTableView().getItems().get(getIndex())));
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    private void updateEntrepriseInDB(franchise f) {
+        try {
+            // 1. Mise à jour de la franchise elle-même
+            franchiseService.updateone(f);
+
+            // 2. SYNCHRONISATION : Bloquer/Débloquer les utilisateurs rattachés
+            userService.updateFranchiseStatus(f.getId(), f.getActif());
+
+            System.out.println("✅ Franchise " + f.getNom() + " et utilisateurs synchronisés.");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "La mise à jour ou la synchronisation a échoué.");
+            loadEntreprises();
+        }
+    }
+
     private void loadEntreprises() {
-        entrepriseList.clear();
         try {
             List<franchise> entreprises = franchiseService.selectAll(new franchise());
-            entrepriseList.addAll(entreprises);
+            entrepriseList.setAll(entreprises);
             tableEntreprises.setItems(entrepriseList);
             updatePaginationLabel();
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les entreprises.");
         }
     }
 
-    private void handleEditEntreprise(franchise selectedEntreprise) {
-        try {
-            System.out.println("Début handleEditEntreprise pour : " + selectedEntreprise.getNom());
-            
-            URL fxmlUrl = getClass().getResource("/updateFranchise.fxml");
-            if (fxmlUrl == null) {
-                System.err.println("ERREUR CRITIQUE : Fichier /updateFranchise.fxml introuvable !");
-                showAlert(Alert.AlertType.ERROR, "Erreur Fichier", "Le fichier updateFranchise.fxml est introuvable.");
-                return;
+    private void handleDeleteEntreprise(franchise f) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer l'entreprise " + f.getNom() + " ?", ButtonType.YES, ButtonType.NO);
+        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            try {
+                franchiseService.deleteone(f);
+                loadEntreprises();
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Suppression impossible.");
             }
-            
-            FXMLLoader loader = new FXMLLoader(fxmlUrl);
-            Parent root = loader.load();
-            System.out.println("FXML chargé avec succès");
-
-            UpdateFranchiseController controller = loader.getController();
-            if (controller == null) {
-                System.err.println("ERREUR : Le contrôleur est null !");
-                throw new IllegalStateException("Le contrôleur updateFranchiseController est null !");
-            }
-            
-            controller.initData(selectedEntreprise);
-            controller.setOnFranchiseUpdated(this::loadEntreprises); 
-
-            Stage stage = new Stage();
-            stage.setTitle("Modifier l'Entreprise");
-            stage.setScene(new Scene(root));
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setResizable(false);
-            stage.showAndWait();
-            System.out.println("Fenêtre de modification fermée");
-
-        } catch (Exception e) {
-            System.err.println("EXCEPTION dans handleEditEntreprise :");
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur Critique", 
-                      "Impossible d'ouvrir le formulaire de modification.\n\n" +
-                      "Cause : " + e.getClass().getSimpleName() + "\n" +
-                      "Message : " + e.getMessage());
-        }
-    }
-
-    private void handleDeleteEntreprise(franchise selectedEntreprise) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Supprimer l'entreprise");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer l'entreprise " + selectedEntreprise.getNom() + " ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            deleteEntreprise(selectedEntreprise);
-        }
-    }
-
-    private void deleteEntreprise(franchise selectedEntreprise) {
-        try {
-            franchiseService.deleteone(selectedEntreprise);
-            showAlert(Alert.AlertType.INFORMATION, "Succès", "Entreprise supprimée avec succès !");
-            loadEntreprises();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer l'entreprise.");
         }
     }
 
     @FXML
     private void handleSearch() {
-        String searchText = searchField.getText().toLowerCase();
-
-        if (searchText.isEmpty()) {
-            tableEntreprises.setItems(entrepriseList);
-        } else {
-            ObservableList<franchise> filteredList = FXCollections.observableArrayList();
-            for (franchise f : entrepriseList) {
-                if (f.getNom().toLowerCase().contains(searchText) ||
-                        f.getEmail().toLowerCase().contains(searchText) ||
-                        f.getAdresse().toLowerCase().contains(searchText)) {
-                    filteredList.add(f);
-                }
-            }
-            tableEntreprises.setItems(filteredList);
-        }
+        String filter = searchField.getText().toLowerCase();
+        tableEntreprises.setItems(entrepriseList.filtered(f ->
+                f.getNom().toLowerCase().contains(filter) || f.getEmail().toLowerCase().contains(filter)));
         updatePaginationLabel();
     }
 
     private void updatePaginationLabel() {
-        int total = tableEntreprises.getItems().size();
-        lblPagination.setText("Affichage de 1 à " + total + " sur " + total + " entreprises");
+        if (lblPagination != null) {
+            lblPagination.setText("Total : " + tableEntreprises.getItems().size() + " entreprise(s)");
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(type);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(content);
+        a.show();
     }
 }

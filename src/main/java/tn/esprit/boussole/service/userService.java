@@ -29,12 +29,12 @@ public class userService implements crud<user> {
             ps.setString(5, user.getRole());
             ps.setBoolean(6, user.getActif());
             ps.setTimestamp(7, user.getDateCreation() != null ? Timestamp.valueOf(user.getDateCreation()) : null);
-            
+
             if (user.getidFranchise() != null && user.getidFranchise() > 0) {
                 ps.setInt(8, user.getidFranchise());
             } else {
 
-                ps.setInt(8, 0); 
+                ps.setInt(8, 0);
             }
 
             ps.executeUpdate();
@@ -87,7 +87,40 @@ public class userService implements crud<user> {
             cnx.setAutoCommit(true);
         }
     }
+    public void updateFranchiseStatus(int idFranchise, boolean status) throws SQLException {
+        try {
+            // Début de la transaction
+            cnx.setAutoCommit(false);
 
+            // 1. Mettre à jour la franchise
+            String sqlFranchise = "UPDATE franchises SET actif = ? WHERE id = ?";
+            try (PreparedStatement psF = cnx.prepareStatement(sqlFranchise)) {
+                psF.setBoolean(1, status);
+                psF.setInt(2, idFranchise);
+                psF.executeUpdate();
+            }
+
+            // 2. Mettre à jour TOUS les utilisateurs liés à cette franchise
+            // Automatiquement, si l'entreprise est inactive, les users le deviennent aussi
+            String sqlUser = "UPDATE utilisateur SET actif = ? WHERE id_franchise = ?";
+            try (PreparedStatement psU = cnx.prepareStatement(sqlUser)) {
+                psU.setBoolean(1, status);
+                psU.setInt(2, idFranchise);
+                psU.executeUpdate();
+            }
+
+            // Valider les deux changements
+            cnx.commit();
+            System.out.println("✅ Statut synchronisé : Franchise " + idFranchise + " et ses utilisateurs sont désormais " + (status ? "actifs" : "inactifs"));
+
+        } catch (SQLException e) {
+            // En cas d'erreur sur l'une des deux tables, on annule tout
+            cnx.rollback();
+            throw e;
+        } finally {
+            cnx.setAutoCommit(true);
+        }
+    }
     @Override
     public void updateone(user user) throws SQLException {
         String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, actif = ?, date_creation = ?, id_franchise = ? WHERE id_user = ?";
@@ -99,13 +132,13 @@ public class userService implements crud<user> {
             ps.setString(5, user.getRole());
             ps.setBoolean(6, user.getActif());
             ps.setTimestamp(7, user.getDateCreation() != null ? Timestamp.valueOf(user.getDateCreation()) : null);
-            
+
             if (user.getidFranchise() != null && user.getidFranchise() > 0) {
                 ps.setInt(8, user.getidFranchise());
             } else {
                 ps.setInt(8, 0);
             }
-            
+
             ps.setInt(9, user.getIdUser());
             ps.executeUpdate();
         }
@@ -146,28 +179,28 @@ public class userService implements crud<user> {
         }
         return list;
     }
-    
+
     // ----------------- INITIALIZE ADMIN -----------------
     public void initializeAdmin() {
         System.out.println("Début de l'initialisation de l'admin...");
         String checkReq = "SELECT COUNT(*) FROM utilisateur WHERE role = 'SIEGE'";
-        
+
         try (Statement st = cnx.createStatement(); ResultSet rs = st.executeQuery(checkReq)) {
             if (rs.next()) {
                 int count = rs.getInt(1);
                 System.out.println("Nombre d'administrateurs trouvés : " + count);
-                
+
                 if (count == 0) {
                     System.out.println("Aucun administrateur trouvé. Création d'une franchise Siège...");
-                    
+
                     // 1. Créer ou récupérer une franchise "Siège"
                     int idFranchiseSiege = getOrCreateSiegeFranchise();
-                    
+
                     System.out.println("ID Franchise Siège : " + idFranchiseSiege);
-                    
+
                     // 2. Créer l'admin lié à cette franchise
                     String insertReq = "INSERT INTO utilisateur(nom, prenom, email, mot_de_passe, role, actif, date_creation, id_franchise) VALUES (?,?,?,?,?,?,?,?)";
-                    
+
                     try (PreparedStatement ps = cnx.prepareStatement(insertReq)) {
                         ps.setString(1, "Admin");
                         ps.setString(2, "System");
@@ -177,7 +210,7 @@ public class userService implements crud<user> {
                         ps.setBoolean(6, true);
                         ps.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
                         ps.setInt(8, idFranchiseSiege); // ID Franchise Siège
-                        
+
                         int rows = ps.executeUpdate();
                         if (rows > 0) {
                             System.out.println("✅ Compte admin créé avec succès : admin@boussole.tn / admin123");
@@ -194,7 +227,7 @@ public class userService implements crud<user> {
             e.printStackTrace();
         }
     }
-    
+
     private int getOrCreateSiegeFranchise() throws SQLException {
         // Vérifier si une franchise "Siège" existe
         String checkF = "SELECT id FROM franchises WHERE nom = 'SIEGE_PRINCIPAL' LIMIT 1";
@@ -203,7 +236,7 @@ public class userService implements crud<user> {
                 return rs.getInt(1);
             }
         }
-        
+
         // Sinon, la créer
         String insertF = "INSERT INTO franchises (nom, email, telephone, adresse, actif, date_creation, solde_actuel) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = cnx.prepareStatement(insertF, Statement.RETURN_GENERATED_KEYS)) {
@@ -214,7 +247,7 @@ public class userService implements crud<user> {
             ps.setBoolean(5, true);
             ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
             ps.setDouble(7, 0.0);
-            
+
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
