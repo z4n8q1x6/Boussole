@@ -17,7 +17,7 @@
   </padding>
 
   <!-- Header with title and button -->
-  <HBox alignment="CENTER_LEFT">
+  <HBox spacing="10" alignment="CENTER_LEFT">
 
     <VBox spacing="4" HBox.hgrow="ALWAYS">
 
@@ -33,11 +33,25 @@
 
     </VBox>
 
+    <Button onAction="#delete"
+      maxWidth="1.7976931348623157E308"
+      prefHeight="40"
+      prefWidth="140"
+      text="Supprimer"
+      style="-fx-background-color: #3D1A1A;
+                 -fx-text-fill: #F43F5E;
+                 -fx-font-weight: bold;
+                 -fx-padding: 12 20;
+                 -fx-background-radius: 8;
+                 -fx-cursor: hand;
+                 -fx-border-color: rgba(244,63,94,0.3);
+                 -fx-border-radius: 8;" />
+
     <Button fx:id="btnAdd"
       text="+ Réclamation"
       onAction="#handleAddReclamation"
       prefHeight="40"
-      prefWidth="160"
+      prefWidth="140"
       style="
                     -fx-background-color: #00E5CC;
                     -fx-text-fill: #06080F;

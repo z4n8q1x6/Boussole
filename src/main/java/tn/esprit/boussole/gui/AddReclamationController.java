@@ -47,14 +47,26 @@ public class AddReclamationController {
   }
 
   private boolean validate() {
-    if (txtSujet.getText().trim().isEmpty()) {
+    String sujet = txtSujet.getText().trim();
+    if (sujet.isEmpty()) {
       showError("Le sujet est obligatoire.");
       return false;
     }
-    if (txtDescription.getText().trim().isEmpty()) {
+    if (Character.isDigit(sujet.charAt(0))) {
+      showError("Le sujet ne doit pas commencer par un chiffre.");
+      return false;
+    }
+
+    String description = txtDescription.getText().trim();
+    if (description.isEmpty()) {
       showError("La description est obligatoire.");
       return false;
     }
+    if (Character.isDigit(description.charAt(0))) {
+      showError("La description ne doit pas commencer par un chiffre.");
+      return false;
+    }
+
     hideError();
     return true;
   }

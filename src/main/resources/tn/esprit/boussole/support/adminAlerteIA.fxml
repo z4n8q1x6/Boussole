@@ -129,7 +129,7 @@
 
         <Button onAction="#delete"
           maxWidth="1.7976931348623157E308"
-          text="Supprimer l'alerte"
+          text="Supprimer"
           style="-fx-background-color: #3D1A1A;
                  -fx-text-fill: #F43F5E;
                  -fx-font-weight: bold;
