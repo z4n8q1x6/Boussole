@@ -125,31 +125,30 @@ public class AdminReclamationController {
   public void analyzeSeverity() {
     Reclamation selected = table.getSelectionModel().getSelectedItem();
     if (selected == null) {
-      AlertUtil.showWarning("No selection", "Select a complaint");
+      AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner une réclamation.");
       return;
     }
 
     String prompt =
         String.format(
             """
-            Analyze this complaint and rate its severity/impact:
+            Analysez cette réclamation et évaluez son niveau de gravité / impact :
+            Sujet : %s
+            Description : %s
 
-            Subject: %s
-            Description: %s
-
-            Provide:
-            1. Severity: Critical / High / Medium / Low
-            2. Why: 1-2 sentence explanation
-            3. Action: What to do about it
+            Fournissez :
+            1. Gravité : Critique / Élevée / Moyenne / Faible
+            2. Justification : explication en 1 à 2 phrases
+            3. Action recommandée : que faut-il faire ? (Classifier: en attente, en cours ou résolue)
             """,
             selected.getSujet(), selected.getDescription());
 
     Optional<String> analysis = Gemini.generateAdvice(prompt);
 
     if (analysis.isPresent()) {
-      AlertUtil.showInformation("Severity Analysis", analysis.get());
+      AlertUtil.showInformation("Analyse de gravité", analysis.get());
     } else {
-      AlertUtil.showError("Error", "Could not analyze");
+      AlertUtil.showError("Erreur", "Impossible d'analyser la réclamation.");
     }
   }
 }

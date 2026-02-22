@@ -34,9 +34,10 @@
     </VBox>
 
     <Button fx:id="btnAdd"
-      text="+ Nouvelle Réclamation"
+      text="+ Réclamation"
       onAction="#handleAddReclamation"
       prefHeight="40"
+      prefWidth="160"
       style="
                     -fx-background-color: #00E5CC;
                     -fx-text-fill: #06080F;

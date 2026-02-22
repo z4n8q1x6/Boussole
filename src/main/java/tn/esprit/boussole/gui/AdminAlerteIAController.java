@@ -1,19 +1,19 @@
 package tn.esprit.boussole.gui;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import java.util.Optional;
-import java.util.HashMap;
-import java.util.Map;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.service.AlerteIAService;
 import tn.esprit.boussole.utils.AlertUtil;
-import tn.esprit.boussole.utils.PDFGenerator;
 import tn.esprit.boussole.utils.Gemini;
+import tn.esprit.boussole.utils.PDFGenerator;
 
 public class AdminAlerteIAController {
   AlerteIAService service = new AlerteIAService();
@@ -103,7 +103,9 @@ public class AdminAlerteIAController {
     // Group alerts by franchiseId
     Map<Integer, java.util.List<AlerteIA>> alertsByFranchise = new HashMap<>();
     for (AlerteIA alert : all) {
-      alertsByFranchise.computeIfAbsent(alert.getFranchiseId(), k -> new java.util.ArrayList<>()).add(alert);
+      alertsByFranchise
+          .computeIfAbsent(alert.getFranchiseId(), k -> new java.util.ArrayList<>())
+          .add(alert);
     }
 
     // Build summary for Gemini
@@ -122,7 +124,8 @@ public class AdminAlerteIAController {
       franchiseSummary.append(String.format("  Critical alerts (score > 8): %d\n", criticalCount));
 
       // Average severity
-      double avgSeverity = alerts.stream().mapToDouble(AlerteIA::getScore_gravite).average().orElse(0);
+      double avgSeverity =
+          alerts.stream().mapToDouble(AlerteIA::getScore_gravite).average().orElse(0);
       franchiseSummary.append(String.format("  Average severity: %.1f/10\n", avgSeverity));
 
       // Alert types
@@ -134,17 +137,20 @@ public class AdminAlerteIAController {
       franchiseSummary.append("\n\n");
     }
 
-    String prompt = String.format("""
-        %s
+    String prompt =
+        String.format(
+            """
+            %s
 
-        For each franchise, provide:
-        1. Health Score (0-10 scale, 10 is perfect)
-        2. Status (Critical/At Risk/Healthy)
-        3. Top 2-3 issues
-        4. Recommended immediate actions
+            For each franchise, provide:
+            1. Health Score (0-10 scale, 10 is perfect)
+            2. Status (Critical/At Risk/Healthy)
+            3. Top 2-3 issues
+            4. Recommended immediate actions
 
-        Format as a professional scorecard for management review.
-        """, franchiseSummary.toString());
+            Format as a professional scorecard for management review.
+            """,
+            franchiseSummary.toString());
 
     Optional<String> healthScores = Gemini.generateAdvice(prompt);
 

@@ -34,8 +34,9 @@
         textFill="#8e9aaf" />
     </VBox>
     <Button onAction="#generate"
-      text="+ Nouvelle Alerte"
+      text="+ Alerte"
       prefHeight="40"
+      prefWidth="160"
       style="-fx-background-color: #00E5CC;
          -fx-text-fill: #06080F;
          -fx-font-weight: bold;
