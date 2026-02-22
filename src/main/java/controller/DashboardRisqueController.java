@@ -24,26 +24,38 @@ public class DashboardRisqueController {
     @FXML private Label lblTotalRembourse;
     @FXML private Label lblTotalRestant;
 
-    // Label optionnel pour afficher spécifiquement le montant en retard
+    // Label pour afficher spécifiquement le montant en retard
     @FXML private Label lblTotalImpayes;
 
     private PretService pretService = new PretService();
 
     @FXML
     public void initialize() {
+        // 1. Charger les données et remplir le PieChart
         chargerStatistiques();
+
+        // 2. Appliquer les couleurs Néon (Forçage après rendu)
+        chartStatuts.getData().forEach(data -> {
+            if (data.getName().startsWith("Accordés")) {
+                applyStylesAndAnimations(data, "#10B981"); // Vert émeraude
+            } else if (data.getName().startsWith("En Attente")) {
+                applyStylesAndAnimations(data, "#00E5CC"); // Cyan Boussole
+            } else if (data.getName().startsWith("Refusés")) {
+                applyStylesAndAnimations(data, "#EF4444"); // Rouge alerte
+            }
+        });
     }
 
     private void chargerStatistiques() {
         List<Pret> allPrets = pretService.getAllPrets();
         LocalDate today = LocalDate.now();
 
-        // 1. Calcul des nombres par statut pour le graphique
+        // --- 1. CALCUL DES NOMBRES PAR STATUT ---
         long countAccorde = allPrets.stream().filter(p -> p.getStatut() == StatutPret.ACCORDE).count();
         long countAttente = allPrets.stream().filter(p -> p.getStatut() == StatutPret.EN_ATTENTE).count();
         long countRefuse = allPrets.stream().filter(p -> p.getStatut() == StatutPret.REFUSE).count();
 
-        // 2. Création et affichage des données du PieChart
+        // --- 2. CRÉATION DES DONNÉES DU GRAPHIQUE ---
         PieChart.Data accordeData = new PieChart.Data("Accordés (" + countAccorde + ")", countAccorde);
         PieChart.Data attenteData = new PieChart.Data("En Attente (" + countAttente + ")", countAttente);
         PieChart.Data refuseData = new PieChart.Data("Refusés (" + countRefuse + ")", countRefuse);
@@ -51,52 +63,45 @@ public class DashboardRisqueController {
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(accordeData, attenteData, refuseData);
         chartStatuts.setData(pieChartData);
 
-        // 3. Personnalisation des COULEURS et ANIMATIONS
-        applyStylesAndAnimations(accordeData, "#27ae60"); // Vert
-        applyStylesAndAnimations(attenteData, "#f39c12"); // Orange
-        applyStylesAndAnimations(refuseData, "#e74c3c");  // Rouge
-
-        // 4. Calcul financier approfondi
-        // Somme totale des montants prêtés (pour les prêts accordés)
+        // --- 3. CALCUL FINANCIER ---
+        // Capital total prêté (Accordés uniquement)
         double totalPrete = allPrets.stream()
                 .filter(p -> p.getStatut() == StatutPret.ACCORDE)
                 .mapToDouble(Pret::getMontantDemande).sum();
 
-        // Somme de ce qui a été payé réellement
+        // Total déjà remboursé (Mensualités payées)
         double totalRembourse = allPrets.stream()
                 .filter(p -> p.getStatut() == StatutPret.ACCORDE)
                 .flatMap(p -> pretService.getMensualitesByPret(p.getId()).stream())
                 .filter(Mensualite::isEstPaye)
                 .mapToDouble(Mensualite::getMontant).sum();
 
-        // LOGIQUE DE RETARD : Somme des mensualités NON PAYÉES dont la date est DEPASSÉE
+        // Risque d'impayés (Mensualités non payées et date < aujourd'hui)
         double totalImpayes = allPrets.stream()
                 .filter(p -> p.getStatut() == StatutPret.ACCORDE)
                 .flatMap(p -> pretService.getMensualitesByPret(p.getId()).stream())
                 .filter(m -> !m.isEstPaye() && m.getDateEcheance().toLocalDate().isBefore(today))
                 .mapToDouble(Mensualite::getMontant).sum();
 
-        // Le reste total à recouvrer (sain + retard)
+        // Reste à recouvrer
         double totalRestant = totalPrete - totalRembourse;
 
-        // 5. Mise à jour de l'interface graphique
+        // --- 4. MISE À JOUR DE L'INTERFACE ---
         lblTotalPrete.setText(String.format("%.2f DT", totalPrete));
         lblTotalRembourse.setText(String.format("%.2f DT", totalRembourse));
         lblTotalRestant.setText(String.format("%.2f DT", totalRestant));
 
-        // Si tu as ajouté lblTotalImpayes dans ton FXML, on l'affiche en rouge
         if (lblTotalImpayes != null) {
             lblTotalImpayes.setText(String.format("%.2f DT", totalImpayes));
-            lblTotalImpayes.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
         }
     }
 
     private void applyStylesAndAnimations(PieChart.Data data, String color) {
-        // Appliquer la couleur à la tranche
+        // Appliquer la couleur à la tranche via CSS inline
         if (data.getNode() != null) {
             data.getNode().setStyle("-fx-pie-color: " + color + ";");
 
-            // Animation d'éclatement au survol
+            // Animation d'éclatement (Zoom) au survol de la souris
             data.getNode().setOnMouseEntered(event -> {
                 data.getNode().setScaleX(1.1);
                 data.getNode().setScaleY(1.1);
