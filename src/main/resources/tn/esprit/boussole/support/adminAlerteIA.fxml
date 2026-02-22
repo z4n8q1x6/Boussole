@@ -34,20 +34,19 @@
         textFill="#8e9aaf" />
     </VBox>
 
-    <Button text="Health"
-      onAction="#franchiseHealthScore"
+    <Button text="Priorités"
+      onAction="#escalationAdvisor"
       prefHeight="40"
-      prefWidth="130"
-      style="-fx-background-color: rgba(139,92,246,0.15);
-         -fx-text-fill: #A78BFA;
+      prefWidth="140"
+      style="-fx-background-color: rgba(251,146,60,0.15);
+         -fx-text-fill: #FB923C;
          -fx-font-weight: bold;
          -fx-background-radius: 8;
-         -fx-border-color: rgba(139,92,246,0.4);
+         -fx-border-color: rgba(251,146,60,0.4);
          -fx-border-radius: 8;
          -fx-padding: 0 18;
          -fx-cursor: hand;
          -fx-alignment: center;" />
-
     <Button fx:id="pdfButton"
       onAction="#pdf"
       text="PDF"

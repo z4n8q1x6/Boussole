@@ -1,7 +1,5 @@
 package tn.esprit.boussole.gui;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -92,49 +90,25 @@ public class AdminAlerteIAController {
   }
 
   @FXML
-  public void franchiseHealthScore() {
+  public void escalationAdvisor() {
     ObservableList<AlerteIA> all = service.getAll();
 
     if (all.isEmpty()) {
-      AlertUtil.showInformation("No data", "No alerts to analyze");
+      AlertUtil.showInformation("Aucune donnée", "Aucune alerte à analyser.");
       return;
     }
 
-    // Group alerts by franchiseId
-    Map<Integer, java.util.List<AlerteIA>> alertsByFranchise = new HashMap<>();
+    StringBuilder alertSummary = new StringBuilder();
+    alertSummary.append("Voici toutes les alertes actuelles pour toutes les franchises :\n\n");
+
     for (AlerteIA alert : all) {
-      alertsByFranchise
-          .computeIfAbsent(alert.getFranchiseId(), k -> new java.util.ArrayList<>())
-          .add(alert);
-    }
-
-    // Build summary for Gemini
-    StringBuilder franchiseSummary = new StringBuilder();
-    franchiseSummary.append("Analyze the health of each franchise based on their alerts:\n\n");
-
-    for (Map.Entry<Integer, java.util.List<AlerteIA>> entry : alertsByFranchise.entrySet()) {
-      int franchiseId = entry.getKey();
-      java.util.List<AlerteIA> alerts = entry.getValue();
-
-      franchiseSummary.append(String.format("FRANCHISE #%d:\n", franchiseId));
-      franchiseSummary.append(String.format("  Total alerts: %d\n", alerts.size()));
-
-      // Count critical alerts
-      long criticalCount = alerts.stream().filter(a -> a.getScore_gravite() > 8).count();
-      franchiseSummary.append(String.format("  Critical alerts (score > 8): %d\n", criticalCount));
-
-      // Average severity
-      double avgSeverity =
-          alerts.stream().mapToDouble(AlerteIA::getScore_gravite).average().orElse(0);
-      franchiseSummary.append(String.format("  Average severity: %.1f/10\n", avgSeverity));
-
-      // Alert types
-      franchiseSummary.append("  Alert types: ");
-      alerts.stream()
-          .map(AlerteIA::getType_alerte)
-          .distinct()
-          .forEach(type -> franchiseSummary.append(type).append(", "));
-      franchiseSummary.append("\n\n");
+      alertSummary.append(
+          String.format(
+              "- Franchise #%d | Type: %s | Severity: %.1f/10\n  Message: %s\n\n",
+              alert.getFranchiseId(),
+              alert.getType_alerte(),
+              alert.getScore_gravite(),
+              alert.getMessage()));
     }
 
     String prompt =
@@ -142,22 +116,37 @@ public class AdminAlerteIAController {
             """
             %s
 
-            For each franchise, provide:
-            1. Health Score (0-10 scale, 10 is perfect)
-            2. Status (Critical/At Risk/Healthy)
-            3. Top 2-3 issues
-            4. Recommended immediate actions
+            Vous êtes un conseiller expert en gestion. Sur la base des alertes ci-dessus, générez un RAPPORT D'ESCALADE URGENT.
 
-            Format as a professional scorecard for management review.
+            Pour chaque alerte, assignez :
+            1. Niveau de priorité : IMMÉDIAT (24h) / URGENT (cette semaine) / À SURVEILLER (ce mois)
+            2. Responsable : PDG / DAF / Directeur des Opérations / Responsable Financier / Responsable IT
+            3. Action spécifique à entreprendre
+
+            Formatez votre réponse exactement comme ceci pour chaque alerte :
+
+            🔴 ACTION IMMÉDIATE REQUISE / 🟡 URGENT / 🟢 À SURVEILLER
+            ├─ Alerte : "[type]" (Gravité X/10)
+            ├─ Franchise : #[id]
+            ├─ Responsable : [rôle]
+            └─ Action : [action spécifique]
+
+            Terminez avec une section résumé :
+            RÉSUMÉ
+            - X problèmes nécessitent une attention immédiate aujourd'hui
+            - X problèmes nécessitent une attention cette semaine
+            - X problèmes peuvent être planifiés pour une révision mensuelle
+
+            Soyez concis et orienté action. Format prêt pour la direction uniquement.
             """,
-            franchiseSummary.toString());
+            alertSummary.toString());
 
-    Optional<String> healthScores = Gemini.generateAdvice(prompt);
+    Optional<String> result = Gemini.generateAdvice(prompt);
 
-    if (healthScores.isPresent()) {
-      AlertUtil.showInformation("Franchise Health Scorecard", healthScores.get());
+    if (result.isPresent()) {
+      AlertUtil.showInformation("Rapport d'Escalade", result.get());
     } else {
-      AlertUtil.showError("Error", "Could not analyze");
+      AlertUtil.showError("Erreur", "Impossible de générer le rapport d'escalade.");
     }
   }
 }
