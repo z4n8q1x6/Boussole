@@ -9,15 +9,20 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType; // Added
+import javafx.scene.control.ContextMenu; // Added
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.MenuItem; // Added
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell; // Added
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter; // Added
 import tn.esprit.Boussole.Models.Charge;
 import tn.esprit.Boussole.Models.budget_previsionnel;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
@@ -32,23 +37,21 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
-
 public class GestionBudgetsController implements Initializable {
 
     @FXML private Button btnDashboard;
     @FXML private Button btnBudgets;
     @FXML private Button btnBilans;
-    @FXML private ComboBox<Integer> cbMois; // Correction du champ manquant
+    @FXML private ComboBox<Integer> cbMois;
     @FXML private ComboBox<Integer> cbAnnee;
     @FXML private ComboBox<budget_previsionnel.TypeBudget> cbTypeBudget;
     @FXML private ComboBox<String> cbCategorie;
     @FXML private TextField txtMontant;
     @FXML private CheckBox chkReseau;
     @FXML private Button btnSauvegarder;
-    @FXML private Button btnVider; // Bouton pour vider le formulaire
+    @FXML private Button btnVider;
     @FXML private TableView<budget_previsionnel> tableBudgets;
-    @FXML private TableColumn<budget_previsionnel, Void> colActions;
+    //@FXML private TableColumn<budget_previsionnel, Void> colActions; // Supprimé
     @FXML private TableColumn<budget_previsionnel, Integer> colMois;
     @FXML private TableColumn<budget_previsionnel, Integer> colAnnee;
     @FXML private TableColumn<budget_previsionnel, Object> colType;
@@ -74,15 +77,70 @@ public class GestionBudgetsController implements Initializable {
         cbTypeBudget.setOnAction(event -> mettreAJourCategories());
         mettreAJourCategories();
 
-        // 2. Configuration des Colonnes (CORRECTION)
+        // 2. Configuration des Colonnes
         colMois.setCellValueFactory(new PropertyValueFactory<>("mois"));
         colAnnee.setCellValueFactory(new PropertyValueFactory<>("annee"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type_budget"));
         colCategorie.setCellValueFactory(new PropertyValueFactory<>("categorie"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montantCible"));
 
-        // 3. Configuration de la colonne Actions
-        configurerColonneActions();
+        // *** UX MODERNE : TABLE ÉDITABLE ***
+        tableBudgets.setEditable(true); // Activer l'édition sur le tableau
+
+        // Configuration pour l'édition du montant
+        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colMontant.setOnEditCommit(event -> {
+            budget_previsionnel budget = event.getRowValue();
+            Double nouveauMontant = event.getNewValue();
+
+            // Validation simple
+            if (nouveauMontant == null || nouveauMontant <= 0) {
+                afficherMessageErreur("Le montant doit être valide et supérieur à 0.");
+                tableBudgets.refresh(); // Annuler visuellement
+                return;
+            }
+
+            budget.setMontantCible(nouveauMontant);
+
+            try {
+                // Mise à jour immédiate en BDD
+                serviceBudget.updateOne(budget);
+                // System.out.println("DEBUG: Update montant effectué via édition cellule");
+            } catch (Exception e) {
+                afficherMessageErreur("Erreur lors de la mise à jour : " + e.getMessage());
+                tableBudgets.refresh();
+            }
+        });
+
+        // *** UX MODERNE : MENU CONTEXTUEL POUR SUPPRESSION ***
+        // Suppression de l'ancienne colonne Actions
+        if (tableBudgets.getColumns().size() > 5) { // Sécurité basique
+             // tableBudgets.getColumns().remove(colActions); // Si injecté via FXML, il faut le retirer
+             // Note: Si colActions est injecté mais non utilisé, il reste null si je l'enlève du FXML.
+             // Ici je vais créer le context menu.
+        }
+
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem itemSupprimer = new MenuItem("🗑️ Supprimer cette ligne");
+        itemSupprimer.setOnAction(e -> {
+            budget_previsionnel selected = tableBudgets.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                supprimerBudget(selected);
+            }
+        });
+        contextMenu.getItems().add(itemSupprimer);
+
+        // Assigner le menu contextuel à chaque ligne (row)
+        tableBudgets.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<budget_previsionnel> row = new javafx.scene.control.TableRow<>();
+            row.contextMenuProperty().bind(
+                javafx.beans.binding.Bindings.when(row.emptyProperty())
+                .then((ContextMenu) null)
+                .otherwise(contextMenu)
+            );
+            return row;
+        });
+
 
         // 4. Chargement initial des données
         rafraichirTable();
@@ -98,8 +156,9 @@ public class GestionBudgetsController implements Initializable {
             btnVider.setOnAction(event -> nettoyerFormulaire());
         }
 
+        // Modification : Le clic simple/double clic remplit toujours le formulaire pour information
         tableBudgets.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) modifierBudget(newSelection);
+            if (newSelection != null) modifierBudget(newSelection); // Remplit le formulaire du haut
         });
     }
 
@@ -236,36 +295,10 @@ public class GestionBudgetsController implements Initializable {
     }
 
     /**
-     * Configure la colonne Actions
+     * Configure la colonne Actions (OBSOLÈTE - Laissée vide ou à supprimer du FXML)
      */
     private void configurerColonneActions() {
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button btnModifier = new Button("✏️");
-            private final Button btnSupprimer = new Button("🗑️");
-            private final HBox hbox = new HBox(5, btnModifier, btnSupprimer);
-
-            {
-                btnModifier.getStyleClass().add("button-action-edit");
-                btnSupprimer.getStyleClass().add("button-action-delete");
-                hbox.setPadding(new Insets(2));
-
-                btnModifier.setOnAction(event -> {
-                    budget_previsionnel b = getTableView().getItems().get(getIndex());
-                    modifierBudget(b);
-                });
-
-                btnSupprimer.setOnAction(event -> {
-                    budget_previsionnel b = getTableView().getItems().get(getIndex());
-                    supprimerBudget(b);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : hbox);
-            }
-        });
+        // Méthode désactivée pour UX Moderne
     }
 
 

@@ -9,17 +9,21 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu; // Added
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem; // Added
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell; // Added
 import javafx.stage.FileChooser;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter; // Added
 import tn.esprit.Boussole.Models.bilan;
 import tn.esprit.Boussole.Services.ServiceBilan;
 import tn.esprit.Boussole.Utilis.SessionManager;
@@ -32,41 +36,18 @@ import java.util.ResourceBundle;
 
 public class GestionBilansController implements Initializable {
 
-    @FXML
-    private Button btnDashboard;
-
-    @FXML
-    private Button btnBudgets;
-
-    @FXML
-    private Button btnBilans;
-
-    @FXML
-    private Button btnGenererBilan;
-
-    @FXML
-    private Button btnExporterPDF;
-
-    @FXML
-    private TableView<bilan> tableBilans;
-
-    @FXML
-    private TableColumn<bilan, Integer> colMois;
-
-    @FXML
-    private TableColumn<bilan, Integer> colAnnee;
-
-    @FXML
-    private TableColumn<bilan, Double> colRecettes;
-
-    @FXML
-    private TableColumn<bilan, Double> colCharges;
-
-    @FXML
-    private TableColumn<bilan, Double> colResultat;
-
-    @FXML
-    private TableColumn<bilan, Void> colActions;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnBudgets;
+    @FXML private Button btnBilans;
+    @FXML private Button btnGenererBilan;
+    @FXML private Button btnExporterPDF;
+    @FXML private TableView<bilan> tableBilans;
+    @FXML private TableColumn<bilan, Integer> colMois;
+    @FXML private TableColumn<bilan, Integer> colAnnee;
+    @FXML private TableColumn<bilan, Double> colRecettes;
+    @FXML private TableColumn<bilan, Double> colCharges;
+    @FXML private TableColumn<bilan, Double> colResultat;
+    //@FXML private TableColumn<bilan, Void> colActions; // Supprimé
 
     private ServiceBilan serviceBilan;
 
@@ -79,8 +60,11 @@ public class GestionBilansController implements Initializable {
 
         if (!accesAutorise) {
             afficherMessageErreur("Session perdue ou accès refusé. Veuillez vous reconnecter.");
-            Stage stage = (Stage) btnDashboard.getScene().getWindow();
-            stage.close();
+            // Attention: si l'UI n'est pas encore affichée, getWindow peut renvoyer null
+            // Ici initialize est appelé après le chargement, donc ça devrait aller
+            if (btnDashboard.getScene() != null) {
+                ((Stage) btnDashboard.getScene().getWindow()).close();
+            }
             return;
         }
 
@@ -93,8 +77,75 @@ public class GestionBilansController implements Initializable {
         colCharges.setCellValueFactory(new PropertyValueFactory<>("totalCharges"));
         colResultat.setCellValueFactory(new PropertyValueFactory<>("resultatNet"));
 
-        // 3. Configuration de la colonne Actions
-        configurerColonneActions();
+        // *** UX MODERNE : TABLE ÉDITABLE ***
+        tableBilans.setEditable(true);
+
+        // Édition Recettes
+        colRecettes.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colRecettes.setOnEditCommit(event -> {
+            bilan b = event.getRowValue();
+            Double newVal = event.getNewValue();
+            if (newVal == null || newVal < 0) {
+                afficherMessageErreur("Valeur invalide.");
+                tableBilans.refresh();
+                return;
+            }
+            b.setTotalRecettes(newVal);
+            b.setResultatNet(newVal - b.getTotalCharges()); // Recalcul auto
+            try {
+                serviceBilan.updateOne(b);
+                tableBilans.refresh(); // Pour mettre à jour la colonne ColResultat visuellement
+            } catch (Exception e) {
+                afficherMessageErreur("Erreur mise à jour : " + e.getMessage());
+            }
+        });
+
+        // Édition Charges
+        colCharges.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colCharges.setOnEditCommit(event -> {
+            bilan b = event.getRowValue();
+            Double newVal = event.getNewValue();
+            if (newVal == null || newVal < 0) {
+                afficherMessageErreur("Valeur invalide.");
+                tableBilans.refresh();
+                return;
+            }
+            b.setTotalCharges(newVal);
+            b.setResultatNet(b.getTotalRecettes() - newVal); // Recalcul auto
+            try {
+                serviceBilan.updateOne(b);
+                tableBilans.refresh(); // Pour mettre à jour la colonne ColResultat visuellement
+            } catch (Exception e) {
+                afficherMessageErreur("Erreur mise à jour : " + e.getMessage());
+            }
+        });
+
+        // *** UX MODERNE : MENU CONTEXTUEL POUR SUPPRESSION ***
+        // Suppression de l'ancienne colonne Actions si elle existe dans FXML
+        if (tableBilans.getColumns().size() > 5) {
+             // Logic to ignore or hide colActions if still present in FXML
+        }
+
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem itemSupprimer = new MenuItem("🗑️ Supprimer cette ligne");
+        itemSupprimer.setOnAction(e -> {
+            bilan selected = tableBilans.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                supprimerBilan(selected);
+            }
+        });
+        contextMenu.getItems().add(itemSupprimer);
+
+        // Assigner le menu contextuel à chaque ligne (row)
+        tableBilans.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<bilan> row = new javafx.scene.control.TableRow<>();
+            row.contextMenuProperty().bind(
+                javafx.beans.binding.Bindings.when(row.emptyProperty())
+                .then((ContextMenu) null)
+                .otherwise(contextMenu)
+            );
+            return row;
+        });
 
         // 4. Chargement initial des données
         rafraichirTable();
@@ -123,109 +174,6 @@ public class GestionBilansController implements Initializable {
         } catch (Exception e) {
             System.out.println("Erreur lors du rafraîchissement des bilans: " + e.getMessage());
         }
-    }
-
-    /**
-     * Configure la colonne Actions avec deux boutons (Modifier et Supprimer)
-     * en utilisant une cellFactory.
-     */
-    private void configurerColonneActions() {
-        colActions.setCellFactory(param -> new TableCell<bilan, Void>() {
-            private final Button btnModifier = new Button("✏️");
-            private final Button btnSupprimer = new Button("🗑️");
-            private final HBox hbox = new HBox(5, btnModifier, btnSupprimer);
-
-            {
-                btnModifier.getStyleClass().add("button-action-edit");
-                btnSupprimer.getStyleClass().add("button-action-delete");
-                hbox.setPadding(new Insets(2));
-
-                btnModifier.setOnAction(event -> {
-                    bilan b = getTableView().getItems().get(getIndex());
-                    afficherDialogueModification(b);
-                });
-
-                btnSupprimer.setOnAction(event -> {
-                    bilan b = getTableView().getItems().get(getIndex());
-                    supprimerBilan(b);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(hbox);
-                }
-            }
-        });
-    }
-
-    /**
-     * Affiche un Dialog pour modifier les valeurs total_recettes et total_charges d'un bilan.
-     */
-    private void afficherDialogueModification(bilan b) {
-        Dialog<bilan> dialog = new Dialog<>();
-        dialog.setTitle("Modifier le Bilan");
-        dialog.setHeaderText("Modifier les totaux du bilan pour " + b.getMois() + "/" + b.getAnnee());
-
-        // Créer les champs de saisie
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(15));
-
-        Label lblRecettes = new Label("Total Recettes (TND):");
-        TextField txtRecettes = new TextField(String.valueOf(b.getTotalRecettes()));
-
-        Label lblCharges = new Label("Total Charges (TND):");
-        TextField txtCharges = new TextField(String.valueOf(b.getTotalCharges()));
-
-        content.getChildren().addAll(
-                lblRecettes, txtRecettes,
-                lblCharges, txtCharges
-        );
-
-        dialog.getDialogPane().setContent(content);
-
-        // Ajouter les boutons OK et Annuler
-        dialog.getDialogPane().getButtonTypes().addAll(
-                javafx.scene.control.ButtonType.OK,
-                javafx.scene.control.ButtonType.CANCEL
-        );
-
-        // Gérer le résultat
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType == javafx.scene.control.ButtonType.OK) {
-                try {
-                    double recettes = Double.parseDouble(txtRecettes.getText());
-                    double charges = Double.parseDouble(txtCharges.getText());
-                    double resultat = recettes - charges;
-
-                    b.setTotalRecettes(recettes);
-                    b.setTotalCharges(charges);
-                    b.setResultatNet(resultat);
-
-                    return b;
-                } catch (NumberFormatException ex) {
-                    System.out.println("Erreur : valeurs numériques invalides. " + ex.getMessage());
-                    return null;
-                }
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(bilanModifie -> {
-            // Mettre à jour la base de données
-            try {
-                serviceBilan.updateOne(bilanModifie);
-                System.out.println("Bilan modifié avec succès : " + bilanModifie.getId());
-                // Rafraîchir la table
-                rafraichirTable();
-            } catch (Exception e) {
-                System.out.println("Erreur lors de la modification du bilan: " + e.getMessage());
-            }
-        });
     }
 
     /**

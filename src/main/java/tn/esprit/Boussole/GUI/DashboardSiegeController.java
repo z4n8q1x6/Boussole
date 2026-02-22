@@ -11,18 +11,23 @@ import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
+import tn.esprit.Boussole.Models.FranchiseData;
+import tn.esprit.Boussole.Services.ServiceClustering;
 import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Services.ServiceBilan;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -64,169 +69,157 @@ public class DashboardSiegeController implements Initializable {
     // Services
     private ServiceTransaction serviceTransaction;
     private ServiceBilan serviceBilan;
+    private ServiceClustering serviceClustering; // Service IA
+
+    // IA Components
+    @FXML
+    private ScatterChart<Number, Number> scatterChartIA;
+    @FXML
+    private NumberAxis xAxisIA;
+    @FXML
+    private NumberAxis yAxisIA;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // instantiate services
-        serviceTransaction = new ServiceTransaction();
-        serviceBilan = new ServiceBilan();
-
-        // Verify session (ROLE CHECK instead of ID check)
-        String role = SessionManager.getInstance().getRole();
-        if (role == null || !role.equals("SIEGE")) {
-            afficherMessageErreur("Accès Refusé : Vous n'avez pas les droits d'accès au Siège.");
-            // Close window for security
-            Platform.runLater(() -> {
-                try {
-                    Stage s = (Stage) (btnDashboard != null ? btnDashboard.getScene().getWindow() : null);
-                    if (s != null) s.close();
-                } catch (Exception ignored) {
-                }
-            });
-            return;
-        }
-
-        // Load real data
-        chargerDonnees();
-
-        // Configure barChart axes labels
+        System.out.println(">>> DEBUG: DashboardSiegeController initialisé - Version chargée avec succès ! " + System.currentTimeMillis());
         try {
-            if (xAxis != null) xAxis.setLabel("Mois");
-            if (yAxis != null) yAxis.setLabel("Montant (TND)");
-        } catch (Exception e) {
-            System.err.println("Erreur configuration axes: " + e.getMessage());
-        }
+            // Initialisation des services
+            serviceTransaction = new ServiceTransaction();
+            serviceBilan = new ServiceBilan();
+            serviceClustering = new ServiceClustering(); // Init Service IA
 
-        // Configurer les boutons de navigation
-        btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"));
-        btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
-        btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
+            // Vérification session
+            int franchiseId = SessionManager.getInstance().getIdFranchise();
+            /*
+            if (franchiseId == 0) {
+                afficherMessageErreur("Session invalide : identifiant manquant.");
+                // Fermer la fenêtre ou rediriger vers Login
+            }
+             */
 
-        // Refresh button
-        if (btnRefresh != null) {
+            // Initialiser la navigation
+            btnBudgets.setOnAction(e -> changerPage(e, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
+            btnBilans.setOnAction(e -> changerPage(e, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
             btnRefresh.setOnAction(e -> chargerDonnees());
+
+            // Chargement initial
+            chargerDonnees();
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'initialisation du DashboardSiegeController : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private void chargerDonnees() {
-        // disable refresh and show progress
-        if (btnRefresh != null) btnRefresh.setDisable(true);
-        if (progress != null) progress.setVisible(true);
+        progress.setVisible(true);
+        btnRefresh.setDisable(true);
 
-        Task<Void> task = new Task<>() {
+        Task<Void> task = new Task<Void>() {
             @Override
-            protected Void call() {
-                try {
-                    int franchiseId = SessionManager.getInstance().getIdFranchise();
+            protected Void call() throws Exception {
+                // 1. Récupération des données financières globales
+                double soldeTotal = serviceTransaction.getSoldeTotalReseau();
+                double totalRevenus = serviceTransaction.getTotalRevenus();
+                double totalDepenses = serviceTransaction.getTotalDepenses();
 
-                    // Get totals (either network-wide or per franchise depending on session)
-                    final double solde;
-                    final double totalRevenus;
-                    final double totalDepenses;
+                // 2. Récupération données Graphique (3 derniers mois)
+                // Ex: 10 = Octobre (juste pour exemple, idéalement dynamique)
+                Map<String, Double[]> graphData = serviceBilan.getDonneesGraphique(3);
 
-                    if (franchiseId == 0) {
-                        solde = serviceTransaction.getSoldeTotalReseau();
-                        totalRevenus = serviceTransaction.getTotalRevenus();
-                        totalDepenses = serviceTransaction.getTotalDepenses();
-                    } else {
-                        solde = serviceTransaction.calculerSolde(franchiseId);
-                        // per franchise totals by summing transactions
-                        double rv = 0.0;
-                        double dp = 0.0;
-                        java.util.List<tn.esprit.Boussole.Models.transaction> txs = serviceTransaction.getAllByFranchise(franchiseId);
-                        for (tn.esprit.Boussole.Models.transaction t : txs) {
-                            if (t.getType() == tn.esprit.Boussole.Models.transaction.Type.RECETTE) rv += t.getMontant();
-                            else if (t.getType() == tn.esprit.Boussole.Models.transaction.Type.DEPENSE) dp += t.getMontant();
-                        }
-                        totalRevenus = rv;
-                        totalDepenses = dp;
-                    }
+                // 3. Analyse IA (Clustering)
+                List<FranchiseData> rawData = serviceTransaction.getDonneesFinancieresGlobales();
+                Map<Integer, List<FranchiseData>> clusters = serviceClustering.analyserDonnees(rawData, 3);
 
-                    // Get last 3 months data (for franchise or network)
-                    Map<String, Double[]> donnees;
-                    // We want the chart to show network totals if session is siege, or franchise totals otherwise
-                    if (franchiseId == 0) {
-                        donnees = serviceBilan.getDonneesGraphique(3);
-                    } else {
-                        // get per-franchise by querying serviceTransaction for each month
-                        java.util.LinkedHashMap<String, Double[]> map = new java.util.LinkedHashMap<>();
-                        for (int i = 2; i >= 0; i--) {
-                            java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
-                            c.add(java.util.Calendar.MONTH, -i);
-                            int month = c.get(java.util.Calendar.MONTH) + 1;
-                            int year = c.get(java.util.Calendar.YEAR);
-                            String key = String.format("%02d/%d", month, year);
-                            double rec = 0.0, dep = 0.0;
-                            java.util.List<tn.esprit.Boussole.Models.transaction> txs = serviceTransaction.getAllByFranchise(franchiseId);
-                            for (tn.esprit.Boussole.Models.transaction t : txs) {
-                                java.util.Date d = t.getDate();
-                                if (d != null) {
-                                    java.util.Calendar dc = java.util.Calendar.getInstance();
-                                    dc.setTime(d);
-                                    int tm = dc.get(java.util.Calendar.MONTH) + 1;
-                                    int ty = dc.get(java.util.Calendar.YEAR);
-                                    if (tm == month && ty == year) {
-                                        if (t.getType() == tn.esprit.Boussole.Models.transaction.Type.RECETTE) rec += t.getMontant();
-                                        else if (t.getType() == tn.esprit.Boussole.Models.transaction.Type.DEPENSE) dep += t.getMontant();
-                                    }
-                                }
-                            }
-                            map.put(key, new Double[]{rec, dep});
-                        }
-                        donnees = map;
-                    }
+                // Mise à jour de l'UI sur le thread JavaFX
+                Platform.runLater(() -> {
+                    // KPI
+                    lblSolde.setText(String.format("%.2f TND", soldeTotal));
+                    lblRevenus.setText(String.format("%.2f TND", totalRevenus));
+                    lblDepenses.setText(String.format("%.2f TND", totalDepenses));
 
-                    // Update UI on JavaFX thread
-                    Platform.runLater(() -> {
-                        try {
-                            lblSolde.setText(String.format("%.2f TND", solde));
-                            lblRevenus.setText(String.format("%.2f TND", totalRevenus));
-                            lblDepenses.setText(String.format("%.2f TND", totalDepenses));
+                    // BarChart
+                    updateBarChart(graphData);
 
-                            XYChart.Series<String, Number> seriesRevenus = new XYChart.Series<>();
-                            seriesRevenus.setName("Revenus");
-                            XYChart.Series<String, Number> seriesDepenses = new XYChart.Series<>();
-                            seriesDepenses.setName("Dépenses");
+                    // ScatterChart (IA)
+                    updateScatterChart(clusters);
 
-                            barChart.getData().clear();
-
-                            for (Map.Entry<String, Double[]> entry : donnees.entrySet()) {
-                                String mois = entry.getKey();
-                                Double[] vals = entry.getValue();
-                                double rec = vals[0] != null ? vals[0] : 0.0;
-                                double dep = vals[1] != null ? vals[1] : 0.0;
-                                seriesRevenus.getData().add(new XYChart.Data<>(mois, rec));
-                                seriesDepenses.getData().add(new XYChart.Data<>(mois, dep));
-                            }
-
-                            // add series individually to avoid unchecked varargs warning
-                            barChart.getData().add(seriesRevenus);
-                            barChart.getData().add(seriesDepenses);
-                        } catch (Exception e) {
-                            System.err.println("Erreur mise à jour UI: " + e.getMessage());
-                        } finally {
-                            if (btnRefresh != null) btnRefresh.setDisable(false);
-                            if (progress != null) progress.setVisible(false);
-                        }
-                    });
-
-                } catch (Exception e) {
-                    // Log and show fallback in UI thread
-                    System.err.println("Erreur lors du chargement des données: " + e.getMessage());
-                    Platform.runLater(() -> {
-                        lblSolde.setText("—");
-                        if (btnRefresh != null) btnRefresh.setDisable(false);
-                        if (progress != null) progress.setVisible(false);
-                        afficherMessageErreur("Erreur lors du chargement des données : " + e.getMessage());
-                    });
-                }
+                    progress.setVisible(false);
+                    btnRefresh.setDisable(false);
+                });
                 return null;
             }
         };
 
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+        // Gestion des erreurs du thread
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                progress.setVisible(false);
+                btnRefresh.setDisable(false);
+                afficherMessageErreur("Erreur lors du chargement des données : " + task.getException().getMessage());
+            });
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateBarChart(Map<String, Double[]> data) {
+        barChart.getData().clear();
+
+        XYChart.Series<String, Number> seriesRevenus = new XYChart.Series<>();
+        seriesRevenus.setName("Revenus");
+
+        XYChart.Series<String, Number> seriesDepenses = new XYChart.Series<>();
+        seriesDepenses.setName("Dépenses");
+
+        for (Map.Entry<String, Double[]> entry : data.entrySet()) {
+            seriesRevenus.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[0]));
+            seriesDepenses.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[1]));
+        }
+
+        barChart.getData().addAll(seriesRevenus, seriesDepenses);
+    }
+
+    private void updateScatterChart(Map<Integer, List<FranchiseData>> clusters) {
+        scatterChartIA.getData().clear();
+
+        // Définition des couleurs et noms des clusters
+        // Note: L'ordre des clusters (0, 1, 2) dépend de l'algorithme, donc on doit analyser les centres
+        // ou pour simplifier ici :
+        // On considère que le cluster avec les Recettes les plus hautes est "Performant"
+        // Celui avec Dépenses > Recettes est "Risqué"
+
+        // Simple mapping direct pour l'instant, on pourra affiner l'intelligence
+        String[] nomsClusters = {"Groupe A", "Groupe B", "Groupe C"};
+        String[] styles = {
+            "-fx-body-color: #00E5CC;", // Vert/Cyan (Performant ?)
+            "-fx-body-color: #FFA726;", // Orange (Neutre)
+            "-fx-body-color: #EF5350;"  // Rouge (Risque)
+        };
+
+        int index = 0;
+        for (Map.Entry<Integer, List<FranchiseData>> entry : clusters.entrySet()) {
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            series.setName(nomsClusters[index % 3]); // Nom générique
+
+            for (FranchiseData franchise : entry.getValue()) {
+                XYChart.Data<Number, Number> point = new XYChart.Data<>(franchise.getRecettes(), franchise.getDepenses());
+                series.getData().add(point);
+
+                // Installation du Tooltip APRES l'ajout au graph (node généré)
+                point.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) {
+                        Tooltip tooltip = new Tooltip(franchise.getLabel() + "\nRec: " + franchise.getRecettes() + "\nDép: " + franchise.getDepenses());
+                        Tooltip.install(newNode, tooltip);
+                        // Appliquer style couleur spécifique si besoin
+                        // newNode.setStyle(styles[finalIndex % 3]);
+                        // Note: ScatterChart gère les couleurs par série par défaut,
+                        // pour forcer des couleurs par cluster "sémantique", il faudrait trier les clusters avant.
+                    }
+                });
+            }
+            scatterChartIA.getData().add(series);
+            index++;
+        }
     }
 
     private void afficherMessageErreur(String message) {

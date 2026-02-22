@@ -5,16 +5,20 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.LoginController" style="-fx-background-color: #f6f8fb;">
-    <VBox spacing="40" alignment="CENTER" maxWidth="400" maxHeight="300" style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
-        
-        <Label text="Bienvenue sur BOUSSOLE" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0b3d91;" />
-        
-        <VBox spacing="20" alignment="CENTER" maxWidth="300">
-            <Button fx:id="btnSiege" text="Espace SIÈGE" maxWidth="Infinity" style="-fx-background-color: #0b3d91; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 15; -fx-cursor: hand; -fx-background-radius: 5;" />
-            <Button fx:id="btnFranchise" text="Espace FRANCHISE" maxWidth="Infinity" style="-fx-background-color: #4fc3f7; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 15; -fx-cursor: hand; -fx-background-radius: 5; -fx-text-fill: #0b3d91; -fx-font-weight: bold;" />
+<StackPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.LoginController"
+           prefWidth="1280" prefHeight="800" stylesheets="@styles.css" styleClass="content-area">
+
+    <VBox spacing="40" alignment="CENTER" maxWidth="450" maxHeight="350" styleClass="kpi-card" style="-fx-padding: 50;">
+
+        <Label text="BOUSSOLE" style="-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,229,204,0.4), 10, 0, 0, 0);" />
+
+        <Label text="Bienvenue" style="-fx-font-size: 18px; -fx-text-fill: #94A3B8;" />
+
+        <VBox spacing="20" alignment="CENTER" maxWidth="350" VBox.vgrow="ALWAYS">
+            <Button fx:id="btnSiege" text="ACCÈS SIÈGE" maxWidth="Infinity" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 15;" />
+            <Button fx:id="btnFranchise" text="ACCÈS FRANCHISE" maxWidth="Infinity" styleClass="nav-button" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-font-size: 14px; -fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12;" />
         </VBox>
 
-        <Label text="Sélectionnez votre rôle pour continuer" style="-fx-text-fill: #66788a; -fx-font-size: 12px;" />
+        <Label text="Sélectionnez votre espace pour continuer" style="-fx-text-fill: #64748B; -fx-font-size: 12px;" />
     </VBox>
 </StackPane>

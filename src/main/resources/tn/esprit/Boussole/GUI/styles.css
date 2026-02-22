@@ -1,56 +1,249 @@
-/* ============================================================================
-   Styles CSS pour les boutons d'actions (Modifier/Supprimer)
-   Utilisés dans GestionBudgetsController et GestionBilansController
-   ============================================================================ */
-
-/* Bouton d'édition (Modifier) - Vert */
-.button-action-edit {
-    -fx-background-color: #4CAF50;
-    -fx-text-fill: white;
-    -fx-font-size: 12px;
-    -fx-padding: 6 10 6 10;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-border: none;
+/* GLOBAL */
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+/* SIDEBAR */
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, #0F172A 0%, #020617 100%);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 15, 0, 0, 0);
+}
+.sidebar-header {
+    -fx-padding: 35 20 35 20;
+}
+/* LOGO AVEC EFFET N�ON */
+.logo-container {
+    -fx-background-color: rgba(0, 229, 204, 0.08);
+    -fx-background-radius: 14;
+    -fx-border-color: rgba(0, 229, 204, 0.4);
+    -fx-border-radius: 14;
+    -fx-padding: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.25), 15, 0, 0, 0);
+}
+/* NAVIGATION BUTTONS - FLUIDIT� */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-alignment: BASELINE_LEFT;
+    -fx-padding: 12 18 12 18;
+    -fx-background-radius: 12;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.0, 0, 2);
+    -fx-border-width: 0 0 0 0;
 }
-
-.button-action-edit:hover {
-    -fx-background-color: #45a049;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0.0, 0, 3);
+/* EFFET DE SURVOL 'GLOW' */
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-text-fill: #E2E8F0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.15), 10, 0, 0, 0);
 }
-
-.button-action-edit:pressed {
-    -fx-background-color: #3d8b40;
+.nav-button:pressed {
+    -fx-background-color: rgba(0, 229, 204, 0.1);
+    -fx-text-fill: #00E5CC;
 }
-
-/* Bouton de suppression (Supprimer) - Rouge */
-.button-action-delete {
-    -fx-background-color: #f44336;
-    -fx-text-fill: white;
+/* SECTION TITLES */
+.section-label {
+    -fx-text-fill: #475569;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-padding: 25 0 8 18;
+    -fx-letter-spacing: 1.5;
+    -fx-opacity: 0.8;
+}
+/* USER PROFILE FOOTER */
+.user-footer {
+    -fx-background-color: rgba(15, 23, 42, 0.6);
+    -fx-padding: 20;
+    -fx-border-color: rgba(255,255,255,0.03);
+    -fx-border-width: 1 0 0 0;
+}
+.user-card {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 16;
+    -fx-padding: 12;
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+}
+.avatar-circle {
+    -fx-background-color: linear-gradient(to bottom right, #00E5CC, #0099FF);
+    -fx-background-radius: 50%;
+    -fx-min-width: 42;
+    -fx-min-height: 42;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.5), 12, 0, 0, 4);
+}
+/* MAIN CONTENT AREA */
+.content-area {
+    -fx-background-color: #06080F;
+    -fx-padding: 40;
+}
+.page-header {
+    -fx-padding: 0 0 30 0;
+}
+.page-title {
+    -fx-text-fill: #F8FAFC;
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 3);
+}
+.page-subtitle {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+/* KPI CARDS */
+.kpi-card {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 4);
+    -fx-padding: 20;
+}
+.kpi-title {
+    -fx-text-fill: #94A3B8;
     -fx-font-size: 12px;
-    -fx-padding: 6 10 6 10;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-border: none;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.0, 0, 2);
-}
-
-.button-action-delete:hover {
-    -fx-background-color: #da190b;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0.0, 0, 3);
-}
-
-.button-action-delete:pressed {
-    -fx-background-color: #ba0000;
-}
-
-/* Style générique pour tous les boutons d'action */
-.button-action {
     -fx-font-weight: bold;
-    -fx-min-width: 40px;
-    -fx-min-height: 30px;
 }
-
+.kpi-value {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+}
+/* INPUT FIELDS */
+.text-field, .date-picker .text-field {
+    -fx-background-color: #0F1523;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255,255,255,0.1);
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+    -fx-padding: 10 15;
+}
+.button-primary {
+    -fx-background-color: linear-gradient(to right, #00E5CC, #00B4D8);
+    -fx-text-fill: #0F172A;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.4), 15, 0, 0, 4);
+}
+.button-primary:hover {
+    -fx-opacity: 0.9;
+}
+/* TABLE VIEW */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.table-view .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.015);
+}
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255,255,255,0.06);
+    -fx-border-width: 0 0 1 0;
+    -fx-size: 44px;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #8892A4;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 24 0 24;
+}
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255,255,255,0.04);
+    -fx-border-width: 0 0 1 0;
+}
+.table-row-cell:hover {
+    -fx-background-color: rgba(0, 229, 204, 0.1); /* Effet survol ligne */
+    -fx-cursor: hand;
+}
+.table-row-cell:selected {
+    -fx-background-color: rgba(0,229,204,0.07);
+}
+.table-cell {
+    -fx-text-fill: #E8EDF5;
+    -fx-font-size: 13px;
+    -fx-padding: 14 24 14 24;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+.table-view .text-field-table-cell .text-field {
+    -fx-background-color: #0F172A;
+    -fx-text-fill: #00E5CC;
+    -fx-border-color: #00E5CC;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+}
+.table-view .context-menu {
+    -fx-background-color: #0F172A;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 8px;
+    -fx-padding: 5px;
+}
+.table-view .menu-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+.table-view .menu-item .label {
+    -fx-text-fill: white;
+}
+/* --- TAB PANE STYLING --- */
+.my-tab-pane {
+    -fx-background-color: transparent;
+}
+.my-tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+.my-tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-padding: 10 20;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0; /* Bordure basse seulement */
+    -fx-cursor: hand;
+}
+.my-tab-pane .tab:selected {
+    -fx-border-color: #00E5CC; /* Couleur n�on */
+    -fx-border-width: 0 0 3 0;
+}
+.my-tab-pane .tab .tab-label {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.my-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #00E5CC;
+}
+/* --- CHART STYLING --- */
+.chart-title {
+    -fx-text-fill: white;
+}
+.axis {
+    -fx-tick-label-fill: #94A3B8;
+    -fx-label-fill: #94A3B8;
+}
+.axis:top {
+    -fx-border-color: transparent transparent #94A3B8 transparent;
+}
+.axis:right {
+    -fx-border-color: transparent transparent transparent #94A3B8;
+}
+.axis:bottom {
+    -fx-border-color: #94A3B8 transparent transparent transparent;
+}
+.axis:left {
+    -fx-border-color: transparent #94A3B8 transparent transparent;
+}
+.chart-legend {
+    -fx-background-color: transparent;
+}
+.chart-legend-item {
+    -fx-text-fill: #94A3B8;
+}
+.chart-symbol { /* Style par d�faut des points du scatter */
+    -fx-background-radius: 50%;
+    -fx-padding: 7px;
+}

@@ -178,6 +178,90 @@ public class ServiceTransaction implements CRUD<transaction> {
         return revenus - depenses;
     }
 
+    // Méthode pour récupérer les données agrégées pour l'IA (Clustering)
+    // Retourne une map : FranchiseID -> {TotalRecettes, TotalDepenses}
+    public List<tn.esprit.Boussole.Models.FranchiseData> getDonneesFinancieresGlobales() {
+        List<tn.esprit.Boussole.Models.FranchiseData> dataList = new ArrayList<>();
+        String sql = "SELECT franchise_id, " +
+                     "SUM(CASE WHEN type = 'RECETTE' THEN montant ELSE 0 END) as total_recettes, " +
+                     "SUM(CASE WHEN type = 'DEPENSE' THEN montant ELSE 0 END) as total_depenses " +
+                     "FROM transaction GROUP BY franchise_id";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int id = rs.getInt("franchise_id");
+                double recettes = rs.getDouble("total_recettes");
+                double depenses = rs.getDouble("total_depenses");
+                String label = "Franchise " + id; // Pourra être remplacé par le vrai nom si dispo
+
+                dataList.add(new tn.esprit.Boussole.Models.FranchiseData(id, label, recettes, depenses));
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur getDonneesFinancieresGlobales: " + e.getMessage());
+        }
+        return dataList;
+    }
+
+    // Méthode pour le PieChart : Répartition des dépenses par catégorie
+    public java.util.Map<String, Double> getRepartitionCharges() {
+        java.util.Map<String, Double> result = new java.util.HashMap<>();
+        // Note: La catégorie est stockée dans la description ou un champ spécifique selon votre modèle.
+        // Si 'description' sert de catégorie pour les dépenses, ou si on n'a pas de colonne catégorie dans transaction,
+        // on va supposer ici que la 'description' contient la catégorie pour les dépenses simples,
+        // OU on va se baser sur les budgets.
+        // MAIS, le prompt demande "Répartition des Charges".
+        // Comme Transaction n'a pas de colonne "categorie" explicite (c'est dans Budget),
+        // On va simuler ou extraire depuis description si possible, OU mieux :
+        // Pour cet exercice, nous allons assumer que la description contient la catégorie
+        // Ou ajouter une logique simple.
+
+        // CORRECTION : Le modèle BudgetPrevisionnel A une catégorie. Le modèle Transaction a une description.
+        // Pour faire simple et robuste sans changer le schéma Transaction maintenant :
+        // On va grouper par DESCRIPTION pour l'instant (ex: "Loyer Janvier", "Salaire").
+        // Idéalement, il faudrait une colonne category_id dans transaction.
+
+        String sql = "SELECT description, SUM(montant) as total FROM transaction WHERE type = 'DEPENSE' GROUP BY description";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String cat = rs.getString("description");
+                // Nettoyage simple pour regrouper (ex: "Salaire Janvier" -> "Salaire")
+                // Ceci est optionnel pour l'IA mais rend le graph plus propre
+                if (cat.contains(" ")) {
+                    cat = cat.split(" ")[0];
+                }
+                double montant = rs.getDouble("total");
+
+                result.put(cat, result.getOrDefault(cat, 0.0) + montant);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur getRepartitionCharges : " + e.getMessage());
+        }
+        return result;
+    }
+
+    // Méthode pour obtenir les dépenses totales par mois pour une année donnée (BarChart)
+    // Retourne Map<Mois(int), Montant>
+    public java.util.Map<Integer, Double> getDepensesParMois(int annee) {
+        java.util.Map<Integer, Double> result = new java.util.HashMap<>();
+        String sql = "SELECT MONTH(date) as mois, SUM(montant) as total FROM transaction " +
+                     "WHERE type = 'DEPENSE' AND YEAR(date) = ? GROUP BY MONTH(date)";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, annee);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getInt("mois"), rs.getDouble("total"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur getDepensesParMois : " + e.getMessage());
+        }
+        return result;
+    }
+
     private transaction mapRowToTransaction(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         Date date = rs.getDate("date");

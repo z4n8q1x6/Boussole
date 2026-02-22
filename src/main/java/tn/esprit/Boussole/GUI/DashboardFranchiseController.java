@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -20,6 +21,7 @@ import tn.esprit.Boussole.Models.budget_previsionnel;
 import tn.esprit.Boussole.Models.budget_previsionnel.TypeBudget;
 import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
+import tn.esprit.Boussole.Services.ServiceDevise;
 import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
@@ -39,6 +41,12 @@ public class DashboardFranchiseController implements Initializable {
     // FXML Components
     @FXML
     private Label lblSolde;
+
+    @FXML
+    private Label lblContreValeur; // Modification de lblSoldeEuro à lblContreValeur
+
+    @FXML
+    private ComboBox<String> cbDevise; // Ajout de la ComboBox
 
     @FXML
     private Label lblUserInfo;
@@ -85,6 +93,7 @@ public class DashboardFranchiseController implements Initializable {
     // Services
     private ServiceTransaction serviceTransaction;
     private ServiceBudgetPrevisionnel serviceBudgetPrevisionnel;
+    private ServiceDevise serviceDevise; // Added ServiceDevise
 
     // Session
     private int franchiseId;
@@ -96,6 +105,7 @@ public class DashboardFranchiseController implements Initializable {
             try {
                 serviceTransaction = new ServiceTransaction();
                 serviceBudgetPrevisionnel = new ServiceBudgetPrevisionnel();
+                serviceDevise = new ServiceDevise(); // Initialize ServiceDevise
             } catch (Exception e) {
                 System.err.println("Error initializing services: " + e.getMessage());
                 afficherMessageErreur("Erreur de connexion à la base de données: " + e.getMessage());
@@ -137,6 +147,13 @@ public class DashboardFranchiseController implements Initializable {
 
             // Load initial data
             if (franchiseId != 0) {
+                // Initialisation de la combo box devises
+                if (cbDevise != null) {
+                    cbDevise.getItems().addAll("EUR", "USD", "GBP", "CAD");
+                    cbDevise.setValue("EUR"); // Valeur par défaut
+                    cbDevise.setOnAction(e -> chargerSolde());
+                }
+
                 chargerSolde();
                 chargerTransactions();
                 chargerBudgets();
@@ -197,6 +214,37 @@ public class DashboardFranchiseController implements Initializable {
         try {
             double solde = serviceTransaction.calculerSolde(franchiseId);
             lblSolde.setText(String.format("%.2f TND", solde));
+
+            // Conversion dynamique
+            try {
+                String devise = "EUR";
+                if(cbDevise != null && cbDevise.getValue() != null) {
+                    devise = cbDevise.getValue();
+                }
+
+                double taux = serviceDevise.convertir(1.0, devise); // On récupère le taux pour 1 TND
+
+                if (taux > 0) {
+                    double soldeConverti = solde * taux;
+                    // Symboles de devises
+                    String symbole = "";
+                    switch(devise) {
+                        case "EUR": symbole = "€"; break;
+                        case "USD": symbole = "$"; break;
+                        case "GBP": symbole = "£"; break;
+                        case "CAD": symbole = "$C"; break;
+                        default: symbole = devise;
+                    }
+                    if (lblContreValeur != null) {
+                        lblContreValeur.setText(String.format("(soit ≈ %.2f %s)", soldeConverti, symbole));
+                    }
+                } else if (lblContreValeur != null) {
+                     lblContreValeur.setText("(Service indisponible)");
+                }
+            } catch (Exception ex) {
+                System.err.println("Erreur conversion devise: " + ex.getMessage());
+                if (lblContreValeur != null) lblContreValeur.setText("(-)");
+            }
 
             // Change color based on solde (green if positive, red if negative)
             if (solde >= 0) {
