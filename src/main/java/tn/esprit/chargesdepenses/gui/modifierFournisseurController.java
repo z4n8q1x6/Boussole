@@ -60,7 +60,6 @@ public class modifierFournisseurController {
             fournisseurService.updateOne(fournisseurActuel);
             showAlert("Succès", "Fournisseur mis à jour avec succès !", Alert.AlertType.INFORMATION);
             
-            // Redirection automatique vers la liste
             handleAfficherListe();
 
         } catch (SQLException e) {
@@ -74,10 +73,11 @@ public class modifierFournisseurController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackFournisseur.fxml")); 
             Parent root = loader.load();
             
-            Stage stage = (Stage) nomInput.getScene().getWindow();
+            Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // CSS mis à jour
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);

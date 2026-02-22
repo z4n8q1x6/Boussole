@@ -15,7 +15,7 @@
 
 <VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
       style="-fx-background-color: #06080F;"
-      stylesheets="@styles/dash.css"
+      stylesheets="@styles/ChargesdepensesDash.css"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="tn.esprit.chargesdepenses.gui.afficherFrontChargeController">
@@ -24,7 +24,7 @@
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
 
-    <HBox alignment="CENTER_LEFT">
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
         <VBox HBox.hgrow="ALWAYS">
             <Label text="Nos Charges &amp; Dépenses" textFill="#E8EDF5">
                 <font><Font name="System Bold" size="26.0" /></font>
@@ -33,6 +33,10 @@
                 <font><Font size="13.0" /></font>
             </Label>
         </VBox>
+
+        <!-- Bouton Conseils (Renommé) -->
+        <Button fx:id="btnIA" text="✨ Conseils" style="-fx-background-color: #8B5CF6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
+
         <Button fx:id="btnAjouter" text="+ Ajouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
     </HBox>
 

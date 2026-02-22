@@ -72,8 +72,8 @@ public class ajouterFournisseurController {
             Stage stage = (Stage) currentScene.getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // CSS mis à jour
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);
@@ -93,8 +93,8 @@ public class ajouterFournisseurController {
             Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // CSS mis à jour
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);

@@ -67,7 +67,6 @@ public class modifierChargeController {
             chargeService.updateOne(chargeActuelle);
             showAlert("Succès", "La charge a été mise à jour avec succès", Alert.AlertType.INFORMATION);
             
-            // Redirection automatique vers la liste
             handleAfficherListe();
 
         } catch (Exception e) {
@@ -81,11 +80,11 @@ public class modifierChargeController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackCharge.fxml"));
             Parent root = loader.load();
             
-            // On récupère la scène actuelle (peu importe le bouton utilisé)
-            Stage stage = (Stage) titreInput.getScene().getWindow();
+            Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // CSS mis à jour
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);

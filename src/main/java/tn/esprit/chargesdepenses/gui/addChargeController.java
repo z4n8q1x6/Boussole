@@ -90,8 +90,8 @@ public class addChargeController {
             Stage stage = (Stage) currentScene.getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // Application explicite du CSS (Nom mis à jour)
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);
@@ -100,7 +100,7 @@ public class addChargeController {
             
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur Navigation", "Impossible de charger la liste : " + e.getMessage(), Alert.AlertType.ERROR);
+            showAlert("Erreur Navigation", "Impossible de charger la liste (Back Office) : " + e.getMessage(), Alert.AlertType.ERROR);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Une erreur inattendue est survenue : " + e.getMessage(), Alert.AlertType.ERROR);
@@ -115,8 +115,8 @@ public class addChargeController {
             Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS
-            String css = getClass().getResource("/styles/dash.css").toExternalForm();
+            // Application explicite du CSS (Nom mis à jour)
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
             stage.setScene(newScene);

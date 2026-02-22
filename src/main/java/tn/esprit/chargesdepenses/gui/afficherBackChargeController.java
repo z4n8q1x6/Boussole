@@ -1,10 +1,12 @@
 package tn.esprit.chargesdepenses.gui;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,6 +19,8 @@ import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.chargesdepenses.models.Charge;
 import tn.esprit.chargesdepenses.services.ChargeService;
+import tn.esprit.chargesdepenses.services.CurrencyService;
+
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -36,6 +40,12 @@ public class afficherBackChargeController {
     @FXML private Label lblTotal;
     @FXML private TextField txtRecherche;
 
+    // ÉLÉMENTS CORRIGÉS POUR L'API
+    @FXML private Label lblTaux;      // Liaison avec fx:id="lblTaux"
+    @FXML private Label lblTotalEur;   // Liaison avec fx:id="lblTotalEur"
+    private final CurrencyService currencyService = new CurrencyService();
+    private double tauxActuel = 0.30; // Valeur par défaut (fallback)
+
     private final ChargeService chargeService = new ChargeService();
     private final ObservableList<Charge> chargesList = FXCollections.observableArrayList();
     private FilteredList<Charge> filteredData;
@@ -45,6 +55,7 @@ public class afficherBackChargeController {
     public void initialize() {
         tableCharges.setEditable(true);
 
+        // Configuration des colonnes
         colTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
         colTitre.setCellFactory(TextFieldTableCell.forTableColumn());
         colTitre.setOnEditCommit(event -> {
@@ -80,12 +91,12 @@ public class afficherBackChargeController {
             updateChargeInDB(c);
         });
 
-        // Affichage du NOM de la franchise
         colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
 
         addModifierButtonToTable();
         addSupprimerButtonToTable();
 
+        // Recherche et Tri
         filteredData = new FilteredList<>(chargesList, p -> true);
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableCharges.comparatorProperty());
@@ -102,11 +113,52 @@ public class afficherBackChargeController {
         comboTri.setItems(FXCollections.observableArrayList("Montant Croissant", "Montant Décroissant"));
         comboTri.setOnAction(e -> trierCharges());
 
+        // INITIALISATION DES DONNÉES ET DE L'API
         loadCharges();
+        chargerTauxDeChange(); // Récupère le taux réel via ExchangeRate API
+
         btnAjouter.setOnAction(e -> openAjoutForm());
         if (btnFront != null) btnFront.setOnAction(e -> openFrontOffice());
     }
 
+    // --- LOGIQUE DE L'API DE CHANGE ---
+    private void chargerTauxDeChange() {
+        Task<Double> task = new Task<>() {
+            @Override
+            protected Double call() {
+                return currencyService.getTauxTndVersEur();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            tauxActuel = task.getValue();
+            if (lblTaux != null) {
+                lblTaux.setText(String.format("1 TND = %.4f EUR", tauxActuel));
+            }
+            calculerTotal(); // Recalcule le total en EUR avec le nouveau taux
+        });
+
+        task.setOnFailed(e -> {
+            if (lblTaux != null) {
+                lblTaux.setText("1 TND = 0.3000 EUR (Hors ligne)");
+            }
+            calculerTotal();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void calculerTotal() {
+        double total = tableCharges.getItems().stream().mapToDouble(Charge::getMontant).sum();
+        lblTotal.setText(String.format("Total : %.2f DT", total));
+
+        // Mise à jour de l'équivalent en Euro
+        if (lblTotalEur != null) {
+            lblTotalEur.setText(String.format("%.2f €", total * tauxActuel));
+        }
+    }
+
+    // --- AUTRES MÉTHODES (SERVICE DB) ---
     private void updateChargeInDB(Charge charge) {
         try {
             chargeService.updateOne(charge);
@@ -124,11 +176,6 @@ public class afficherBackChargeController {
         } catch (SQLException e) {
             showAlert("Erreur", "Chargement impossible : " + e.getMessage());
         }
-    }
-
-    private void calculerTotal() {
-        double total = tableCharges.getItems().stream().mapToDouble(Charge::getMontant).sum();
-        lblTotal.setText(String.format("Total : %.2f DT", total));
     }
 
     private void trierCharges() {

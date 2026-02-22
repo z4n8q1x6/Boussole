@@ -58,6 +58,25 @@
             <version>2.0.1</version>
             </dependency>
 
+            <dependency>
+                <!-- Plus léger et suffisant pour ton code actuel -->
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20231013</version>
+            </dependency>
+
+            <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.7</version>
+            </dependency>
+
+            <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+            </dependency>
+
 
 
 

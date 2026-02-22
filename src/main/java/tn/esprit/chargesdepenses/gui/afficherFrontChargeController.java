@@ -48,11 +48,12 @@ import java.util.stream.Collectors;
 public class afficherFrontChargeController {
 
     @FXML private GridPane gridCharges;
-    @FXML private StackPane chartContainer; // Injecté depuis le nouveau FXML
+    @FXML private StackPane chartContainer;
     @FXML private Button btnPrecedent;
     @FXML private Button btnSuivant;
     @FXML private Label lblPageInfo;
     @FXML private Button btnAjouter;
+    @FXML private Button btnIA;
     @FXML private TextField txtRecherche;
     @FXML private ComboBox<String> comboTri;
 
@@ -75,6 +76,97 @@ public class afficherFrontChargeController {
         btnPrecedent.setOnAction(e -> { if (currentPage > 0) { currentPage--; updateView(); } });
         btnSuivant.setOnAction(e -> { if (currentPage < totalPages - 1) { currentPage++; updateView(); } });
         btnAjouter.setOnAction(e -> openAjoutForm());
+        
+        // Changement : Appel de la logique locale au lieu de l'API Gemini
+        btnIA.setOnAction(e -> handleConseilsLocaux());
+    }
+
+    /**
+     * LOGIQUE DE CONSEILS LOCALE (Remplacement de l'IA)
+     * Analyse les données et génère des recommandations basées sur des règles métiers.
+     */
+    private void handleConseilsLocaux() {
+        if (allCharges.isEmpty()) {
+            showAlert("Info", "Aucune donnée à analyser pour le moment.");
+            return;
+        }
+
+        StringBuilder rapport = new StringBuilder();
+        rapport.append("📊 ANALYSE FINANCIÈRE AUTOMATISÉE\n\n");
+
+        // 1. Calculs de base
+        double totalDepenses = allCharges.stream().mapToDouble(Charge::getMontant).sum();
+        double moyenneParCharge = totalDepenses / allCharges.size();
+        
+        Map<Charge.TypeCharge, Double> parCategorie = allCharges.stream()
+                .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
+
+        // Trouver la catégorie la plus coûteuse
+        Map.Entry<Charge.TypeCharge, Double> topCategorie = parCategorie.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        // 2. Génération du rapport
+        rapport.append(String.format("💰 Total des dépenses : %.2f DT\n", totalDepenses));
+        rapport.append(String.format("📉 Moyenne par dépense : %.2f DT\n\n", moyenneParCharge));
+
+        rapport.append("🔍 OBSERVATIONS :\n");
+        
+        if (topCategorie != null) {
+            double pourcentage = (topCategorie.getValue() / totalDepenses) * 100;
+            rapport.append(String.format("- Votre poste de dépense principal est '%s' (%.1f%% du total).\n", 
+                    topCategorie.getKey(), pourcentage));
+            
+            if (pourcentage > 50) {
+                rapport.append("  ⚠️ Attention : Cette catégorie consomme plus de la moitié de votre budget !\n");
+            }
+        }
+
+        // 3. Conseils spécifiques par catégorie
+        rapport.append("\n💡 CONSEILS PERSONNALISÉS :\n");
+        
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXPLOITATIONS)) {
+            rapport.append("- Exploitation : Vérifiez vos contrats fournisseurs et négociez les tarifs récurrents.\n");
+        }
+        
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_FINANCIERES)) {
+            rapport.append("- Financier : Analysez les frais bancaires et les intérêts d'emprunt pour les optimiser.\n");
+        }
+        
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXCEPTIONNELLES)) {
+            rapport.append("- Exceptionnel : Ces dépenses sont imprévues. Pensez à constituer un fonds de réserve.\n");
+        }
+
+        if (totalDepenses > 10000) { // Seuil arbitraire d'exemple
+            rapport.append("- Votre volume de dépenses est élevé. Un audit détaillé ligne par ligne est recommandé.\n");
+        } else {
+            rapport.append("- Votre gestion semble maîtrisée. Continuez à surveiller les petits écarts.\n");
+        }
+
+        showAdviceDialog(rapport.toString());
+    }
+
+    private void showAdviceDialog(String conseils) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Analyse Financière");
+        alert.setHeaderText("Rapport de vos dépenses");
+        
+        TextArea textArea = new TextArea(conseils);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        textArea.setStyle("-fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;"); // Police monospace pour l'alignement
+        
+        GridPane.setVgrow(textArea, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(textArea, javafx.scene.layout.Priority.ALWAYS);
+        
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(textArea, 0, 0);
+
+        alert.getDialogPane().setContent(expContent);
+        alert.showAndWait();
     }
 
     private void loadData() {
@@ -103,47 +195,40 @@ public class afficherFrontChargeController {
         currentPage = 0;
 
         updateView();
-        updateStatistics(); // Calculer les stats sur les données filtrées
+        updateStatistics();
     }
 
-    /**
-     * LOGIQUE DE L'API STATISTIQUE (JFreeChart)
-     */
     private void updateStatistics() {
         if (displayedCharges.isEmpty()) {
             chartContainer.getChildren().clear();
             return;
         }
 
-        // 1. Préparer les données (Somme des montants par Type de Charge)
         DefaultPieDataset dataset = new DefaultPieDataset();
         Map<Charge.TypeCharge, Double> stats = displayedCharges.stream()
                 .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
 
         stats.forEach((type, total) -> dataset.setValue(type.toString(), total));
 
-        // 2. Créer le graphique via l'API
         JFreeChart chart = ChartFactory.createPieChart3D("Répartition des charges (DT)", dataset, true, true, false);
 
-        // 3. Personnaliser le style pour le mode sombre
-        chart.setBackgroundPaint(null); // Fond transparent
-        chart.getTitle().setPaint(java.awt.Color.WHITE); // Titre en BLANC
+        chart.setBackgroundPaint(null);
+        chart.getTitle().setPaint(java.awt.Color.WHITE);
         chart.getTitle().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 18));
 
         PiePlot3D plot = (PiePlot3D) chart.getPlot();
         plot.setBackgroundPaint(null);
         plot.setOutlineVisible(false);
-        plot.setLabelPaint(java.awt.Color.WHITE); // Labels en BLANC
-        plot.setLabelBackgroundPaint(new java.awt.Color(12, 15, 26, 200)); // Fond des labels sombre
+        plot.setLabelPaint(java.awt.Color.WHITE);
+        plot.setLabelBackgroundPaint(new java.awt.Color(12, 15, 26, 200));
 
-        // Légende en blanc
         if (chart.getLegend() != null) {
             chart.getLegend().setBackgroundPaint(null);
             chart.getLegend().setItemPaint(java.awt.Color.WHITE);
         }
 
-        // 4. Afficher dans le conteneur JavaFX
         ChartViewer viewer = new ChartViewer(chart);
+        viewer.setStyle("-fx-background-color: transparent;");
         chartContainer.getChildren().setAll(viewer);
     }
 
@@ -167,7 +252,11 @@ public class afficherFrontChargeController {
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(15));
         card.setPrefSize(250, 380);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);");
+        
+        String defaultStyle = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);";
+        String hoverStyle = "-fx-background-color: #1E293B; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.4), 15, 0, 0, 0); -fx-cursor: hand;";
+        
+        card.setStyle(defaultStyle);
 
         ImageView iv = new ImageView();
         iv.setFitHeight(120); iv.setFitWidth(220); iv.setPreserveRatio(true);
@@ -175,29 +264,36 @@ public class afficherFrontChargeController {
 
         Label lblTitre = new Label(charge.getTitre());
         lblTitre.setFont(Font.font("System", FontWeight.BOLD, 16));
-        lblTitre.setTextFill(Color.web("#0e5384"));
+        lblTitre.setTextFill(Color.web("#E8EDF5"));
 
         Label lblMontant = new Label(charge.getMontant() + " DT");
         lblMontant.setFont(Font.font("System", FontWeight.BOLD, 20));
-        lblMontant.setTextFill(Color.web("#27ae60"));
+        lblMontant.setTextFill(Color.web("#00E5CC"));
+
+        Label lblType = new Label(charge.getType().toString());
+        lblType.setTextFill(Color.web("#8892A4"));
+        lblType.setStyle("-fx-background-color: rgba(255,255,255,0.05); -fx-padding: 5 10; -fx-background-radius: 10;");
 
         HBox actionBox = new HBox(8);
         actionBox.setAlignment(Pos.CENTER);
 
         Button btnMod = new Button("✎");
-        btnMod.setStyle("-fx-background-color: #4593cb; -fx-text-fill: white; -fx-cursor: hand;");
+        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 8;");
         btnMod.setOnAction(e -> openModifierForm(charge));
 
         Button btnSup = new Button("🗑");
-        btnSup.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
+        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 8;");
         btnSup.setOnAction(e -> supprimerCharge(charge));
 
         Button btnPdf = new Button("PDF");
-        btnPdf.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;");
+        btnPdf.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold; -fx-background-radius: 8;");
         btnPdf.setOnAction(e -> genererFicheChargePDF(charge));
 
         actionBox.getChildren().addAll(btnMod, btnSup, btnPdf);
-        card.getChildren().addAll(iv, lblTitre, lblMontant, new Label(charge.getType().toString()), actionBox);
+        card.getChildren().addAll(iv, lblTitre, lblMontant, lblType, actionBox);
+
+        card.setOnMouseEntered(e -> card.setStyle(hoverStyle));
+        card.setOnMouseExited(e -> card.setStyle(defaultStyle));
 
         return card;
     }

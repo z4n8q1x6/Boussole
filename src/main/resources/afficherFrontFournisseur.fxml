@@ -14,7 +14,7 @@
 
 <VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
       style="-fx-background-color: #06080F;"
-      stylesheets="@styles/dash.css"
+      stylesheets="@styles/ChargesdepensesDash.css"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="tn.esprit.chargesdepenses.gui.afficherFrontFournisseurController">
@@ -28,9 +28,25 @@
             <Label text="Nos Fournisseurs Partenaires" textFill="#E8EDF5">
                 <font><Font name="System Bold" size="26.0" /></font>
             </Label>
-            <Label text="Liste des partenaires et fournisseurs" textFill="#8892A4">
-                <font><Font size="13.0" /></font>
-            </Label>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Liste des partenaires" textFill="#8892A4">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label text="|" textFill="#374151" />
+
+                <Label fx:id="lblMeteo" text="Chargement météo..." textFill="#0EA5E9">
+                    <font><Font name="System Bold" size="13.0" /></font>
+                </Label>
+
+                <Label text="|" textFill="#374151" />
+
+                <Label text="Flash Business:" textFill="#00E5CC" style="-fx-font-weight: bold;">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label fx:id="lblNews" text="Chargement des news..." textFill="#8892A4" maxWidth="400.0">
+                    <font><Font name="System Italic" size="13.0" /></font>
+                </Label>
+            </HBox>
         </VBox>
         <Button fx:id="btnAjouter" text="+ Ajouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20 10 20; -fx-cursor: hand;" />
     </HBox>

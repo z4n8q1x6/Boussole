@@ -64,7 +64,6 @@ public class afficherBackFournisseurController {
             updateFournisseurInDB(f);
         });
 
-        // Affichage du NOM de la franchise
         colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
 
         addModifierButtonToTable();
@@ -192,10 +191,19 @@ public class afficherBackFournisseurController {
     private void openFrontOffice() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherFrontFournisseur.fxml"));
+            Parent root = loader.load();
             Stage stage = new Stage();
-            stage.setScene(new Scene(loader.load()));
+            Scene scene = new Scene(root);
+            
+            // Chargement dynamique du CSS
+            String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+            scene.getStylesheets().add(css);
+            
+            stage.setScene(scene);
+            stage.setTitle("Fournisseurs - Front Office");
             stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
             showAlert("Erreur", "Front Office inaccessible : " + e.getMessage());
         }
     }

@@ -40,22 +40,41 @@
     <TableView fx:id="tableCharges" styleClass="dark-table" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colTitre" prefWidth="130.0" text="TITRE" />
-            <TableColumn fx:id="colMontant" prefWidth="92.00003051757812" text="MONTANT" />
-            <TableColumn fx:id="colDate" prefWidth="127.19996643066406" text="DATE" />
-            <TableColumn fx:id="colType" prefWidth="160.80001831054688" text="TYPE" />
+            <TableColumn fx:id="colMontant" prefWidth="92.0" text="MONTANT (TND)" />
+            <TableColumn fx:id="colDate" prefWidth="127.0" text="DATE" />
+            <TableColumn fx:id="colType" prefWidth="160.0" text="TYPE" />
             <TableColumn fx:id="colStatus" prefWidth="100.0" text="STATUT" />
             <TableColumn fx:id="colFranchiseId" prefWidth="130.0" text="NOM FRANCHISE" />
-            <TableColumn fx:id="colModifier" prefWidth="60.0" text="MOD" />
-            <TableColumn fx:id="colSupprimer" prefWidth="60.0" text="SUPP" />
+            <TableColumn fx:id="colModifier" prefWidth="100.0" text="MODIFIER" />
+            <TableColumn fx:id="colSupprimer" prefWidth="100.0" text="SUPPRIMER" />
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
         </columnResizePolicy>
     </TableView>
 
-    <HBox alignment="CENTER_LEFT">
-        <Label fx:id="lblTotal" text="Total : 0.0 DT" textFill="#E8EDF5">
-            <font><Font name="System Bold" size="16.0" /></font>
-        </Label>
+    <HBox spacing="20.0" alignment="CENTER_LEFT" style="-fx-background-color: #0C0F1A; -fx-padding: 20; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15;">
+        <VBox spacing="5">
+            <Label text="TOTAL EN TND" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
+            <Label fx:id="lblTotal" text="0.00 DT" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="20.0" /></font>
+            </Label>
+        </VBox>
+
+        <VBox prefWidth="1" style="-fx-background-color: rgba(255,255,255,0.1);" />
+
+        <VBox spacing="5">
+            <Label text="TAUX DE CHANGE" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
+            <Label fx:id="lblTaux" text="Chargement du taux..." textFill="#0EA5E9">
+                <font><Font name="System Bold" size="14.0" /></font>
+            </Label>
+        </VBox>
+
+        <VBox spacing="5" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+            <Label text="ÉQUIVALENT EN EURO" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
+            <Label fx:id="lblTotalEur" text="0.00 €" textFill="#27ae60">
+                <font><Font name="System Bold" size="22.0" /></font>
+            </Label>
+        </VBox>
     </HBox>
 </VBox>
