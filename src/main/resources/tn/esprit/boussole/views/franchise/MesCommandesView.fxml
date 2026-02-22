@@ -6,9 +6,11 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
 <VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.MesCommandesController">
     <padding>
@@ -16,59 +18,91 @@
     </padding>
 
     <children>
-        <!-- En-tête avec titre et filtres -->
-        <VBox spacing="15.0">
+        <!-- En-tête -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
             <children>
-                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="📦 Mes Commandes" />
-
-                <!-- Statistiques rapides -->
-                <HBox spacing="20.0">
-                    <children>
-                        <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
-                            <children>
-                                <Label style="-fx-text-fill: #94A3B8;" text="Total commandes" />
-                                <Label fx:id="totalCommandesLabel" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
-                            </children>
-                        </VBox>
-
-                        <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
-                            <children>
-                                <Label style="-fx-text-fill: #94A3B8;" text="Total dépensé" />
-                                <Label fx:id="totalDepenseLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 24px; -fx-font-weight: bold;" text="0 DT" />
-                            </children>
-                        </VBox>
-                    </children>
-                </HBox>
-
-                <!-- Filtres -->
-                <HBox spacing="15.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8;" text="Filtrer par statut:" />
-                        <ComboBox fx:id="filtreStatutCombo" prefWidth="150" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155;" />
-
-                        <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="🔄 Rafraîchir" />
-                    </children>
-                </HBox>
+                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                    <Image url="@/images/orders.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Mes Commandes" />
             </children>
-        </VBox>
+        </HBox>
+
+        <!-- Statistiques -->
+        <HBox spacing="20.0">
+            <children>
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="200">
+                    <children>
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total commandes" />
+                        <Label fx:id="totalCommandesLabel" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;" text="0" />
+                    </children>
+                </VBox>
+
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="250">
+                    <children>
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total dépensé" />
+                        <Label fx:id="totalDepenseLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 32px; -fx-font-weight: bold;" text="0 DT" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- Filtres -->
+        <HBox spacing="15.0" alignment="CENTER_LEFT">
+            <children>
+                <Label style="-fx-text-fill: #94A3B8;" text="Filtrer par statut:" />
+                <ComboBox fx:id="filtreStatutCombo" prefWidth="180" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;" />
+
+                <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 18; -fx-background-radius: 8; -fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
+                            <Image url="@/images/refresh.png" />
+                        </ImageView>
+                    </graphic>
+                    <text>  Rafraîchir</text>
+                    <tooltip>
+                        <Tooltip text="Actualiser la liste" />
+                    </tooltip>
+                </Button>
+            </children>
+        </HBox>
 
         <!-- Tableau des commandes -->
-        <TableView fx:id="commandeTable" style="-fx-background-color: transparent; -fx-border-color: #334155; -fx-border-radius: 5;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colDate" prefWidth="180" text="Date" />
-                <TableColumn fx:id="colTotal" prefWidth="120" text="Total" />
-                <TableColumn fx:id="colStatut" prefWidth="120" text="Statut" />
-                <TableColumn fx:id="colActions" prefWidth="100" text="Actions" />
+                <TableColumn fx:id="colDate" prefWidth="200" text="Date" styleClass="date-column" />
+                <TableColumn fx:id="colTotal" prefWidth="150" text="Total" styleClass="montant-column" />
+                <TableColumn fx:id="colStatut" prefWidth="150" text="Statut" />
+                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
             </columns>
         </TableView>
 
         <!-- Boutons de filtre rapide -->
-        <HBox spacing="10.0" alignment="CENTER">
+        <HBox spacing="15.0" alignment="CENTER">
             <children>
-                <Button onAction="#handleEnAttente" style="-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="⏳ En attente" />
-                <Button onAction="#handleValidees" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="✅ Validées" />
-                <Button onAction="#handleRefusees" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="❌ Refusées" />
-                <Button onAction="#handleVoirToutes" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-cursor: hand;" text="📋 Toutes" />
+                <Button onAction="#handleEnAttente" style="-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 10, 0, 0, 0);" text="⏳ En attente">
+                    <tooltip>
+                        <Tooltip text="Afficher les commandes en attente" />
+                    </tooltip>
+                </Button>
+
+                <Button onAction="#handleValidees" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.3), 10, 0, 0, 0);" text="✅ Validées">
+                    <tooltip>
+                        <Tooltip text="Afficher les commandes validées" />
+                    </tooltip>
+                </Button>
+
+                <Button onAction="#handleRefusees" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.3), 10, 0, 0, 0);" text="❌ Refusées">
+                    <tooltip>
+                        <Tooltip text="Afficher les commandes refusées" />
+                    </tooltip>
+                </Button>
+
+                <Button onAction="#handleVoirToutes" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand;" text="📋 Toutes">
+                    <tooltip>
+                        <Tooltip text="Afficher toutes les commandes" />
+                    </tooltip>
+                </Button>
             </children>
         </HBox>
     </children>

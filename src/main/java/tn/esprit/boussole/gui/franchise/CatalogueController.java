@@ -44,9 +44,6 @@ public class CatalogueController implements Initializable {
         );
         sortCombo.setValue("Prix croissant");
 
-        // Styliser la ComboBox
-        sortCombo.setStyle("-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155;");
-
         // Ajouter les listeners
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filtrerEtTrier());
         sortCombo.setOnAction(e -> filtrerEtTrier());
@@ -60,7 +57,7 @@ public class CatalogueController implements Initializable {
             produitList = FXCollections.observableArrayList(produitService.selectAll());
             filteredList = FXCollections.observableArrayList(produitList);
             filtrerEtTrier();
-            System.out.println("✅ " + produitList.size() + " produits chargés");
+            System.out.println("✅ " + produitList.size() + " produits chargés dans le marketplace");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger le catalogue: " + e.getMessage());
             e.printStackTrace();
@@ -99,7 +96,6 @@ public class CatalogueController implements Initializable {
 
         // Mettre à jour le compteur
         resultCountLabel.setText(filteredList.size() + " produit(s) trouvé(s)");
-        resultCountLabel.setStyle("-fx-text-fill: #94A3B8;");
 
         // Afficher
         afficherCatalogue();
@@ -134,11 +130,12 @@ public class CatalogueController implements Initializable {
         // Image du produit
         ImageView imageView = new ImageView();
         imageView.setFitHeight(120);
-        imageView.setFitWidth(200);
+        imageView.setFitWidth(120);
         imageView.setPreserveRatio(true);
+        imageView.setStyle("-fx-background-color: #334155; -fx-background-radius: 5;");
 
-        // Charger l'image
-        chargerImage(imageView, p);
+        // Charger l'image du produit
+        chargerImageProduit(imageView, p);
 
         // Nom du produit
         Label nomLabel = new Label(p.getNom());
@@ -181,60 +178,33 @@ public class CatalogueController implements Initializable {
         return card;
     }
 
-    private void chargerImage(ImageView imageView, Produit p) {
+    private void chargerImageProduit(ImageView imageView, Produit p) {
         try {
             if (p.getImage() != null && !p.getImage().isEmpty()) {
                 String imagePath = p.getImage();
                 Image img = null;
 
-                // Essayer de charger l'image depuis différents endroits
+                // Essayer de charger l'image
                 if (imagePath.startsWith("http")) {
-                    // URL distante
-                    img = new Image(imagePath, 200, 120, true, true);
+                    img = new Image(imagePath, 120, 120, true, true);
                 } else if (imagePath.startsWith("file:")) {
-                    // Chemin file: déjà complet
-                    img = new Image(imagePath, 200, 120, true, true);
+                    img = new Image(imagePath, 120, 120, true, true);
                 } else {
-                    // Essayer comme chemin absolu
                     java.io.File file = new java.io.File(imagePath);
                     if (file.exists()) {
-                        img = new Image(file.toURI().toString(), 200, 120, true, true);
-                    } else {
-                        // Essayer dans le répertoire courant
-                        java.io.File currentDirFile = new java.io.File(System.getProperty("user.dir") + "/" + imagePath);
-                        if (currentDirFile.exists()) {
-                            img = new Image(currentDirFile.toURI().toString(), 200, 120, true, true);
-                        } else {
-                            // Image par défaut
-                            setDefaultImage(imageView);
-                            return;
-                        }
+                        img = new Image(file.toURI().toString(), 120, 120, true, true);
                     }
                 }
 
                 if (img != null && !img.isError()) {
                     imageView.setImage(img);
-                } else {
-                    setDefaultImage(imageView);
                 }
-            } else {
-                setDefaultImage(imageView);
             }
         } catch (Exception e) {
-            System.err.println("❌ Erreur chargement image pour produit " + p.getId() + ": " + p.getImage());
-            setDefaultImage(imageView);
+            // Ignorer, l'image restera grise
         }
     }
 
-    private void setDefaultImage(ImageView imageView) {
-        // Image par défaut (placeholder)
-        imageView.setStyle("-fx-background-color: #334155; -fx-background-radius: 5;");
-        imageView.setImage(null);
-    }
-
-    /**
-     * Ajouter un produit au panier
-     */
     private void ajouterAuPanier(Produit p) {
         // Demander la quantité
         TextInputDialog dialog = new TextInputDialog("1");
@@ -242,39 +212,27 @@ public class CatalogueController implements Initializable {
         dialog.setHeaderText("Ajouter " + p.getNom() + " au panier");
         dialog.setContentText("Quantité:");
 
-        // Styliser la boîte de dialogue
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.setStyle("-fx-background-color: #1E293B;");
-        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
-        dialog.getEditor().setStyle("-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;");
-
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             try {
                 int quantite = Integer.parseInt(result.get());
 
-                // Vérifier que la quantité est valide
                 if (quantite <= 0) {
                     showAlert(Alert.AlertType.WARNING, "Quantité invalide",
                             "La quantité doit être supérieure à 0.");
                     return;
                 }
 
-                // Vérifier le stock
                 if (quantite > p.getStock_dispo()) {
                     showAlert(Alert.AlertType.WARNING, "Stock insuffisant",
-                            "Stock disponible: " + p.getStock_dispo() + "\n" +
-                                    "Quantité demandée: " + quantite);
+                            "Stock disponible: " + p.getStock_dispo());
                     return;
                 }
 
-                // Ajouter au panier via le PanierManager
                 PanierManager.getInstance().ajouterProduit(p, quantite);
 
-                // Afficher confirmation
                 showAlert(Alert.AlertType.INFORMATION, "Ajouté au panier",
-                        "✅ " + p.getNom() + " (x" + quantite + ") a été ajouté au panier !\n\n" +
-                                "Total articles: " + PanierManager.getInstance().getQuantiteTotale());
+                        "✅ " + p.getNom() + " (x" + quantite + ") a été ajouté au panier !");
 
             } catch (NumberFormatException e) {
                 showAlert(Alert.AlertType.WARNING, "Quantité invalide",
@@ -286,7 +244,6 @@ public class CatalogueController implements Initializable {
     @FXML
     private void handleRefresh() {
         chargerProduits();
-        showAlert(Alert.AlertType.INFORMATION, "Rafraîchissement", "Catalogue mis à jour !");
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
@@ -294,12 +251,6 @@ public class CatalogueController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
-
-        // Styliser l'alerte
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.setStyle("-fx-background-color: #1E293B;");
-        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
-
         alert.showAndWait();
     }
 }

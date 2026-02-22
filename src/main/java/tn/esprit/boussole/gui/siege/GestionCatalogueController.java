@@ -55,13 +55,20 @@ public class GestionCatalogueController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         produitService = new ProduitService();
 
+        // Vérifier que tous les champs sont injectés
+        verifierChamps();
+
         // Initialiser les filtres
-        filterStockCombo.getItems().addAll("Tous", "En stock", "Rupture de stock", "Stock faible (<5)");
-        filterStockCombo.setValue("Tous");
-        filterStockCombo.setOnAction(e -> filtrerProduits());
+        if (filterStockCombo != null) {
+            filterStockCombo.getItems().addAll("Tous", "En stock", "Rupture de stock", "Stock faible (<5)");
+            filterStockCombo.setValue("Tous");
+            filterStockCombo.setOnAction(e -> filtrerProduits());
+        }
 
         // Recherche en temps réel
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> filtrerProduits());
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> filtrerProduits());
+        }
 
         // Configuration du tableau
         configurerTable();
@@ -69,188 +76,269 @@ public class GestionCatalogueController implements Initializable {
         // Charger les données
         chargerDonnees();
 
-        // Validation en temps réel
+        // Ajouter les validations APRÈS que tous les champs soient initialisés
         ajouterValidations();
+    }
+
+    private void verifierChamps() {
+        System.out.println("=== Vérification des champs FXML ===");
+        System.out.println("nomField: " + (nomField != null ? "OK" : "NULL"));
+        System.out.println("referenceField: " + (referenceField != null ? "OK" : "NULL"));
+        System.out.println("prixField: " + (prixField != null ? "OK" : "NULL"));
+        System.out.println("stockField: " + (stockField != null ? "OK" : "NULL"));
+        System.out.println("imageField: " + (imageField != null ? "OK" : "NULL"));
+        System.out.println("searchField: " + (searchField != null ? "OK" : "NULL"));
+        System.out.println("filterStockCombo: " + (filterStockCombo != null ? "OK" : "NULL"));
+        System.out.println("totalProduitsLabel: " + (totalProduitsLabel != null ? "OK" : "NULL"));
+        System.out.println("enStockLabel: " + (enStockLabel != null ? "OK" : "NULL"));
+        System.out.println("ruptureLabel: " + (ruptureLabel != null ? "OK" : "NULL"));
+        System.out.println("valeurStockLabel: " + (valeurStockLabel != null ? "OK" : "NULL"));
+        System.out.println("produitTable: " + (produitTable != null ? "OK" : "NULL"));
+        System.out.println("================================");
     }
 
     private void ajouterValidations() {
         // Validation du champ Prix (nombre décimal)
-        prixField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*\\.?\\d*")) {
-                prixField.setText(oldValue);
-            }
-        });
+        if (prixField != null) {
+            prixField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("\\d*\\.?\\d*")) {
+                    prixField.setText(oldValue);
+                }
+            });
+        } else {
+            System.err.println("⚠️ prixField est null - validation non ajoutée");
+        }
 
         // Validation du champ Stock (nombre entier)
-        stockField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                stockField.setText(oldValue);
-            }
-        });
+        if (stockField != null) {
+            stockField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("\\d*")) {
+                    stockField.setText(oldValue);
+                }
+            });
+        } else {
+            System.err.println("⚠️ stockField est null - validation non ajoutée");
+        }
 
         // Validation du champ Nom (pas de chiffres)
-        nomField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.matches(".*\\d.*")) {
-                showAlert(Alert.AlertType.WARNING, "Attention", "Le nom ne doit pas contenir de chiffres");
-                nomField.setText(oldValue);
-            }
-        });
+        if (nomField != null) {
+            nomField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue.matches(".*\\d.*")) {
+                    showAlert(Alert.AlertType.WARNING, "Attention", "Le nom ne doit pas contenir de chiffres");
+                    nomField.setText(oldValue);
+                }
+            });
+        } else {
+            System.err.println("⚠️ nomField est null - validation non ajoutée");
+        }
     }
 
     private void configurerTable() {
+        if (produitTable == null) {
+            System.err.println("⚠️ produitTable est null !");
+            return;
+        }
+
         // Rendre le tableau éditable
         produitTable.setEditable(true);
         produitTable.getSelectionModel().setCellSelectionEnabled(true);
 
         // Colonne NOM
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colNom.setCellFactory(TextFieldTableCell.forTableColumn());
-        colNom.setOnEditCommit(event -> {
-            String newValue = event.getNewValue();
-            if (newValue.matches(".*\\d.*")) {
-                showAlert(Alert.AlertType.WARNING, "Attention", "Le nom ne doit pas contenir de chiffres");
-                chargerDonnees();
-                return;
-            }
-            Produit p = event.getRowValue();
-            p.setNom(newValue);
-            sauvegarderModification(p);
-        });
-        colNom.setPrefWidth(150);
+        if (colNom != null) {
+            colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+            colNom.setCellFactory(TextFieldTableCell.forTableColumn());
+            colNom.setOnEditCommit(event -> {
+                String newValue = event.getNewValue();
+                if (newValue.matches(".*\\d.*")) {
+                    showAlert(Alert.AlertType.WARNING, "Attention", "Le nom ne doit pas contenir de chiffres");
+                    chargerDonnees();
+                    return;
+                }
+                Produit p = event.getRowValue();
+                p.setNom(newValue);
+                sauvegarderModification(p);
+            });
+            colNom.setPrefWidth(150);
+        } else {
+            System.err.println("⚠️ colNom est null");
+        }
 
         // Colonne RÉFÉRENCE
-        colReference.setCellValueFactory(new PropertyValueFactory<>("reference"));
-        colReference.setCellFactory(TextFieldTableCell.forTableColumn());
-        colReference.setOnEditCommit(event -> {
-            String newValue = event.getNewValue();
-            if (newValue.matches("^0+$")) {
-                showAlert(Alert.AlertType.WARNING, "Attention", "La référence ne doit pas être que des zéros");
-                chargerDonnees();
-                return;
-            }
-            Produit p = event.getRowValue();
-            p.setReference(newValue);
-            sauvegarderModification(p);
-        });
-        colReference.setPrefWidth(120);
+        if (colReference != null) {
+            colReference.setCellValueFactory(new PropertyValueFactory<>("reference"));
+            colReference.setCellFactory(TextFieldTableCell.forTableColumn());
+            colReference.setOnEditCommit(event -> {
+                String newValue = event.getNewValue();
+                if (newValue.matches("^0+$")) {
+                    showAlert(Alert.AlertType.WARNING, "Attention", "La référence ne doit pas être que des zéros");
+                    chargerDonnees();
+                    return;
+                }
+                Produit p = event.getRowValue();
+                p.setReference(newValue);
+                sauvegarderModification(p);
+            });
+            colReference.setPrefWidth(120);
+        } else {
+            System.err.println("⚠️ colReference est null");
+        }
 
         // Colonne PRIX
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_achat"));
-        colPrix.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter() {
-            @Override
-            public Double fromString(String value) {
-                try {
-                    double prix = Double.parseDouble(value);
-                    if (prix <= 0) {
-                        showAlert(Alert.AlertType.WARNING, "Attention", "Le prix doit être supérieur à 0");
+        if (colPrix != null) {
+            colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_achat"));
+            colPrix.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter() {
+                @Override
+                public Double fromString(String value) {
+                    try {
+                        double prix = Double.parseDouble(value);
+                        if (prix <= 0) {
+                            showAlert(Alert.AlertType.WARNING, "Attention", "Le prix doit être supérieur à 0");
+                            return null;
+                        }
+                        return prix;
+                    } catch (NumberFormatException e) {
+                        showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix doit être un nombre valide");
                         return null;
                     }
-                    return prix;
-                } catch (NumberFormatException e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix doit être un nombre valide");
-                    return null;
                 }
-            }
-        }));
-        colPrix.setOnEditCommit(event -> {
-            Produit p = event.getRowValue();
-            Double newValue = event.getNewValue();
-            if (newValue != null && newValue > 0) {
-                p.setPrix_achat(newValue);
-                sauvegarderModification(p);
-            }
-        });
-        colPrix.setPrefWidth(100);
+            }));
+            colPrix.setOnEditCommit(event -> {
+                Produit p = event.getRowValue();
+                Double newValue = event.getNewValue();
+                if (newValue != null && newValue > 0) {
+                    p.setPrix_achat(newValue);
+                    sauvegarderModification(p);
+                }
+            });
+            colPrix.setPrefWidth(100);
+        } else {
+            System.err.println("⚠️ colPrix est null");
+        }
 
         // Colonne STOCK
-        colStock.setCellValueFactory(new PropertyValueFactory<>("stock_dispo"));
-        colStock.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter() {
-            @Override
-            public Integer fromString(String value) {
-                try {
-                    int stock = Integer.parseInt(value);
-                    if (stock < 0) {
-                        showAlert(Alert.AlertType.WARNING, "Attention", "Le stock ne peut pas être négatif");
+        if (colStock != null) {
+            colStock.setCellValueFactory(new PropertyValueFactory<>("stock_dispo"));
+            colStock.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter() {
+                @Override
+                public Integer fromString(String value) {
+                    try {
+                        int stock = Integer.parseInt(value);
+                        if (stock < 0) {
+                            showAlert(Alert.AlertType.WARNING, "Attention", "Le stock ne peut pas être négatif");
+                            return null;
+                        }
+                        return stock;
+                    } catch (NumberFormatException e) {
+                        showAlert(Alert.AlertType.ERROR, "Erreur", "Le stock doit être un nombre entier");
                         return null;
                     }
-                    return stock;
-                } catch (NumberFormatException e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", "Le stock doit être un nombre entier");
-                    return null;
                 }
-            }
-        }));
-        colStock.setOnEditCommit(event -> {
-            Produit p = event.getRowValue();
-            Integer newValue = event.getNewValue();
-            if (newValue != null && newValue >= 0) {
-                p.setStock_dispo(newValue);
-                sauvegarderModification(p);
-            }
-        });
-        colStock.setPrefWidth(80);
+            }));
+            colStock.setOnEditCommit(event -> {
+                Produit p = event.getRowValue();
+                Integer newValue = event.getNewValue();
+                if (newValue != null && newValue >= 0) {
+                    p.setStock_dispo(newValue);
+                    sauvegarderModification(p);
+                }
+            });
+            colStock.setPrefWidth(80);
+        } else {
+            System.err.println("⚠️ colStock est null");
+        }
 
         // Colonne IMAGE (avec aperçu)
-        colImage.setCellValueFactory(new PropertyValueFactory<>("image"));
-        colImage.setCellFactory(param -> new TableCell<Produit, String>() {
-            private final ImageView imageView = new ImageView();
+        if (colImage != null) {
+            colImage.setCellValueFactory(new PropertyValueFactory<>("image"));
+            colImage.setCellFactory(param -> new TableCell<Produit, String>() {
+                private final ImageView imageView = new ImageView();
 
-            {
-                imageView.setFitHeight(40);
-                imageView.setFitWidth(40);
-                imageView.setPreserveRatio(true);
-            }
+                {
+                    imageView.setFitHeight(40);
+                    imageView.setFitWidth(40);
+                    imageView.setPreserveRatio(true);
+                }
 
-            @Override
-            protected void updateItem(String imagePath, boolean empty) {
-                super.updateItem(imagePath, empty);
+                @Override
+                protected void updateItem(String imagePath, boolean empty) {
+                    super.updateItem(imagePath, empty);
 
-                if (empty || imagePath == null || imagePath.isEmpty()) {
-                    setGraphic(null);
-                    setText(null);
-                } else {
-                    try {
-                        Image image = new Image(imagePath, 40, 40, true, true);
-                        imageView.setImage(image);
-                        setGraphic(imageView);
-                        setText(null);
-                    } catch (Exception e) {
+                    if (empty || imagePath == null || imagePath.isEmpty()) {
                         setGraphic(null);
-                        setText("📷");
+                        setText(null);
+                    } else {
+                        try {
+                            Image image = new Image(imagePath, 40, 40, true, true);
+                            imageView.setImage(image);
+                            setGraphic(imageView);
+                            setText(null);
+                        } catch (Exception e) {
+                            setGraphic(null);
+                            setText("📷");
+                        }
                     }
                 }
-            }
-        });
-        colImage.setPrefWidth(80);
+            });
+            colImage.setPrefWidth(80);
+        } else {
+            System.err.println("⚠️ colImage est null");
+        }
 
         // Colonne ACTIONS (Modifier/Supprimer)
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editBtn = new Button("✏️");
-            private final Button deleteBtn = new Button("🗑️");
-            private final HBox pane = new HBox(5, editBtn, deleteBtn);
+        if (colActions != null) {
+            colActions.setCellFactory(param -> new TableCell<>() {
+                private final Button editBtn = new Button();
+                private final Button deleteBtn = new Button();
+                private final HBox pane = new HBox(5, editBtn, deleteBtn);
 
-            {
-                editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
-                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                {
+                    // Configurer le bouton Modifier avec image
+                    try {
+                        ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
+                        editIcon.setFitHeight(16);
+                        editIcon.setFitWidth(16);
+                        editIcon.setPreserveRatio(true);
+                        editBtn.setGraphic(editIcon);
+                    } catch (Exception e) {
+                        editBtn.setText("✏️");
+                    }
+                    editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                    editBtn.setTooltip(new Tooltip("Modifier"));
 
-                editBtn.setOnAction(event -> {
-                    Produit produit = getTableView().getItems().get(getIndex());
-                    remplirFormulaire(produit);
-                });
+                    // Configurer le bouton Supprimer avec image
+                    try {
+                        ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
+                        deleteIcon.setFitHeight(16);
+                        deleteIcon.setFitWidth(16);
+                        deleteIcon.setPreserveRatio(true);
+                        deleteBtn.setGraphic(deleteIcon);
+                    } catch (Exception e) {
+                        deleteBtn.setText("🗑️");
+                    }
+                    deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 3;");
+                    deleteBtn.setTooltip(new Tooltip("Supprimer"));
 
-                deleteBtn.setOnAction(event -> {
-                    Produit produit = getTableView().getItems().get(getIndex());
-                    supprimerProduit(produit);
-                });
-            }
+                    editBtn.setOnAction(event -> {
+                        Produit produit = getTableView().getItems().get(getIndex());
+                        remplirFormulaire(produit);
+                    });
 
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
-            }
-        });
-        colActions.setPrefWidth(100);
+                    deleteBtn.setOnAction(event -> {
+                        Produit produit = getTableView().getItems().get(getIndex());
+                        supprimerProduit(produit);
+                    });
+                }
+
+                @Override
+                protected void updateItem(Void item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setGraphic(empty ? null : pane);
+                }
+            });
+            colActions.setPrefWidth(100);
+        } else {
+            System.err.println("⚠️ colActions est null");
+        }
     }
 
     @FXML
@@ -276,19 +364,19 @@ public class GestionCatalogueController implements Initializable {
     }
 
     private void remplirFormulaire(Produit produit) {
-        nomField.setText(produit.getNom());
-        referenceField.setText(produit.getReference());
-        prixField.setText(String.valueOf(produit.getPrix_achat()));
-        stockField.setText(String.valueOf(produit.getStock_dispo()));
-        imageField.setText(produit.getImage());
+        if (nomField != null) nomField.setText(produit.getNom());
+        if (referenceField != null) referenceField.setText(produit.getReference());
+        if (prixField != null) prixField.setText(String.valueOf(produit.getPrix_achat()));
+        if (stockField != null) stockField.setText(String.valueOf(produit.getStock_dispo()));
+        if (imageField != null) imageField.setText(produit.getImage());
 
         try {
-            if (produit.getImage() != null && !produit.getImage().isEmpty()) {
+            if (produit.getImage() != null && !produit.getImage().isEmpty() && apercuImage != null) {
                 Image image = new Image(produit.getImage(), 100, 100, true, true);
                 apercuImage.setImage(image);
             }
         } catch (Exception e) {
-            apercuImage.setImage(null);
+            if (apercuImage != null) apercuImage.setImage(null);
         }
     }
 
@@ -306,8 +394,11 @@ public class GestionCatalogueController implements Initializable {
         try {
             produitList = FXCollections.observableArrayList(produitService.selectAll());
             filteredList = FXCollections.observableArrayList(produitList);
-            produitTable.setItems(filteredList);
+            if (produitTable != null) {
+                produitTable.setItems(filteredList);
+            }
             mettreAJourStatistiques();
+            System.out.println("✅ " + produitList.size() + " produits chargés");
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les produits: " + e.getMessage());
             e.printStackTrace();
@@ -315,37 +406,47 @@ public class GestionCatalogueController implements Initializable {
     }
 
     private void filtrerProduits() {
-        String recherche = searchField.getText().toLowerCase();
-        String filtreStock = filterStockCombo.getValue();
+        if (produitList == null) return;
+
+        String recherche = searchField != null ? searchField.getText().toLowerCase() : "";
+        String filtreStock = filterStockCombo != null ? filterStockCombo.getValue() : "Tous";
 
         filteredList = FXCollections.observableArrayList();
 
         for (Produit p : produitList) {
             // Filtre texte
             boolean correspondTexte = recherche.isEmpty() ||
-                    p.getNom().toLowerCase().contains(recherche) ||
-                    p.getReference().toLowerCase().contains(recherche);
+                    (p.getNom() != null && p.getNom().toLowerCase().contains(recherche)) ||
+                    (p.getReference() != null && p.getReference().toLowerCase().contains(recherche));
 
             if (!correspondTexte) continue;
 
             // Filtre stock
-            switch (filtreStock) {
-                case "Tous":
-                    filteredList.add(p);
-                    break;
-                case "En stock":
-                    if (p.getStock_dispo() > 0) filteredList.add(p);
-                    break;
-                case "Rupture de stock":
-                    if (p.getStock_dispo() == 0) filteredList.add(p);
-                    break;
-                case "Stock faible (<5)":
-                    if (p.getStock_dispo() > 0 && p.getStock_dispo() < 5) filteredList.add(p);
-                    break;
+            if (filtreStock != null) {
+                switch (filtreStock) {
+                    case "Tous":
+                        filteredList.add(p);
+                        break;
+                    case "En stock":
+                        if (p.getStock_dispo() > 0) filteredList.add(p);
+                        break;
+                    case "Rupture de stock":
+                        if (p.getStock_dispo() == 0) filteredList.add(p);
+                        break;
+                    case "Stock faible (<5)":
+                        if (p.getStock_dispo() > 0 && p.getStock_dispo() < 5) filteredList.add(p);
+                        break;
+                    default:
+                        filteredList.add(p);
+                }
+            } else {
+                filteredList.add(p);
             }
         }
 
-        produitTable.setItems(filteredList);
+        if (produitTable != null) {
+            produitTable.setItems(filteredList);
+        }
     }
 
     private void mettreAJourStatistiques() {
@@ -355,10 +456,13 @@ public class GestionCatalogueController implements Initializable {
             int rupture = produitService.countRupture();
             double valeur = produitService.getValeurTotaleStock();
 
-            totalProduitsLabel.setText(String.valueOf(total));
-            enStockLabel.setText(String.valueOf(enStock));
-            ruptureLabel.setText(String.valueOf(rupture));
-            valeurStockLabel.setText(String.format("%.2f DT", valeur));
+            if (totalProduitsLabel != null) totalProduitsLabel.setText(String.valueOf(total));
+            if (enStockLabel != null) enStockLabel.setText(String.valueOf(enStock));
+            if (ruptureLabel != null) ruptureLabel.setText(String.valueOf(rupture));
+            if (valeurStockLabel != null) valeurStockLabel.setText(String.format("%.2f DT", valeur));
+
+            System.out.println("📊 Statistiques - Total: " + total + ", En stock: " + enStock + ", Rupture: " + rupture);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -396,13 +500,15 @@ public class GestionCatalogueController implements Initializable {
 
     private void supprimerProduit(Produit produit) {
         try {
-            // Vérifier si le produit est utilisé dans des commandes
-            // Cette vérification sera faite plus tard avec LigneCommandeService
-
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Confirmation");
             confirm.setHeaderText("Supprimer le produit");
             confirm.setContentText("Êtes-vous sûr de vouloir supprimer le produit \"" + produit.getNom() + "\" ?");
+
+            // Styliser l'alerte
+            DialogPane dialogPane = confirm.getDialogPane();
+            dialogPane.setStyle("-fx-background-color: #1E293B;");
+            dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
 
             Optional<ButtonType> result = confirm.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -417,13 +523,6 @@ public class GestionCatalogueController implements Initializable {
     }
 
     @FXML
-    private void handleModifier() {
-        // La modification se fait directement dans le tableau
-        // Cette méthode peut être utilisée pour valider les modifications en cours
-        showAlert(Alert.AlertType.INFORMATION, "Info", "Double-cliquez sur une cellule pour modifier");
-    }
-
-    @FXML
     private void handleEffacer() {
         viderFormulaire();
     }
@@ -431,46 +530,48 @@ public class GestionCatalogueController implements Initializable {
     @FXML
     private void handleRefresh() {
         chargerDonnees();
+        if (searchField != null) searchField.clear();
+        if (filterStockCombo != null) filterStockCombo.setValue("Tous");
     }
 
     private void viderFormulaire() {
-        nomField.clear();
-        referenceField.clear();
-        prixField.clear();
-        stockField.clear();
-        imageField.clear();
-        apercuImage.setImage(null);
+        if (nomField != null) nomField.clear();
+        if (referenceField != null) referenceField.clear();
+        if (prixField != null) prixField.clear();
+        if (stockField != null) stockField.clear();
+        if (imageField != null) imageField.clear();
+        if (apercuImage != null) apercuImage.setImage(null);
     }
 
     private boolean validerChampsAjout() {
         // Validation Nom
-        String nom = nomField.getText();
-        if (nom.isEmpty()) {
+        if (nomField == null || nomField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Attention", "Le nom est obligatoire");
             return false;
         }
+        String nom = nomField.getText();
         if (nom.matches(".*\\d.*")) {
             showAlert(Alert.AlertType.WARNING, "Attention", "Le nom ne doit pas contenir de chiffres");
             return false;
         }
 
         // Validation Référence
-        String ref = referenceField.getText();
-        if (ref.isEmpty()) {
+        if (referenceField == null || referenceField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Attention", "La référence est obligatoire");
             return false;
         }
+        String ref = referenceField.getText();
         if (ref.matches("^0+$")) {
             showAlert(Alert.AlertType.WARNING, "Attention", "La référence ne doit pas être que des zéros");
             return false;
         }
 
         // Validation Prix
-        String prixStr = prixField.getText();
-        if (prixStr.isEmpty()) {
+        if (prixField == null || prixField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Attention", "Le prix est obligatoire");
             return false;
         }
+        String prixStr = prixField.getText();
         try {
             double prix = Double.parseDouble(prixStr);
             if (prix <= 0) {
@@ -483,11 +584,11 @@ public class GestionCatalogueController implements Initializable {
         }
 
         // Validation Stock
-        String stockStr = stockField.getText();
-        if (stockStr.isEmpty()) {
+        if (stockField == null || stockField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Attention", "Le stock est obligatoire");
             return false;
         }
+        String stockStr = stockField.getText();
         try {
             int stock = Integer.parseInt(stockStr);
             if (stock < 0) {
@@ -507,6 +608,15 @@ public class GestionCatalogueController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
+
+        // Styliser l'alerte
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #1E293B;");
+        Label contentLabel = (Label) dialogPane.lookup(".content.label");
+        if (contentLabel != null) {
+            contentLabel.setStyle("-fx-text-fill: white;");
+        }
+
         alert.showAndWait();
     }
 }

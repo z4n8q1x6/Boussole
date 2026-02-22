@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.siege.CarteFranchisesController">
+
+    <!-- Haut: Barre d'outils -->
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #1E293B; -fx-padding: 15;">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <children>
+                        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" text="🗺️ Carte des franchises" />
+                        <Label fx:id="countLabel" style="-fx-background-color: #0EA5E9; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15;" text="0" />
+                    </children>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <children>
+                        <Label style="-fx-text-fill: #94A3B8;" text="Filtrer:" />
+                        <ComboBox fx:id="franchiseFilter" prefWidth="200" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" />
+
+                        <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="16" fitWidth="16" preserveRatio="true">
+                                    <Image url="@/images/refresh.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Rafraîchir</text>
+                            <tooltip>
+                                <Tooltip text="Recharger la carte" />
+                            </tooltip>
+                        </Button>
+
+                        <Button onAction="#handleZoomIn" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="+" />
+                        <Button onAction="#handleZoomOut" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="-" />
+                        <Button onAction="#handleCentrerTunis" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="📍 Centrer" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+
+    <!-- Centre: Carte -->
+    <center>
+        <StackPane>
+            <children>
+                <WebView fx:id="webView" />
+
+                <!-- Overlay de chargement -->
+                <VBox fx:id="loadingPane" alignment="CENTER" spacing="20" style="-fx-background-color: rgba(0,0,0,0.8);">
+                    <ProgressIndicator fx:id="progressIndicator" />
+                    <Label fx:id="statusLabel" text="Chargement de la carte..." style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                </VBox>
+            </children>
+        </StackPane>
+    </center>
+
+    <!-- Bas: Infos -->
+    <bottom>
+        <HBox style="-fx-background-color: #1E293B; -fx-padding: 10;" alignment="CENTER_RIGHT">
+            <children>
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="Données © OpenStreetMap contributeurs" />
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

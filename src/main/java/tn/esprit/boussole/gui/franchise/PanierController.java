@@ -125,6 +125,11 @@ public class PanierController implements Initializable {
         confirm.setHeaderText("Confirmer votre commande");
         confirm.setContentText(recap + "\n\nVoulez-vous valider cette commande ?");
 
+        // Styliser l'alerte
+        DialogPane dialogPane = confirm.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #1E293B;");
+        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
+
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
@@ -212,6 +217,11 @@ public class PanierController implements Initializable {
         confirm.setHeaderText("Vider le panier");
         confirm.setContentText("Êtes-vous sûr de vouloir vider votre panier ?");
 
+        // Styliser l'alerte
+        DialogPane dialogPane = confirm.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #1E293B;");
+        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
+
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             PanierManager.getInstance().viderPanier();
@@ -245,10 +255,16 @@ public class PanierController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
+
+        // Styliser l'alerte
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #1E293B;");
+        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white;");
+
         alert.showAndWait();
     }
 
-    // Cellule personnalisée pour l'affichage du panier
+    // Cellule personnalisée pour l'affichage du panier avec images
     class PanierCell extends ListCell<ProduitPanier> {
         private final HBox content = new HBox(15);
         private final ImageView imageView = new ImageView();
@@ -257,15 +273,15 @@ public class PanierController implements Initializable {
         private final Label prixLabel = new Label();
         private final HBox quantiteBox = new HBox(10);
         private final Label quantiteLabel = new Label();
-        private final Button moinsBtn = new Button("-");
-        private final Button plusBtn = new Button("+");
-        private final Button supprimerBtn = new Button("🗑️");
+        private final Button moinsBtn = new Button();
+        private final Button plusBtn = new Button();
+        private final Button supprimerBtn = new Button();
         private final Label totalLigneLabel = new Label();
 
         public PanierCell() {
             super();
 
-            // Configuration de l'image
+            // Configuration de l'image du produit
             imageView.setFitHeight(60);
             imageView.setFitWidth(60);
             imageView.setPreserveRatio(true);
@@ -277,10 +293,10 @@ public class PanierController implements Initializable {
             totalLigneLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 16px;");
             quantiteLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5 10; -fx-background-color: #1E293B; -fx-background-radius: 5;");
 
-            // Style des boutons
-            moinsBtn.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 30;");
-            plusBtn.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 30;");
-            supprimerBtn.setStyle("-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40;");
+            // Configuration des boutons avec images
+            configurerBouton(moinsBtn, "/images/minus.png", "Moins");
+            configurerBouton(plusBtn, "/images/plus.png", "Plus");
+            configurerBouton(supprimerBtn, "/images/delete.png", "Supprimer");
 
             // Actions des boutons
             moinsBtn.setOnAction(e -> {
@@ -321,6 +337,22 @@ public class PanierController implements Initializable {
             HBox.setMargin(totalLigneLabel, new Insets(0, 10, 0, 0));
         }
 
+        private void configurerBouton(Button btn, String imagePath, String tooltip) {
+            try {
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream(imagePath)));
+                icon.setFitHeight(16);
+                icon.setFitWidth(16);
+                icon.setPreserveRatio(true);
+                btn.setGraphic(icon);
+            } catch (Exception e) {
+                System.err.println("Image non trouvée: " + imagePath);
+                btn.setText(tooltip.equals("Moins") ? "-" : tooltip.equals("Plus") ? "+" : "🗑️");
+            }
+
+            btn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-pref-width: 30; -fx-pref-height: 30;");
+            btn.setTooltip(new Tooltip(tooltip));
+        }
+
         private void mettreAJourAffichage(ProduitPanier item) {
             quantiteLabel.setText(String.valueOf(item.getQuantite()));
             totalLigneLabel.setText(String.format("%.2f DT", item.getTotalLigne()));
@@ -333,17 +365,8 @@ public class PanierController implements Initializable {
             if (empty || item == null) {
                 setGraphic(null);
             } else {
-                // Charger l'image
-                try {
-                    if (item.getImage() != null && !item.getImage().isEmpty()) {
-                        Image img = new Image(item.getImage(), 60, 60, true, true);
-                        imageView.setImage(img);
-                    } else {
-                        imageView.setImage(null);
-                    }
-                } catch (Exception e) {
-                    imageView.setImage(null);
-                }
+                // Charger l'image du produit
+                chargerImageProduit(item);
 
                 // Mettre à jour les textes
                 nomLabel.setText(item.getNom());
@@ -351,10 +374,37 @@ public class PanierController implements Initializable {
                 quantiteLabel.setText(String.valueOf(item.getQuantite()));
                 totalLigneLabel.setText(String.format("%.2f DT", item.getTotalLigne()));
 
-                // Désactiver le bouton + si stock atteint
-                plusBtn.setDisable(item.getQuantite() >= item.getStock());
-
                 setGraphic(content);
+            }
+        }
+
+        private void chargerImageProduit(ProduitPanier item) {
+            try {
+                if (item.getImage() != null && !item.getImage().isEmpty()) {
+                    String imagePath = item.getImage();
+                    Image img = null;
+
+                    if (imagePath.startsWith("http")) {
+                        img = new Image(imagePath, 60, 60, true, true);
+                    } else if (imagePath.startsWith("file:")) {
+                        img = new Image(imagePath, 60, 60, true, true);
+                    } else {
+                        java.io.File file = new java.io.File(imagePath);
+                        if (file.exists()) {
+                            img = new Image(file.toURI().toString(), 60, 60, true, true);
+                        }
+                    }
+
+                    if (img != null && !img.isError()) {
+                        imageView.setImage(img);
+                    } else {
+                        imageView.setImage(null);
+                    }
+                } else {
+                    imageView.setImage(null);
+                }
+            } catch (Exception e) {
+                imageView.setImage(null);
             }
         }
     }

@@ -7,14 +7,13 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
 <VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.siege.GestionCatalogueController">
     <padding>
@@ -22,37 +21,44 @@
     </padding>
 
     <children>
-        <!-- En-tête -->
-        <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="📦 Gestion du catalogue" />
+        <!-- En-tête avec image -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <children>
+                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                    <Image url="@/images/products.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Gestion du catalogue" />
+            </children>
+        </HBox>
 
         <!-- Statistiques -->
         <HBox spacing="20.0">
             <children>
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="150">
                     <children>
-                        <Label style="-fx-text-fill: #94A3B8;" text="Total produits" />
-                        <Label fx:id="totalProduitsLabel" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total produits" />
+                        <Label fx:id="totalProduitsLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
                     </children>
                 </VBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="150">
                     <children>
-                        <Label style="-fx-text-fill: #94A3B8;" text="En stock" />
-                        <Label fx:id="enStockLabel" style="-fx-text-fill: #10B981; -fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="En stock" />
+                        <Label fx:id="enStockLabel" style="-fx-text-fill: #10B981; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
                     </children>
                 </VBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="150">
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="150">
                     <children>
-                        <Label style="-fx-text-fill: #94A3B8;" text="Rupture" />
-                        <Label fx:id="ruptureLabel" style="-fx-text-fill: #EF4444; -fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Rupture" />
+                        <Label fx:id="ruptureLabel" style="-fx-text-fill: #EF4444; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
                     </children>
                 </VBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15;" prefWidth="200">
+                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="200">
                     <children>
-                        <Label style="-fx-text-fill: #94A3B8;" text="Valeur du stock" />
-                        <Label fx:id="valeurStockLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 24px; -fx-font-weight: bold;" text="0 DT" />
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Valeur du stock" />
+                        <Label fx:id="valeurStockLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 28px; -fx-font-weight: bold;" text="0 DT" />
                     </children>
                 </VBox>
             </children>
@@ -61,31 +67,48 @@
         <!-- Filtres et recherche -->
         <HBox spacing="15.0" alignment="CENTER_LEFT">
             <children>
-                <TextField fx:id="searchField" promptText="Rechercher un produit..." style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-prompt-text-fill: #64748B; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Rechercher un produit..." style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-prompt-text-fill: #64748B; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12;" HBox.hgrow="ALWAYS" />
 
                 <Label style="-fx-text-fill: #94A3B8;" text="Stock:" />
-                <ComboBox fx:id="filterStockCombo" prefWidth="150" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155;" />
+                <ComboBox fx:id="filterStockCombo" prefWidth="180" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;" />
 
-                <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;" text="🔄 Rafraîchir" />
+                <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 8; -fx-cursor: hand;">
+                    <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
+                            <Image url="@/images/refresh.png" />
+                        </ImageView>
+                    </graphic>
+                    <text>  Rafraîchir</text>
+                    <tooltip>
+                        <Tooltip text="Actualiser la liste" />
+                    </tooltip>
+                </Button>
             </children>
         </HBox>
 
         <!-- Tableau des produits -->
-        <TableView fx:id="produitTable" prefHeight="300" style="-fx-background-color: transparent; -fx-border-color: #334155; -fx-border-radius: 5;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="produitTable" VBox.vgrow="ALWAYS" prefHeight="300">
             <columns>
-                <TableColumn fx:id="colNom" prefWidth="150" text="Nom" />
-                <TableColumn fx:id="colReference" prefWidth="120" text="Référence" />
-                <TableColumn fx:id="colPrix" prefWidth="100" text="Prix (DT)" />
-                <TableColumn fx:id="colStock" prefWidth="80" text="Stock" />
-                <TableColumn fx:id="colImage" prefWidth="80" text="Image" />
-                <TableColumn fx:id="colActions" prefWidth="100" text="Actions" />
+                <TableColumn fx:id="colNom" prefWidth="180" text="Nom" />
+                <TableColumn fx:id="colReference" prefWidth="140" text="Référence" />
+                <TableColumn fx:id="colPrix" prefWidth="120" text="Prix (DT)" />
+                <TableColumn fx:id="colStock" prefWidth="100" text="Stock" />
+                <TableColumn fx:id="colImage" prefWidth="100" text="Image" />
+                <TableColumn fx:id="colActions" prefWidth="140" text="Actions" />
             </columns>
         </TableView>
 
-        <!-- Formulaire d'ajout -->
+        <!-- Formulaire d'ajout avec les bons fx:id -->
         <VBox spacing="15.0" style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 20;">
             <children>
-                <Label style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="➕ Ajouter un nouveau produit" />
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <ImageView fitHeight="24.0" fitWidth="24.0" preserveRatio="true">
+                            <Image url="@/images/add.png" />
+                        </ImageView>
+                        <Label style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="Ajouter un nouveau produit" />
+                    </children>
+                </HBox>
 
                 <GridPane hgap="15.0" vgap="10.0">
                     <columnConstraints>
@@ -96,37 +119,69 @@
                     </columnConstraints>
 
                     <children>
-                        <!-- Ligne 0 -->
+                        <!-- Ligne 0 - Nom et Référence -->
                         <Label style="-fx-text-fill: #94A3B8;" text="Nom:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                        <TextField fx:id="nomField" promptText="Nom du produit" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                        <TextField fx:id="nomField" promptText="Nom du produit" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
                         <Label style="-fx-text-fill: #94A3B8;" text="Référence:" GridPane.rowIndex="0" GridPane.columnIndex="2" />
-                        <TextField fx:id="referenceField" promptText="Référence" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" GridPane.rowIndex="0" GridPane.columnIndex="3" />
+                        <TextField fx:id="referenceField" promptText="Référence" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" GridPane.rowIndex="0" GridPane.columnIndex="3" />
 
-                        <!-- Ligne 1 -->
-                        <Label style="-fx-text-fill: #94A3B8;" text="Prix:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                        <TextField fx:id="prixField" promptText="0.00" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        <!-- Ligne 1 - Prix et Stock -->
+                        <Label style="-fx-text-fill: #94A3B8;" text="Prix (DT):" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <TextField fx:id="prixField" promptText="0.00" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
                         <Label style="-fx-text-fill: #94A3B8;" text="Stock:" GridPane.rowIndex="1" GridPane.columnIndex="2" />
-                        <TextField fx:id="stockField" promptText="0" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" GridPane.rowIndex="1" GridPane.columnIndex="3" />
+                        <TextField fx:id="stockField" promptText="0" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" GridPane.rowIndex="1" GridPane.columnIndex="3" />
 
-                        <!-- Ligne 2 -->
+                        <!-- Ligne 2 - Image et Aperçu -->
                         <Label style="-fx-text-fill: #94A3B8;" text="Image:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
                         <HBox spacing="5" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.columnIndex="1">
-                            <TextField fx:id="imageField" promptText="URL ou chemin de l'image" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155;" HBox.hgrow="ALWAYS" />
-                            <Button fx:id="btnParcourir" onAction="#handleParcourirImage" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-cursor: hand;" text="📁 Parcourir" />
+                            <TextField fx:id="imageField" promptText="URL ou chemin de l'image" style="-fx-background-color: #0B0F1A; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
+
+                            <Button fx:id="btnParcourir" onAction="#handleParcourirImage" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 15; -fx-background-radius: 5; -fx-cursor: hand;">
+                                <graphic>
+                                    <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
+                                        <Image url="@/images/browse.png" />
+                                    </ImageView>
+                                </graphic>
+                                <text>  Parcourir</text>
+                                <tooltip>
+                                    <Tooltip text="Choisir une image" />
+                                </tooltip>
+                            </Button>
                         </HBox>
 
                         <Label style="-fx-text-fill: #94A3B8;" text="Aperçu:" GridPane.rowIndex="2" GridPane.columnIndex="3" />
-                        <ImageView fx:id="apercuImage" fitHeight="60" fitWidth="60" preserveRatio="true" GridPane.rowIndex="2" GridPane.columnIndex="3" />
+                        <ImageView fx:id="apercuImage" fitHeight="60" fitWidth="60" preserveRatio="true" style="-fx-background-color: #334155; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 0);" GridPane.rowIndex="2" GridPane.columnIndex="3" />
                     </children>
                 </GridPane>
 
                 <!-- Boutons d'action -->
                 <HBox spacing="10.0" alignment="CENTER_RIGHT">
                     <children>
-                        <Button onAction="#handleEffacer" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;" text="🗑️ Effacer" />
-                        <Button onAction="#handleAjouter" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;" text="➕ Ajouter le produit" />
+                        <Button onAction="#handleEffacer" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
+                                    <Image url="@/images/delete.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Effacer</text>
+                            <tooltip>
+                                <Tooltip text="Vider le formulaire" />
+                            </tooltip>
+                        </Button>
+
+                        <Button onAction="#handleAjouter" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
+                                    <Image url="@/images/add.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Ajouter le produit</text>
+                            <tooltip>
+                                <Tooltip text="Ajouter un nouveau produit" />
+                            </tooltip>
+                        </Button>
                     </children>
                 </HBox>
             </children>

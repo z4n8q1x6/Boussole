@@ -6,10 +6,11 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.CatalogueController">
@@ -18,20 +19,22 @@
     </padding>
 
     <children>
-        <!-- En-tête avec titre et recherche -->
+        <!-- En-tête avec image du marketplace -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <children>
+                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                    <Image url="@/images/marketplace.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Marketplace" />
+            </children>
+        </HBox>
+
+        <!-- Barre de recherche et filtres -->
         <VBox spacing="15.0">
             <children>
-                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="🛒 Marketplace" />
-
-                <!-- Barre de recherche et filtres -->
                 <HBox spacing="15.0" alignment="CENTER_LEFT">
                     <children>
-                        <HBox spacing="10.0" HBox.hgrow="ALWAYS">
-                            <children>
-                                <TextField fx:id="searchField" promptText="Rechercher un produit..." style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-prompt-text-fill: #64748B; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
-                                <Button style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;" text="🔍 Rechercher" />
-                            </children>
-                        </HBox>
+                        <TextField fx:id="searchField" promptText="Rechercher un produit..." style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-prompt-text-fill: #64748B; -fx-border-color: #334155; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
 
                         <Label style="-fx-text-fill: #94A3B8;" text="Trier par:" />
                         <ComboBox fx:id="sortCombo" prefWidth="150" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155;" />
@@ -60,7 +63,5 @@
                 </GridPane>
             </content>
         </ScrollPane>
-
-        <!-- Bouton supprimé : on retire le HBox avec le bouton flottant -->
     </children>
 </VBox>

@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -16,12 +18,21 @@
     </padding>
 
     <children>
-        <!-- En-tête -->
-        <HBox alignment="CENTER_LEFT">
+        <!-- En-tête avec image du panier -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
             <children>
-                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="🛍️ Mon Panier" />
+                <!-- Image du panier -->
+                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                    <Image url="@/images/cart.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Mon Panier" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="nbArticlesLabel" style="-fx-background-color: #0EA5E9; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15;" text="0" />
+                <!-- Compteur d'articles avec image -->
+                <HBox spacing="10.0" alignment="CENTER">
+                    <children>
+                        <Label fx:id="nbArticlesLabel" style="-fx-background-color: #0EA5E9; -fx-background-radius: 15; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15;" text="0" />
+                    </children>
+                </HBox>
             </children>
         </HBox>
 
@@ -42,16 +53,30 @@
 
                 <Separator style="-fx-background-color: #334155;" />
 
-                <!-- Boutons d'action -->
+                <!-- Boutons d'action avec images -->
                 <HBox spacing="15.0" alignment="CENTER_RIGHT">
                     <children>
-                        <Button fx:id="viderPanierBtn" onAction="#handleViderPanier" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;" text="🗑️ Vider le panier">
+                        <!-- Bouton Vider le panier avec image -->
+                        <Button fx:id="viderPanierBtn" onAction="#handleViderPanier" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" preserveRatio="true">
+                                    <Image url="@/images/delete.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Vider le panier</text>
                             <font>
                                 <Font size="14.0" />
                             </font>
                         </Button>
 
-                        <Button fx:id="validerCommandeBtn" onAction="#handleValiderCommande" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;" text="✅ Valider la commande">
+                        <!-- Bouton Valider la commande avec image -->
+                        <Button fx:id="validerCommandeBtn" onAction="#handleValiderCommande" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" preserveRatio="true">
+                                    <Image url="@/images/validate.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Valider la commande</text>
                             <font>
                                 <Font size="14.0" />
                             </font>
