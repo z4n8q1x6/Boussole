@@ -9,11 +9,11 @@ public class Pret {
     private StatutPret statut;
     private String motif;
 
-    // 🔹 Constructeur vide (obligatoire)
+
     public Pret() {
     }
 
-    // 🔹 Constructeur avec paramètres (optionnel)
+
     public Pret(int id, double montantDemande, int dureeMois, float taux, StatutPret statut, String motif) {
         this.id = id;
         this.montantDemande = montantDemande;
@@ -23,7 +23,7 @@ public class Pret {
         this.motif = motif;
     }
 
-    // 🔹 Getters & Setters
+
     public int getId() {
         return id;
     }
@@ -72,7 +72,7 @@ public class Pret {
         this.motif = motif;
     }
 
-    // 🔹 toString (utile pour les tests console)
+
     @Override
     public String toString() {
         return "Pret{" +

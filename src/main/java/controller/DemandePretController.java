@@ -74,18 +74,16 @@ public class DemandePretController {
         }
     }
 
-    /**
-     * Méthode pour naviguer vers l'interface de la liste des prêts
-     */
+
     @FXML
     private void ouvrirListe() throws Exception {
-        // Chargement de la nouvelle vue
+
         Parent root = FXMLLoader.load(getClass().getResource("/view/ListePrets.fxml"));
 
-        // Récupération de la fenêtre actuelle (Stage) via n'importe quel composant de la vue (ici txtMontant)
+
         Stage stage = (Stage) txtMontant.getScene().getWindow();
 
-        // Changement de la scène
+
         stage.setScene(new Scene(root));
         stage.setTitle("Boussole - Liste des Prêts");
     }

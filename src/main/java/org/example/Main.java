@@ -10,7 +10,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Chargement de la liste par défaut
+
         Parent root = FXMLLoader.load(getClass().getResource("/view/ListePrets.fxml"));
         Scene scene = new Scene(root, 1100, 700);
 

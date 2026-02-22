@@ -1,7 +1,8 @@
-/* --- CONFIGURATION GÉNÉRALE --- */
+/* --- STRUCTURE GLOBALE --- */
 
+/* Fond principal avec dégradé (Comme sur la page 2) */
 .main-container {
-    -fx-background-color: #2c3e50;
+    -fx-background-color: linear-gradient(to bottom right, #2c3e50, #1a252f);
     -fx-padding: 40;
 }
 
@@ -11,8 +12,7 @@
     -fx-text-fill: white;
 }
 
-/* --- BARRE DE NAVIGATION (SIDEBAR) --- */
-
+/* --- SIDEBAR --- */
 .sidebar {
     -fx-background-color: #1a252f;
     -fx-padding: 20;
@@ -51,12 +51,11 @@
     -fx-background-radius: 5;
 }
 
-/* --- FORMULAIRE ET CARTES --- */
-
+/* --- CARTES ET CONTENEURS (Le look "Page 2") --- */
 .form-card {
     -fx-background-color: white;
     -fx-background-radius: 15;
-    -fx-padding: 30;
+    -fx-padding: 25;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 15, 0, 0, 5);
 }
 
@@ -67,6 +66,7 @@
     -fx-padding: 0 0 10 0;
 }
 
+/* --- CHAMPS DE SAISIE --- */
 .custom-field {
     -fx-background-radius: 5;
     -fx-border-color: #dcdde1;
@@ -80,8 +80,7 @@
     -fx-background-color: white;
 }
 
-/* --- BOUTONS ET MESSAGES --- */
-
+/* --- BOUTONS --- */
 .login-button {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
@@ -101,10 +100,11 @@
     -fx-text-alignment: center;
 }
 
-/* --- STYLE DE LA TABLE (CRUD) --- */
-
+/* --- TABLEAU (Ajusté pour fond blanc) --- */
 .table-view {
     -fx-background-color: transparent;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 10;
     -fx-selection-bar: #3498db;
 }
 
@@ -112,29 +112,26 @@
     -fx-background-color: #f2f2f2;
     -fx-border-color: #dcdde1;
     -fx-padding: 8;
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
 }
 
 .table-row-cell:filled:selected {
     -fx-background-color: #3498db;
 }
 
-/* --- BOUTONS D'ACTION DANS LE TABLEAU --- */
-
+/* --- BOUTONS D'ACTION (L'oeil bleu, etc.) --- */
 .btn-edit {
-    -fx-background-color: #f1c40f; /* Jaune/Or */
+    -fx-background-color: #f1c40f;
     -fx-text-fill: white;
     -fx-cursor: hand;
     -fx-background-radius: 5;
     -fx-padding: 5 12;
     -fx-font-weight: bold;
-}
-
-.btn-edit:hover {
-    -fx-background-color: #f39c12;
 }
 
 .btn-delete {
-    -fx-background-color: #e74c3c; /* Rouge */
+    -fx-background-color: #e74c3c;
     -fx-text-fill: white;
     -fx-cursor: hand;
     -fx-background-radius: 5;
@@ -142,12 +139,21 @@
     -fx-font-weight: bold;
 }
 
-.btn-delete:hover {
-    -fx-background-color: #c0392b;
+/* --- CHARTS (DASHBOARD) --- */
+.chart-pie-label {
+    -fx-fill: white;
+    -fx-font-size: 14px;
 }
 
-/* Conteneur HBox à l'intérieur de la cellule d'action */
-.hbox {
-    -fx-alignment: CENTER;
-    -fx-spacing: 10;
+.chart-pie-label-line {
+    -fx-stroke: white;
+}
+
+.chart-legend-item {
+    -fx-text-fill: white;
+}
+
+.chart-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
 }

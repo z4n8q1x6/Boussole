@@ -3,27 +3,30 @@ package controller;
 import entity.Pret;
 import entity.StatutPret;
 import service.PretService;
+import service.MailService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
-
-import java.util.List;
+import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.FloatStringConverter;
+import javafx.util.converter.IntegerStringConverter;
+import java.io.File;
 
 public class ListePretsController {
 
     @FXML private TableView<Pret> tablePrets;
-    @FXML private TableColumn<Pret, Integer> colId;
     @FXML private TableColumn<Pret, String> colMotif;
     @FXML private TableColumn<Pret, Double> colMontant;
     @FXML private TableColumn<Pret, Integer> colDuree;
@@ -35,195 +38,271 @@ public class ListePretsController {
     @FXML private ComboBox<String> comboStatut;
 
     private PretService pretService = new PretService();
+    private MailService mailService = new MailService();
     private ObservableList<Pret> pretList = FXCollections.observableArrayList();
+
+    // On déclare la FilteredList en variable de classe pour y accéder facilement
+    private FilteredList<Pret> filteredData;
 
     @FXML
     public void initialize() {
-        // 1. Configurer les colonnes
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colMotif.setCellValueFactory(new PropertyValueFactory<>("motif"));
-        colMontant.setCellValueFactory(new PropertyValueFactory<>("montantDemande"));
-        colDuree.setCellValueFactory(new PropertyValueFactory<>("dureeMois"));
-        colTaux.setCellValueFactory(new PropertyValueFactory<>("taux"));
-        colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
+        // --- ACTIVATION DE L'ÉDITION ---
+        tablePrets.setEditable(true);
 
-        // 2. Initialiser le ComboBox
-        comboStatut.setItems(FXCollections.observableArrayList("TOUS", "EN_ATTENTE", "ACCORDE", "REFUSE"));
-        comboStatut.getSelectionModel().selectFirst();
-
-        // 3. Boutons d'actions
-        ajouterBoutonsActions();
-
-        // 4. Charger les données initiales
-        chargerDonnees();
-
-        // 5. Configurer la recherche et les filtres dynamiques
-        configurerFiltres();
-    }
-
-    @FXML
-    public void chargerDonnees() {
-        try {
-            List<Pret> data = pretService.getAllPrets();
-            pretList.setAll(data);
-           
-        } catch (Exception e) {
-            afficherAlerte("Erreur de chargement", "Impossible de récupérer les données : " + e.getMessage(), Alert.AlertType.ERROR);
+        // Initialisation de la ComboBox
+        if (comboStatut != null) {
+            comboStatut.setItems(FXCollections.observableArrayList("TOUS", "EN_ATTENTE", "ACCORDE", "REFUSE"));
+            comboStatut.getSelectionModel().selectFirst();
         }
+
+        configurerColonnes();
+        chargerDonnees();
+        ajouterBoutonsActions();
+        configurerFiltrageMultiCritere();
     }
 
     /**
-     * GESTION DE LA RECHERCHE (ID / MOTIF / STATUT)
+     * Logique de filtrage combinée : Recherche textuelle + ComboBox Statut
      */
-    private void configurerFiltres() {
-        // 1. Créer une FilteredList enveloppant notre liste d'origine
-        FilteredList<Pret> filteredData = new FilteredList<>(pretList, p -> true);
+    private void configurerFiltrageMultiCritere() {
+        // 1. Créer la FilteredList
+        filteredData = new FilteredList<>(pretList, p -> true);
 
-        // 2. Écouter les changements sur le champ de texte (ID et Motif)
-        txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
-            appliquerFiltre(filteredData);
-        });
+        // 2. Créer une méthode interne pour appliquer les filtres
+        Runnable appliquerFiltres = () -> {
+            String textSearch = (txtRecherche.getText() == null) ? "" : txtRecherche.getText().toLowerCase();
+            String statutSearch = comboStatut.getSelectionModel().getSelectedItem();
 
-        // 3. Écouter les changements sur le ComboBox (Statut)
-        comboStatut.valueProperty().addListener((observable, oldValue, newValue) -> {
-            appliquerFiltre(filteredData);
-        });
+            filteredData.setPredicate(pret -> {
+                // --- FILTRE 1 : Statut ---
+                boolean matchStatut = true;
+                if (statutSearch != null && !statutSearch.equals("TOUS")) {
+                    matchStatut = pret.getStatut().toString().equals(statutSearch);
+                }
 
-        // 4. Lier la liste filtrée à la TableView
-        tablePrets.setItems(filteredData);
-    }
+                // --- FILTRE 2 : Recherche (Motif ou Mois) ---
+                boolean matchText = true;
+                if (!textSearch.isEmpty()) {
+                    boolean matchMotif = pret.getMotif().toLowerCase().contains(textSearch);
+                    boolean matchMois = String.valueOf(pret.getDureeMois()).contains(textSearch);
+                    matchText = (matchMotif || matchMois);
+                }
 
-    private void appliquerFiltre(FilteredList<Pret> filteredData) {
-        filteredData.setPredicate(pret -> {
-            String input = txtRecherche.getText().toLowerCase().trim();
-            String statutFiltre = comboStatut.getValue();
+                // Le prêt est affiché seulement s'il valide les DEUX conditions
+                return matchStatut && matchText;
+            });
+        };
 
-            // --- Logique de recherche par Texte (ID ou Motif) ---
-            boolean matchTexte = true;
-            if (!input.isEmpty()) {
-                String idString = String.valueOf(pret.getId());
-                String motifString = pret.getMotif().toLowerCase();
+        // 3. Écouter les changements sur le TextField
+        txtRecherche.textProperty().addListener((obs, oldVal, newVal) -> appliquerFiltres.run());
 
-                // Le prêt correspond si l'ID contient la saisie OU si le motif contient la saisie
-                matchTexte = idString.contains(input) || motifString.contains(input);
-            }
+        // 4. Écouter les changements sur la ComboBox
+        comboStatut.valueProperty().addListener((obs, oldVal, newVal) -> appliquerFiltres.run());
 
-            // --- Logique de filtrage par Statut ---
-            boolean matchStatut = statutFiltre == null ||
-                    statutFiltre.equals("TOUS") ||
-                    pret.getStatut().name().equals(statutFiltre);
-
-            // Le prêt est affiché uniquement s'il valide les deux conditions
-            return matchTexte && matchStatut;
-        });
+        // 5. Lier au tableau avec tri conservé
+        SortedList<Pret> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(tablePrets.comparatorProperty());
+        tablePrets.setItems(sortedData);
     }
 
     @FXML
-    private void ouvrirFormulaire() throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/view/DemandePret.fxml"));
-        Stage stage = (Stage) tablePrets.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("Boussole - Nouvelle Demande");
+    private void chargerDonnees() {
+        try {
+            pretList.setAll(pretService.getAllPrets());
+            tablePrets.refresh();
+        } catch (Exception e) {
+            afficherErreur("Erreur de chargement", "Impossible de récupérer les prêts : " + e.getMessage());
+        }
     }
+
+    private void configurerColonnes() {
+        colMotif.setCellValueFactory(new PropertyValueFactory<>("motif"));
+        colMotif.setCellFactory(TextFieldTableCell.forTableColumn());
+        colMotif.setOnEditCommit(event -> {
+            Pret p = event.getRowValue();
+            p.setMotif(event.getNewValue());
+            updatePretInDatabase(p);
+        });
+
+        colMontant.setCellValueFactory(new PropertyValueFactory<>("montantDemande"));
+        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colMontant.setOnEditCommit(event -> {
+            Pret p = event.getRowValue();
+            p.setMontantDemande(event.getNewValue());
+            updatePretInDatabase(p);
+        });
+
+        colDuree.setCellValueFactory(new PropertyValueFactory<>("dureeMois"));
+        colDuree.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        colDuree.setOnEditCommit(event -> {
+            Pret p = event.getRowValue();
+            p.setDureeMois(event.getNewValue());
+            updatePretInDatabase(p);
+        });
+
+        colTaux.setCellValueFactory(new PropertyValueFactory<>("taux"));
+        colTaux.setCellFactory(TextFieldTableCell.forTableColumn(new FloatStringConverter()));
+        colTaux.setOnEditCommit(event -> {
+            Pret p = event.getRowValue();
+            p.setTaux(event.getNewValue());
+            updatePretInDatabase(p);
+        });
+
+        colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
+    }
+
+    private void updatePretInDatabase(Pret p) {
+        try {
+            pretService.modifierPret(p);
+            System.out.println("Prêt mis à jour : " + p.getId());
+        } catch (Exception e) {
+            afficherErreur("Erreur de mise à jour", e.getMessage());
+            chargerDonnees();
+        }
+    }
+
+    // --- NAVIGATION ---
+
+    @FXML
+    private void ouvrirFormulaire() {
+        naviguerVers("/view/DemandePret.fxml", "Nouvelle Demande");
+    }
+
+    @FXML
+    private void ouvrirDashboard() {
+        naviguerVers("/view/DashboardRisque.fxml", "Dashboard Risque");
+    }
+
+    @FXML
+    private void handleExportPDF() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter PDF");
+        fileChooser.setInitialFileName("Rapport_Prets.pdf");
+        File file = fileChooser.showSaveDialog(tablePrets.getScene().getWindow());
+
+        if (file != null) {
+            try {
+                // On exporte les données actuellement visibles (filtrées)
+                pretService.genererRapportPDF(filteredData, file.getAbsolutePath());
+                new Alert(Alert.AlertType.INFORMATION, "PDF généré avec succès !").show();
+            } catch (Exception e) {
+                afficherErreur("Erreur PDF", e.getMessage());
+            }
+        }
+    }
+
+    private void naviguerVers(String fxmlPath, String titre) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) tablePrets.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle(titre);
+        } catch (Exception e) {
+            afficherErreur("Erreur de navigation", "Impossible d'ouvrir : " + fxmlPath);
+        }
+    }
+
+    // --- GESTION DES ACTIONS ---
 
     private void ajouterBoutonsActions() {
         Callback<TableColumn<Pret, Void>, TableCell<Pret, Void>> cellFactory = param -> new TableCell<>() {
-            private final Button btnEdit = new Button("📝");
+            private final Button btnView = new Button("👁");
+            private final Button btnCheck = new Button("✔");
+            private final Button btnCross = new Button("✖");
             private final Button btnDelete = new Button("🗑");
-            private final HBox pane = new HBox(btnEdit, btnDelete);
+            private final HBox pane = new HBox(5);
 
             {
-                pane.setSpacing(10);
-                btnEdit.getStyleClass().add("btn-edit");
-                btnDelete.getStyleClass().add("btn-delete");
+                btnView.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
+                btnCheck.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;");
+                btnCross.setStyle("-fx-background-color: #f1c40f; -fx-text-fill: white; -fx-cursor: hand;");
+                btnDelete.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
 
-                btnEdit.setOnAction(event -> {
-                    Pret p = getTableView().getItems().get(getIndex());
-                    ouvrirDialogueModification(p);
-                });
-
-                btnDelete.setOnAction(event -> {
-                    Pret p = getTableView().getItems().get(getIndex());
-                    confirmerSuppression(p);
-                });
+                btnView.setOnAction(e -> ouvrirInterfaceRecouvrement(getTableRow().getItem()));
+                btnCheck.setOnAction(e -> confirmerDecision(getTableRow().getItem(), "ACCORDE"));
+                btnCross.setOnAction(e -> confirmerDecision(getTableRow().getItem(), "REFUSE"));
+                btnDelete.setOnAction(e -> confirmerSuppression(getTableRow().getItem()));
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
+                if (empty || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    Pret p = getTableRow().getItem();
+                    pane.getChildren().clear();
+                    pane.getChildren().add(btnView);
+                    if (p.getStatut() == StatutPret.EN_ATTENTE) {
+                        pane.getChildren().addAll(btnCheck, btnCross);
+                    }
+                    pane.getChildren().add(btnDelete);
+                    setGraphic(pane);
+                }
             }
         };
         colActions.setCellFactory(cellFactory);
     }
 
-    private void ouvrirDialogueModification(Pret p) {
-        Dialog<Pret> dialog = new Dialog<>();
-        dialog.setTitle("Modifier le prêt #" + p.getId());
-        dialog.setHeaderText("Mise à jour des informations du prêt");
-
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        TextField editMotif = new TextField(p.getMotif());
-        TextField editMontant = new TextField(String.valueOf(p.getMontantDemande()));
-        TextField editDuree = new TextField(String.valueOf(p.getDureeMois()));
-        TextField editTaux = new TextField(String.valueOf(p.getTaux()));
-
-        grid.add(new Label("Motif:"), 0, 0); grid.add(editMotif, 1, 0);
-        grid.add(new Label("Montant:"), 0, 1); grid.add(editMontant, 1, 1);
-        grid.add(new Label("Durée (mois):"), 0, 2); grid.add(editDuree, 1, 2);
-        grid.add(new Label("Taux (%):"), 0, 3); grid.add(editTaux, 1, 3);
-
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                p.setMotif(editMotif.getText());
-                p.setMontantDemande(Double.parseDouble(editMontant.getText()));
-                p.setDureeMois(Integer.parseInt(editDuree.getText()));
-                p.setTaux(Float.parseFloat(editTaux.getText()));
-                return p;
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(pretModifie -> {
-            try {
-                pretService.modifierPret(pretModifie);
-                chargerDonnees();
-                afficherAlerte("Succès", "Le prêt a été mis à jour.", Alert.AlertType.INFORMATION);
-            } catch (Exception e) {
-                afficherAlerte("Erreur", "Échec de la modification : " + e.getMessage(), Alert.AlertType.ERROR);
+    private void confirmerDecision(Pret p, String decision) {
+        String msg = decision.equals("ACCORDE") ? "accepter" : "refuser";
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous " + msg + " ce prêt ?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                gererDecision(p, decision);
             }
         });
     }
 
-    private void confirmerSuppression(Pret p) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation de suppression");
-        alert.setHeaderText("Voulez-vous vraiment supprimer le prêt #" + p.getId() + " ?");
-        alert.setContentText("Cela supprimera également toutes les mensualités associées.");
-
-        if (alert.showAndWait().get() == ButtonType.OK) {
-            try {
-                pretService.supprimerPret(p.getId());
-                chargerDonnees();
-                afficherAlerte("Succès", "Le prêt a été supprimé.", Alert.AlertType.INFORMATION);
-            } catch (Exception e) {
-                afficherAlerte("Erreur SQL", "Erreur lors de la suppression : " + e.getMessage(), Alert.AlertType.ERROR);
+    private void gererDecision(Pret p, String decision) {
+        try {
+            if (decision.equals("ACCORDE")) {
+                p.setStatut(StatutPret.ACCORDE);
+                pretService.modifierPret(p);
+                pretService.genererMensualites(p);
+                mailService.envoyerEmailStatut(p, "Accordé");
+            } else {
+                p.setStatut(StatutPret.REFUSE);
+                pretService.modifierPret(p);
+                mailService.envoyerEmailStatut(p, "Refusé");
             }
+            chargerDonnees();
+        } catch (Exception e) {
+            afficherErreur("Erreur", e.getMessage());
         }
     }
 
-    private void afficherAlerte(String titre, String contenu, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setTitle(titre);
-        alert.setContentText(contenu);
-        alert.showAndWait();
+    private void confirmerSuppression(Pret p) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer ce prêt ?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(r -> {
+            if (r == ButtonType.YES) {
+                try {
+                    pretService.supprimerPret(p.getId());
+                    chargerDonnees();
+                } catch (Exception e) {
+                    afficherErreur("Erreur", "Suppression impossible.");
+                }
+            }
+        });
+    }
+
+    private void ouvrirInterfaceRecouvrement(Pret p) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Mensualites.fxml"));
+            Parent root = loader.load();
+            MensualiteController controller = loader.getController();
+            controller.setPretId(p.getId(), p.getMotif());
+            Stage stage = (Stage) tablePrets.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void afficherErreur(String t, String m) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle(t);
+        a.setContentText(m);
+        a.show();
     }
 }

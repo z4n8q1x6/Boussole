@@ -11,8 +11,15 @@
         </ImageView>
         <Label text="BOUSSOLE" styleClass="sidebar-title"/>
         <Separator opacity="0.3"/>
+
         <Button text="➕ Nouvelle Demande" onAction="#ouvrirFormulaire" styleClass="sidebar-button" maxWidth="Infinity"/>
         <Button text="📋 Liste des Prêts" styleClass="sidebar-button-active" maxWidth="Infinity"/>
+
+        <Button text="📊 Voir le Dashboard" onAction="#ouvrirDashboard" maxWidth="Infinity" styleClass="sidebar-button">
+            <VBox.margin>
+                <Insets top="10" left="10" right="10" />
+            </VBox.margin>
+        </Button>
     </VBox>
 
     <VBox spacing="20" alignment="TOP_CENTER" styleClass="main-container" HBox.hgrow="ALWAYS" fx:id="mainContent">
@@ -21,17 +28,22 @@
         <Label text="Gestion des Prêts - Comité" styleClass="app-title"/>
 
         <HBox spacing="15" alignment="CENTER_LEFT" styleClass="form-card">
-            <TextField fx:id="txtRecherche" promptText="Rechercher par ID ou Motif..." prefWidth="300" styleClass="custom-field"/>
-
+            <TextField fx:id="txtRecherche" promptText="Rechercher par motif..." prefWidth="300" styleClass="custom-field"/>
             <ComboBox fx:id="comboStatut" prefWidth="150" styleClass="custom-field"/>
 
             <Button text="Rafraîchir" onAction="#chargerDonnees" styleClass="login-button"/>
+
+            <Button text="📄 Exporter PDF" onAction="#handleExportPDF"
+                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;">
+                <HBox.margin>
+                    <Insets left="10" />
+                </HBox.margin>
+            </Button>
         </HBox>
 
         <TableView fx:id="tablePrets" VBox.vgrow="ALWAYS" styleClass="form-card">
             <columns>
-                <TableColumn fx:id="colId" text="ID" prefWidth="50" />
-                <TableColumn fx:id="colMotif" text="Motif" prefWidth="200" />
+                <TableColumn fx:id="colMotif" text="Motif" prefWidth="250" />
                 <TableColumn fx:id="colMontant" text="Montant" prefWidth="120" />
                 <TableColumn fx:id="colDuree" text="Mois" prefWidth="80" />
                 <TableColumn fx:id="colTaux" text="Taux %" prefWidth="50" />

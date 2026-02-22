@@ -9,11 +9,11 @@ public class Mensualite {
     private boolean estPaye;
     private int pretId;
 
-    // 🔹 Constructeur vide
+
     public Mensualite() {
     }
 
-    // 🔹 Constructeur avec paramètres
+
     public Mensualite(int id, Date dateEcheance, double montant, boolean estPaye, int pretId) {
         this.id = id;
         this.dateEcheance = dateEcheance;
@@ -22,7 +22,7 @@ public class Mensualite {
         this.pretId = pretId;
     }
 
-    // 🔹 Getters & Setters
+
     public int getId() {
         return id;
     }

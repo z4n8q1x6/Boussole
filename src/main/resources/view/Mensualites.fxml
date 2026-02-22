@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.Font?>
+
+<HBox stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MensualiteController">
+    <VBox spacing="20" styleClass="sidebar" prefWidth="200" alignment="TOP_CENTER">
+        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@boussole.png" />
+        </ImageView>
+        <Label text="BOUSSOLE" styleClass="sidebar-title"/>
+        <Separator opacity="0.3"/>
+
+        <Button text="⬅ Retour Liste" onAction="#retourListe" styleClass="sidebar-button" maxWidth="Infinity"/>
+    </VBox>
+
+    <VBox spacing="20" alignment="TOP_CENTER" styleClass="main-container" HBox.hgrow="ALWAYS">
+        <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+        <Label fx:id="lblTitre" text="Échéancier de Remboursement" styleClass="app-title">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+
+        <TableView fx:id="tableMensualites" VBox.vgrow="ALWAYS" styleClass="form-card">
+            <columns>
+                <TableColumn fx:id="colDate" text="Date d'Échéance" prefWidth="180" />
+                <TableColumn fx:id="colMontant" text="Montant Dû (DT)" prefWidth="150" />
+                <TableColumn fx:id="colAction" text="Action (Recouvrement)" prefWidth="200" />
+            </columns>
+        </TableView>
+
+        <HBox alignment="CENTER_LEFT">
+            <Button mnemonicParsing="false" onAction="#retourListe" style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-background-radius: 5;" text="Retour" />
+        </HBox>
+    </VBox>
+</HBox>
