@@ -59,7 +59,7 @@ public class AlerteIAService {
         alerteIA.setId(rs.getInt("id"));
         alerteIA.setType_alerte(rs.getString("type_alerte"));
         alerteIA.setScore_gravite(rs.getFloat("score_gravite"));
-        alerteIA.setDate_detection(rs.getDate("date_detection"));
+        alerteIA.setDate_detection(rs.getTimestamp("date_detection"));
         alerteIA.setMessage(rs.getString("message"));
         alerteIA.setFranchiseId(franchiseId);
         list.add(alerteIA);
@@ -81,7 +81,7 @@ public class AlerteIAService {
         alerteIA.setId(rs.getInt("id"));
         alerteIA.setType_alerte(rs.getString("type_alerte"));
         alerteIA.setScore_gravite(rs.getFloat("score_gravite"));
-        alerteIA.setDate_detection(rs.getDate("date_detection"));
+        alerteIA.setDate_detection(rs.getTimestamp("date_detection"));
         alerteIA.setMessage(rs.getString("message"));
         alerteIA.setFranchiseId(rs.getInt("franchise_id"));
         list.add(alerteIA);

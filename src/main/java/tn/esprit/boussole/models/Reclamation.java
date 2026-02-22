@@ -1,6 +1,6 @@
 package tn.esprit.boussole.models;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Reclamation {
 
@@ -8,7 +8,7 @@ public class Reclamation {
   private String sujet;
   private String description;
   private StatutReclamation statut;
-  private Date dateCreation;
+  private Timestamp dateCreation;
   private int franchiseId;
 
   // Constructors
@@ -19,7 +19,7 @@ public class Reclamation {
       String sujet,
       String description,
       StatutReclamation statut,
-      Date dateCreation,
+      Timestamp dateCreation,
       int franchiseId) {
     this.id = id;
     this.sujet = sujet;
@@ -70,11 +70,11 @@ public class Reclamation {
     this.statut = statut;
   }
 
-  public Date getDateCreation() {
+  public Timestamp getDateCreation() {
     return dateCreation;
   }
 
-  public void setDateCreation(Date dateCreation) {
+  public void setDateCreation(Timestamp dateCreation) {
     this.dateCreation = dateCreation;
   }
 }

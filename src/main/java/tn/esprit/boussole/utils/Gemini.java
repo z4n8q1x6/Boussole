@@ -33,7 +33,7 @@ public class Gemini {
             .properties(
                 ImmutableMap.of(
                     "type_alerte",
-                    Schema.builder().type(Known.STRING).minItems(1L).maxLength(50L).build(),
+                    Schema.builder().type(Known.STRING).minItems(1L).maxLength(35L).build(),
                     "message",
                     Schema.builder().type(Known.STRING).minLength(100L).maxLength(1000L).build(),
                     "score_gravite",
@@ -49,20 +49,80 @@ public class Gemini {
             .temperature(1.75f)
             .build();
 
-    double totalCharges = 98500.00;
-    double totalRecettes = 74200.00;
-    // double totalCharges = 1250000.00;
-    // double totalRecettes = 1487500.50;
+    // Simulated data variables (will be replaced with DB queries after integration)
+    String franchiseName = "Tunis Downtown";
+    int year = 2024;
+    int month = 2;
+    double totalRecettes = 450000.00;
+    double totalChargesExploitation = 180000.00;
+    double totalChargesFinanciere = 45000.00;
+    double totalChargesExceptionnelle = 15000.00;
+    double resultatNet =
+        totalRecettes
+            - (totalChargesExploitation + totalChargesFinanciere + totalChargesExceptionnelle);
+    double soldeActuel = 120000.00;
+    double budgetRevenuCible = 500000.00;
+    double budgetDepenseLimite = 250000.00;
+    double totalCharges =
+        totalChargesExploitation + totalChargesFinanciere + totalChargesExceptionnelle;
+    double variance = ((totalRecettes - budgetRevenuCible) / budgetRevenuCible) * 100;
+    int unpaidRedevancesCount = 2;
+    double unpaidRedevancesAmount = 25000.00;
+    int pendingChargesCount = 5;
+    int rejectedChargesCount = 1;
+    int transactionCount = 47;
+    double recettesDepensesRatio = totalRecettes / totalCharges;
+
     String prompt =
         String.format(
             """
-            Analyse ces données financières:
-            - Charges totales: %,.2f TND
-            - Recettes totales: %,.2f TND
+            Analyse les données financières de la franchise %s pour %s %d:
+
+            BILAN MENSUEL:
+            - Chiffre d'affaires: %,.2f TND
+            - Charges opérationnelles: %,.2f TND
+            - Charges financières: %,.2f TND
+            - Charges exceptionnelles: %,.2f TND
             - Résultat net: %,.2f TND
-            - Détecte les anomalies ou alertes critiques
+            - Solde actuel en caisse: %,.2f TND
+
+            BUDGET PRÉVISIONNEL:
+            - Objectif revenu: %,.2f TND (vs réel: %,.2f TND)
+            - Limite dépenses: %,.2f TND (vs réel: %,.2f TND)
+            - Variance: %+.1f%%
+
+            OBLIGATIONS FINANCIÈRES:
+            - Redevances impayées: %d (montant total: %,.2f TND)
+            - Charges en attente de validation: %d
+            - Charges rejetées: %d
+
+            TRANSACTIONS RÉCENTES:
+            - Nombre de transactions ce mois: %d
+            - Ratio recettes/dépenses: %.2f
+
+            Détecte les anomalies, risques financiers ou alertes critiques.
+            Formule une alerte spécifique et sérieuse basée sur ces données.
             """,
-            totalCharges, totalRecettes, (totalRecettes - totalCharges));
+            franchiseName,
+            month,
+            year,
+            totalRecettes,
+            totalChargesExploitation,
+            totalChargesFinanciere,
+            totalChargesExceptionnelle,
+            resultatNet,
+            soldeActuel,
+            budgetRevenuCible,
+            totalRecettes,
+            budgetDepenseLimite,
+            totalCharges,
+            variance,
+            unpaidRedevancesCount,
+            unpaidRedevancesAmount,
+            pendingChargesCount,
+            rejectedChargesCount,
+            transactionCount,
+            recettesDepensesRatio);
 
     AlerteIA alerteIA = new AlerteIA();
     int i = 0;

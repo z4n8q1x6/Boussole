@@ -18,7 +18,7 @@ public class App extends Application {
       "/tn/esprit/boussole/support/alerteIA.fxml",
       "/tn/esprit/boussole/support/adminAlerteIA.fxml",
     };
-    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[1]));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource(views[3]));
     Parent root = null;
     try {
 

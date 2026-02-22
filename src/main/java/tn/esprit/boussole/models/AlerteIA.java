@@ -1,13 +1,13 @@
 package tn.esprit.boussole.models;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class AlerteIA {
   private int id;
   private String type_alerte;
   private String message;
   private float score_gravite;
-  private Date date_detection;
+  private Timestamp date_detection;
   private int franchiseId;
 
   public AlerteIA() {}
@@ -17,7 +17,7 @@ public class AlerteIA {
       String type_alerte,
       String message,
       float score_gravite,
-      Date date_detection,
+      Timestamp date_detection,
       int franchiseId) {
     this.id = id;
     this.type_alerte = type_alerte;
@@ -67,11 +67,11 @@ public class AlerteIA {
     this.score_gravite = score_gravite;
   }
 
-  public Date getDate_detection() {
+  public Timestamp getDate_detection() {
     return date_detection;
   }
 
-  public void setDate_detection(Date date_detection) {
+  public void setDate_detection(Timestamp date_detection) {
     this.date_detection = date_detection;
   }
 }

@@ -72,7 +72,7 @@ public class ReclamationService {
         reclamation.setSujet(rs.getString("sujet"));
         reclamation.setDescription(rs.getString("description"));
         reclamation.setStatut(StatutReclamation.valueOf(rs.getString("statut").toUpperCase()));
-        reclamation.setDateCreation(rs.getDate("date_creation"));
+        reclamation.setDateCreation(rs.getTimestamp("date_creation"));
         reclamation.setFranchiseId(franchiseId);
         list.add(reclamation);
       }
@@ -94,7 +94,7 @@ public class ReclamationService {
         reclamation.setSujet(rs.getString("sujet"));
         reclamation.setDescription(rs.getString("description"));
         reclamation.setStatut(StatutReclamation.valueOf(rs.getString("statut").toUpperCase()));
-        reclamation.setDateCreation(rs.getDate("date_creation"));
+        reclamation.setDateCreation(rs.getTimestamp("date_creation"));
         reclamation.setFranchiseId(rs.getInt("franchise_id"));
         list.add(reclamation);
       }
