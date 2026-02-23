@@ -1,6 +1,7 @@
 package tn.esprit.chargesdepenses.gui;
 
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -15,9 +16,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.concurrent.Task;
+import org.json.JSONArray;
 import org.json.JSONObject;
-
 import tn.esprit.chargesdepenses.models.Fournisseur;
 import tn.esprit.chargesdepenses.services.FournisseurService;
 
@@ -26,8 +26,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -43,8 +43,8 @@ public class afficherFrontFournisseurController {
     @FXML private TextField txtRecherche;
     @FXML private ComboBox<String> comboTri;
 
-    @FXML private Label lblMeteo;
-    @FXML private Label lblNews;
+    @FXML private Button btnIA;
+    @FXML private TextArea txtReponseIA;
 
     private final FournisseurService fournisseurService = new FournisseurService();
     private List<Fournisseur> allFournisseurs = new ArrayList<>();
@@ -54,12 +54,12 @@ public class afficherFrontFournisseurController {
     private int currentPage = 0;
     private int totalPages = 0;
 
+    // --- CONFIGURATION IA VALIDÉE ---
+    private static final String GEMINI_API_KEY = "AIzaSyDDrRFJ92kzJe17C31zdVHmfjpT9j8fv_Q";
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY;
+
     @FXML
     public void initialize() {
-        // Lancer les services API
-        chargerMeteoOpenMeteo();
-        chargerNewsBusiness();
-
         comboTri.setItems(FXCollections.observableArrayList("Matricule Croissant", "Matricule Décroissant"));
         comboTri.setOnAction(e -> applyFilters());
         txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
@@ -71,97 +71,121 @@ public class afficherFrontFournisseurController {
         btnAjouter.setOnAction(e -> openAjoutForm());
     }
 
-    private void chargerMeteoOpenMeteo() {
+    @FXML
+    private void handleAnalyseIA() {
+        if (allFournisseurs.isEmpty()) {
+            showAlert("Information", "Aucun fournisseur à analyser.");
+            return;
+        }
+
+        btnIA.setDisable(true);
+        txtReponseIA.setText("L'IA examine vos partenaires commerciaux...");
+
+        StringBuilder context = new StringBuilder("Voici ma liste de fournisseurs :\n");
+        for (Fournisseur f : allFournisseurs) {
+            context.append("- ").append(f.getNom()).append(" (Matricule: ").append(f.getMatriculeFiscal()).append(")\n");
+        }
+        context.append("\nEn tant qu'expert financier, donne-moi 2 conseils brefs pour optimiser mes relations avec eux.");
+
         Task<String> task = new Task<>() {
             @Override
             protected String call() throws Exception {
-                String url = "https://api.open-meteo.com/v1/forecast?latitude=36.81&longitude=10.18&current_weather=true";
+                JSONObject jsonBody = new JSONObject();
+                JSONArray partsArray = new JSONArray();
+                partsArray.put(new JSONObject().put("text", context.toString()));
+                JSONArray contentsArray = new JSONArray();
+                contentsArray.put(new JSONObject().put("parts", partsArray));
+                jsonBody.put("contents", contentsArray);
+
                 HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(API_URL))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody.toString(), StandardCharsets.UTF_8))
+                        .build();
+
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200) {
-                    JSONObject json = new JSONObject(response.body());
-                    JSONObject current = json.getJSONObject("current_weather");
-                    double temp = current.getDouble("temperature");
-                    int code = current.getInt("weathercode");
-                    return String.format("%.1f°C %s", temp, getEmojiForCode(code));
-                }
-                return "Erreur";
-            }
-        };
-        task.setOnSucceeded(e -> { if (lblMeteo != null) lblMeteo.setText("Tunis : " + task.getValue()); });
-        new Thread(task).start();
-    }
-
-    // MODIFICATION ICI : Méthode de découpage (Split) ultra-fiable
-    private void chargerNewsBusiness() {
-        Task<String> task = new Task<>() {
-            @Override
-            protected String call() throws Exception {
-                try {
-                    // Flux Business Google News
-                    String url = "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=fr&gl=FR&ceid=FR:fr";
-
-                    HttpClient client = HttpClient.newBuilder()
-                            .connectTimeout(Duration.ofSeconds(10))
-                            .followRedirects(HttpClient.Redirect.ALWAYS) // Important pour Google
-                            .build();
-
-                    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                    if (response.statusCode() == 200) {
-                        String body = response.body();
-
-                        // On passe tout en minuscule pour éviter les problèmes de balises <TITLE> vs <title>
-                        String lowerBody = body.toLowerCase();
-
-                        if (lowerBody.contains("<item>")) {
-                            // On coupe au premier item
-                            int itemIndex = lowerBody.indexOf("<item>");
-                            String itemSection = body.substring(itemIndex);
-
-                            // On cherche le titre à l'intérieur de cet item
-                            String lowerSection = itemSection.toLowerCase();
-                            int startTitle = lowerSection.indexOf("<title>") + 7;
-                            int endTitle = lowerSection.indexOf("</title>");
-
-                            if (startTitle > 6 && endTitle > startTitle) {
-                                String title = itemSection.substring(startTitle, endTitle);
-
-                                // Nettoyage final
-                                return title.replace("&quot;", "\"")
-                                        .replace("&amp;", "&")
-                                        .replace("&#39;", "'")
-                                        .replaceAll("(?i) - .*", "") // Supprime la source proprement
-                                        .trim();
-                            }
-                        }
-                    }
-                    return "Format de flux inconnu";
-                } catch (Exception e) {
-                    return "Erreur réseau : " + e.getMessage();
+                    JSONObject responseJson = new JSONObject(response.body());
+                    return responseJson.getJSONArray("candidates")
+                            .getJSONObject(0)
+                            .getJSONObject("content")
+                            .getJSONArray("parts")
+                            .getJSONObject(0)
+                            .getString("text");
+                } else if (response.statusCode() == 429) {
+                    throw new Exception("Quota dépassé. Attendez 1 minute.");
+                } else {
+                    throw new Exception("Erreur API : " + response.statusCode());
                 }
             }
         };
 
         task.setOnSucceeded(e -> {
-            if (lblNews != null) lblNews.setText(task.getValue());
+            txtReponseIA.setText(task.getValue());
+            btnIA.setDisable(false);
         });
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        task.setOnFailed(e -> {
+            txtReponseIA.setText("Note : " + task.getException().getMessage());
+            btnIA.setDisable(false);
+        });
+
+        new Thread(task).start();
     }
 
-    private String getEmojiForCode(int code) {
-        if (code == 0) return "☀️";
-        if (code >= 1 && code <= 3) return "☁️";
-        if (code >= 51 && code <= 67) return "🌧️";
-        if (code >= 95) return "⛈️";
-        return "🌡️";
+    // --- DESIGN ORIGINAL RÉTABLI ---
+
+    private VBox createFournisseurCard(Fournisseur fournisseur) {
+        VBox card = new VBox();
+        card.setAlignment(Pos.TOP_CENTER);
+        card.setSpacing(15);
+        card.setPadding(new Insets(20));
+        card.setPrefWidth(250);
+        card.setPrefHeight(250);
+
+        String defaultStyle = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);";
+        String hoverStyle = "-fx-background-color: #1E293B; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.4), 15, 0, 0, 0); -fx-cursor: hand;";
+
+        card.setStyle(defaultStyle);
+
+        Label lblNom = new Label(fournisseur.getNom());
+        lblNom.setFont(Font.font("System", FontWeight.BOLD, 22));
+        lblNom.setTextFill(Color.web("#E8EDF5"));
+        lblNom.setWrapText(true);
+        lblNom.setAlignment(Pos.CENTER);
+
+        Label lblMatricule = new Label("Matricule: " + fournisseur.getMatriculeFiscal());
+        lblMatricule.setTextFill(Color.web("#8892A4"));
+        lblMatricule.setFont(Font.font("System", 12));
+
+        Label lblPhone = new Label("📞 " + fournisseur.getTelephone());
+        lblPhone.setFont(Font.font("System", FontWeight.BOLD, 14));
+        lblPhone.setTextFill(Color.web("#00E5CC"));
+        lblPhone.setStyle("-fx-background-color: rgba(0, 229, 204, 0.1); -fx-padding: 5 10; -fx-background-radius: 20;");
+
+        HBox actionBox = new HBox(10);
+        actionBox.setAlignment(Pos.CENTER);
+
+        Button btnMod = new Button("Modifier");
+        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
+        btnMod.setOnAction(e -> openModifierForm(fournisseur));
+
+        Button btnSup = new Button("Supprimer");
+        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
+        btnSup.setOnAction(e -> supprimerFournisseur(fournisseur));
+
+        actionBox.getChildren().addAll(btnMod, btnSup);
+        card.getChildren().addAll(lblNom, lblMatricule, lblPhone, actionBox);
+
+        card.setOnMouseEntered(e -> card.setStyle(hoverStyle));
+        card.setOnMouseExited(e -> card.setStyle(defaultStyle));
+
+        return card;
     }
+
+    // --- LOGIQUE DE CHARGEMENT ---
 
     private void loadData() {
         try {
@@ -187,6 +211,7 @@ public class afficherFrontFournisseurController {
         totalPages = (int) Math.ceil((double) displayedFournisseurs.size() / ITEMS_PER_PAGE);
         if (totalPages == 0) totalPages = 1;
         currentPage = 0;
+
         updateView();
     }
 
@@ -205,42 +230,6 @@ public class afficherFrontFournisseurController {
         }
     }
 
-    private VBox createFournisseurCard(Fournisseur fournisseur) {
-        VBox card = new VBox();
-        card.setAlignment(Pos.TOP_CENTER);
-        card.setSpacing(15);
-        card.setPadding(new Insets(20));
-        card.setPrefWidth(250);
-        card.setPrefHeight(250);
-
-        String style = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15;";
-        card.setStyle(style);
-
-        Label lblNom = new Label(fournisseur.getNom());
-        lblNom.setFont(Font.font("System", FontWeight.BOLD, 22));
-        lblNom.setTextFill(Color.web("#E8EDF5"));
-        lblNom.setWrapText(true);
-
-        Label lblMatricule = new Label("Matricule: " + fournisseur.getMatriculeFiscal());
-        lblMatricule.setTextFill(Color.web("#8892A4"));
-
-        Label lblPhone = new Label("📞 " + fournisseur.getTelephone());
-        lblPhone.setTextFill(Color.web("#00E5CC"));
-        lblPhone.setStyle("-fx-background-color: rgba(0, 229, 204, 0.1); -fx-padding: 5 10; -fx-background-radius: 20;");
-
-        HBox actions = new HBox(10, createBtn("Modifier", "#0EA5E9"), createBtn("Supprimer", "#EF4444"));
-        actions.setAlignment(Pos.CENTER);
-
-        card.getChildren().addAll(lblNom, lblMatricule, lblPhone, actions);
-        return card;
-    }
-
-    private Button createBtn(String text, String color) {
-        Button b = new Button(text);
-        b.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-        return b;
-    }
-
     private void openAjoutForm() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterFournisseur.fxml"));
@@ -249,16 +238,40 @@ public class afficherFrontFournisseurController {
             stage.showAndWait();
             loadData();
         } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire d'ajout");
+            showAlert("Erreur", "Impossible d'ouvrir le formulaire d'ajout: " + e.getMessage());
         }
     }
 
-    private void openModifierForm(Fournisseur f) { /* Logique modifier */ }
-    private void supprimerFournisseur(Fournisseur f) { /* Logique supprimer */ }
-    private void showAlert(String t, String m) {
+    private void openModifierForm(Fournisseur fournisseur) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/modifierFournisseur.fxml"));
+            Parent root = loader.load();
+            modifierFournisseurController controller = loader.getController();
+            controller.setFournisseurActuel(fournisseur);
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Modifier le Fournisseur");
+            stage.showAndWait();
+            loadData();
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir le formulaire de modification.");
+        }
+    }
+
+    private void supprimerFournisseur(Fournisseur fournisseur) {
+        try {
+            fournisseurService.deleteOne(fournisseur);
+            loadData();
+        } catch (SQLException e) {
+            showAlert("Erreur", "Impossible de supprimer le fournisseur.");
+        }
+    }
+
+    private void showAlert(String titre, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(t);
-        alert.setContentText(m);
-        alert.show();
+        alert.setTitle(titre);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

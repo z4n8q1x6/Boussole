@@ -60,8 +60,8 @@
         </VBox>
 
         <VBox spacing="8.0">
-            <Label text="Franchise (ID)" textFill="#CBD5F5" />
-            <TextField fx:id="franchiseIdInput" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+            <Label text="Franchise" textFill="#CBD5F5" />
+            <TextField fx:id="franchiseIdInput" promptText="Ex: Nom de la franchise" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
         </VBox>
 
         <Button fx:id="btnValider" maxWidth="1.7976931348623157E308" onAction="#handleModifier" text="✓ Mettre à jour"

@@ -19,7 +19,7 @@ public class ajouterFournisseurController {
     @FXML private TextField nomInput;
     @FXML private TextField matriculeInput;
     @FXML private TextField telephoneInput;
-    @FXML private TextField franchiseIdInput;
+    @FXML private TextField franchiseIdInput; // Saisie du NOM de la franchise
     @FXML private Button btnListe;
     @FXML private Button btnValider;
     @FXML private Button btnVersCharge;
@@ -28,9 +28,7 @@ public class ajouterFournisseurController {
 
     @FXML
     public void initialize() {
-        franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
-            if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
-        });
+        // Pas de validation numérique sur franchiseIdInput car c'est un nom
     }
 
     @FXML
@@ -42,11 +40,20 @@ public class ajouterFournisseurController {
         }
 
         try {
+            // Récupération de l'ID à partir du NOM saisi
+            String nomFranchise = franchiseIdInput.getText().trim();
+            int franchiseId = fournisseurService.getFranchiseIdByName(nomFranchise);
+
+            if (franchiseId == -1) {
+                showAlert("Erreur", "La franchise '" + nomFranchise + "' n'existe pas.", Alert.AlertType.ERROR);
+                return;
+            }
+
             Fournisseur nouveauFournisseur = new Fournisseur(
                     nomInput.getText().trim(),
                     matriculeInput.getText().trim(),
                     telephoneInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText().trim())
+                    franchiseId // Utilisation de l'ID trouvé
             );
 
             fournisseurService.insertOne(nouveauFournisseur);
@@ -56,7 +63,7 @@ public class ajouterFournisseurController {
         } catch (SQLException e) {
             showAlert("Erreur Base de Données", "Impossible d'enregistrer le fournisseur : " + e.getMessage(), Alert.AlertType.ERROR);
         } catch (NumberFormatException e) {
-            showAlert("Erreur", "L'ID de franchise doit être un nombre valide.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Format invalide.", Alert.AlertType.ERROR);
         }
     }
 
@@ -72,7 +79,6 @@ public class ajouterFournisseurController {
             Stage stage = (Stage) currentScene.getWindow();
             Scene newScene = new Scene(root);
             
-            // CSS mis à jour
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
@@ -81,7 +87,7 @@ public class ajouterFournisseurController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur Navigation", "Impossible de charger afficherBackFournisseur.fxml : " + e.getMessage(), Alert.AlertType.ERROR);
+            showAlert("Erreur Navigation", "Impossible de charger la liste : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -93,7 +99,6 @@ public class ajouterFournisseurController {
             Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            // CSS mis à jour
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             

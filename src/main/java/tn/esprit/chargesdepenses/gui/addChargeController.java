@@ -21,7 +21,7 @@ public class addChargeController {
     @FXML private ComboBox<Charge.TypeCharge> typeCombo;
     @FXML private TextField preuveImageInput;
     @FXML private ComboBox<Charge.StatusValidation> statusCombo;
-    @FXML private TextField franchiseIdInput;
+    @FXML private TextField franchiseIdInput; // Saisie du NOM de la franchise ici
     @FXML private Button btnListe; 
     @FXML private Button btnVersFournisseur;
     @FXML private Button btnValider;
@@ -38,9 +38,7 @@ public class addChargeController {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
         });
         
-        franchiseIdInput.textProperty().addListener((obs, old, newValue) -> {
-            if (!newValue.matches("\\d*")) franchiseIdInput.setText(old);
-        });
+        // J'ai retiré la validation "chiffres uniquement" pour franchiseIdInput car on saisit un NOM
     }
 
     @FXML
@@ -53,13 +51,22 @@ public class addChargeController {
         }
 
         try {
+            // Récupération de l'ID à partir du NOM saisi
+            String nomFranchise = franchiseIdInput.getText().trim();
+            int franchiseId = chargeService.getFranchiseIdByName(nomFranchise);
+
+            if (franchiseId == -1) {
+                showAlert("Erreur", "La franchise '" + nomFranchise + "' n'existe pas.", Alert.AlertType.ERROR);
+                return;
+            }
+
             Charge nouvelleCharge = new Charge(
                     titreInput.getText().trim(),
                     Double.parseDouble(montantInput.getText()),
                     dateInput.getValue(),
                     typeCombo.getValue(),
                     preuveImageInput.getText().trim(),
-                    Integer.parseInt(franchiseIdInput.getText().trim())
+                    franchiseId // Utilisation de l'ID trouvé
             );
             nouvelleCharge.setStatusValidation(statusCombo.getValue());
 
@@ -90,7 +97,6 @@ public class addChargeController {
             Stage stage = (Stage) currentScene.getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS (Nom mis à jour)
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
@@ -115,7 +121,6 @@ public class addChargeController {
             Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
             
-            // Application explicite du CSS (Nom mis à jour)
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
             
