@@ -26,11 +26,11 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-// Imports pour JFreeChart
+// Imports pour JFreeChart (Utilisation de PiePlot pour le Flat Design)
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
-import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
 
 import tn.esprit.chargesdepenses.models.Charge;
@@ -76,15 +76,86 @@ public class afficherFrontChargeController {
         btnPrecedent.setOnAction(e -> { if (currentPage > 0) { currentPage--; updateView(); } });
         btnSuivant.setOnAction(e -> { if (currentPage < totalPages - 1) { currentPage++; updateView(); } });
         btnAjouter.setOnAction(e -> openAjoutForm());
-        
-        // Changement : Appel de la logique locale au lieu de l'API Gemini
+
         btnIA.setOnAction(e -> handleConseilsLocaux());
     }
 
-    /**
-     * LOGIQUE DE CONSEILS LOCALE (Remplacement de l'IA)
-     * Analyse les données et génère des recommandations basées sur des règles métiers.
-     */
+    // --- LOGIQUE STATISTIQUE CORRIGÉE (DEUX GRAPHIQUES FLAT) ---
+
+    private void updateStatistics() {
+        if (displayedCharges.isEmpty()) {
+            chartContainer.getChildren().clear();
+            return;
+        }
+
+        // 1. Dataset pour la Répartition par TYPE (Montants)
+        DefaultPieDataset typeDataset = new DefaultPieDataset();
+        Map<Charge.TypeCharge, Double> typeStats = displayedCharges.stream()
+                .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
+        typeStats.forEach((type, total) -> typeDataset.setValue(type.toString(), total));
+
+        // 2. Dataset pour la Distribution par STATUT (Nombre)
+        DefaultPieDataset statusDataset = new DefaultPieDataset();
+        Map<String, Long> statusStats = displayedCharges.stream()
+                .collect(Collectors.groupingBy(c -> c.getStatusValidation().toString(), Collectors.counting()));
+        statusStats.forEach(statusDataset::setValue);
+
+        // 3. Création des graphiques 2D
+        JFreeChart typeChart = createFlatChart("Répartition des dépenses (DT)", typeDataset);
+        JFreeChart statusChart = createFlatChart("État des validations", statusDataset);
+
+        // 4. Couleurs personnalisées pour le graphique des TYPES
+        PiePlot typePlot = (PiePlot) typeChart.getPlot();
+        typePlot.setSectionPaint("CHARGES_EXPLOITATIONS", new java.awt.Color(0, 229, 204)); // Turquoise
+        typePlot.setSectionPaint("CHARGES_FINANCIERES", new java.awt.Color(14, 165, 233));  // Bleu
+        typePlot.setSectionPaint("CHARGES_EXCEPTIONNELLES", new java.awt.Color(139, 92, 246)); // Violet
+
+        // 5. Couleurs pour le graphique des STATUTS
+        PiePlot statusPlot = (PiePlot) statusChart.getPlot();
+        statusPlot.setSectionPaint("VALIDE", new java.awt.Color(16, 185, 129));      // Vert
+        statusPlot.setSectionPaint("EN_ATTENTE", new java.awt.Color(245, 158, 11));  // Orange
+        statusPlot.setSectionPaint("REJETTE", new java.awt.Color(239, 68, 68));      // Rouge
+
+        // 6. Organisation côte à côte dans le StackPane
+        ChartViewer typeViewer = new ChartViewer(typeChart);
+        ChartViewer statusViewer = new ChartViewer(statusChart);
+
+        HBox chartsBox = new HBox(20, typeViewer, statusViewer);
+        chartsBox.setAlignment(Pos.CENTER);
+
+        // Liaison de la largeur pour l'homogénéité
+        typeViewer.prefWidthProperty().bind(chartContainer.widthProperty().divide(2).subtract(10));
+        statusViewer.prefWidthProperty().bind(chartContainer.widthProperty().divide(2).subtract(10));
+
+        chartContainer.getChildren().setAll(chartsBox);
+    }
+
+    private JFreeChart createFlatChart(String title, DefaultPieDataset dataset) {
+        JFreeChart chart = ChartFactory.createPieChart(title, dataset, true, true, false);
+
+        chart.setBackgroundPaint(null);
+        chart.getTitle().setPaint(java.awt.Color.WHITE);
+        chart.getTitle().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
+        chart.setBorderVisible(false);
+
+        PiePlot plot = (PiePlot) chart.getPlot();
+        plot.setBackgroundPaint(null);
+        plot.setOutlineVisible(false);
+        plot.setShadowPaint(null);
+        plot.setLabelGenerator(null); // Retire les étiquettes blanches avec bordures
+        plot.setCircular(true);
+
+        if (chart.getLegend() != null) {
+            chart.getLegend().setBackgroundPaint(null);
+            chart.getLegend().setItemPaint(java.awt.Color.LIGHT_GRAY);
+            chart.getLegend().setFrame(org.jfree.chart.block.BlockBorder.NONE);
+        }
+
+        return chart;
+    }
+
+    // --- LOGIQUE MÉTIER & CONSEILS ---
+
     private void handleConseilsLocaux() {
         if (allCharges.isEmpty()) {
             showAlert("Info", "Aucune donnée à analyser pour le moment.");
@@ -94,54 +165,31 @@ public class afficherFrontChargeController {
         StringBuilder rapport = new StringBuilder();
         rapport.append("📊 ANALYSE FINANCIÈRE AUTOMATISÉE\n\n");
 
-        // 1. Calculs de base
         double totalDepenses = allCharges.stream().mapToDouble(Charge::getMontant).sum();
         double moyenneParCharge = totalDepenses / allCharges.size();
-        
+
         Map<Charge.TypeCharge, Double> parCategorie = allCharges.stream()
                 .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
 
-        // Trouver la catégorie la plus coûteuse
         Map.Entry<Charge.TypeCharge, Double> topCategorie = parCategorie.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .orElse(null);
 
-        // 2. Génération du rapport
         rapport.append(String.format("💰 Total des dépenses : %.2f DT\n", totalDepenses));
         rapport.append(String.format("📉 Moyenne par dépense : %.2f DT\n\n", moyenneParCharge));
 
         rapport.append("🔍 OBSERVATIONS :\n");
-        
         if (topCategorie != null) {
             double pourcentage = (topCategorie.getValue() / totalDepenses) * 100;
-            rapport.append(String.format("- Votre poste de dépense principal est '%s' (%.1f%% du total).\n", 
+            rapport.append(String.format("- Votre poste de dépense principal est '%s' (%.1f%% du total).\n",
                     topCategorie.getKey(), pourcentage));
-            
-            if (pourcentage > 50) {
-                rapport.append("  ⚠️ Attention : Cette catégorie consomme plus de la moitié de votre budget !\n");
-            }
+            if (pourcentage > 50) rapport.append("  ⚠️ Attention : Cette catégorie consomme plus de la moitié de votre budget !\n");
         }
 
-        // 3. Conseils spécifiques par catégorie
         rapport.append("\n💡 CONSEILS PERSONNALISÉS :\n");
-        
-        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXPLOITATIONS)) {
-            rapport.append("- Exploitation : Vérifiez vos contrats fournisseurs et négociez les tarifs récurrents.\n");
-        }
-        
-        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_FINANCIERES)) {
-            rapport.append("- Financier : Analysez les frais bancaires et les intérêts d'emprunt pour les optimiser.\n");
-        }
-        
-        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXCEPTIONNELLES)) {
-            rapport.append("- Exceptionnel : Ces dépenses sont imprévues. Pensez à constituer un fonds de réserve.\n");
-        }
-
-        if (totalDepenses > 10000) { // Seuil arbitraire d'exemple
-            rapport.append("- Votre volume de dépenses est élevé. Un audit détaillé ligne par ligne est recommandé.\n");
-        } else {
-            rapport.append("- Votre gestion semble maîtrisée. Continuez à surveiller les petits écarts.\n");
-        }
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXPLOITATIONS)) rapport.append("- Exploitation : Vérifiez vos contrats fournisseurs.\n");
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_FINANCIERES)) rapport.append("- Financier : Analysez les frais bancaires.\n");
+        if (parCategorie.containsKey(Charge.TypeCharge.CHARGES_EXCEPTIONNELLES)) rapport.append("- Exceptionnel : Pensez à constituer un fonds de réserve.\n");
 
         showAdviceDialog(rapport.toString());
     }
@@ -150,24 +198,16 @@ public class afficherFrontChargeController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Analyse Financière");
         alert.setHeaderText("Rapport de vos dépenses");
-        
         TextArea textArea = new TextArea(conseils);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        textArea.setStyle("-fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;"); // Police monospace pour l'alignement
-        
-        GridPane.setVgrow(textArea, javafx.scene.layout.Priority.ALWAYS);
-        GridPane.setHgrow(textArea, javafx.scene.layout.Priority.ALWAYS);
-        
+        textArea.setEditable(false); textArea.setWrapText(true);
+        textArea.setStyle("-fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;");
         GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
         expContent.add(textArea, 0, 0);
-
         alert.getDialogPane().setContent(expContent);
         alert.showAndWait();
     }
+
+    // --- CRUD & AFFICHAGE ---
 
     private void loadData() {
         try {
@@ -198,40 +238,6 @@ public class afficherFrontChargeController {
         updateStatistics();
     }
 
-    private void updateStatistics() {
-        if (displayedCharges.isEmpty()) {
-            chartContainer.getChildren().clear();
-            return;
-        }
-
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        Map<Charge.TypeCharge, Double> stats = displayedCharges.stream()
-                .collect(Collectors.groupingBy(Charge::getType, Collectors.summingDouble(Charge::getMontant)));
-
-        stats.forEach((type, total) -> dataset.setValue(type.toString(), total));
-
-        JFreeChart chart = ChartFactory.createPieChart3D("Répartition des charges (DT)", dataset, true, true, false);
-
-        chart.setBackgroundPaint(null);
-        chart.getTitle().setPaint(java.awt.Color.WHITE);
-        chart.getTitle().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 18));
-
-        PiePlot3D plot = (PiePlot3D) chart.getPlot();
-        plot.setBackgroundPaint(null);
-        plot.setOutlineVisible(false);
-        plot.setLabelPaint(java.awt.Color.WHITE);
-        plot.setLabelBackgroundPaint(new java.awt.Color(12, 15, 26, 200));
-
-        if (chart.getLegend() != null) {
-            chart.getLegend().setBackgroundPaint(null);
-            chart.getLegend().setItemPaint(java.awt.Color.WHITE);
-        }
-
-        ChartViewer viewer = new ChartViewer(chart);
-        viewer.setStyle("-fx-background-color: transparent;");
-        chartContainer.getChildren().setAll(viewer);
-    }
-
     private void updateView() {
         gridCharges.getChildren().clear();
         lblPageInfo.setText("Page " + (currentPage + 1) + " / " + totalPages);
@@ -252,10 +258,10 @@ public class afficherFrontChargeController {
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(15));
         card.setPrefSize(250, 380);
-        
-        String defaultStyle = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);";
-        String hoverStyle = "-fx-background-color: #1E293B; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.4), 15, 0, 0, 0); -fx-cursor: hand;";
-        
+
+        String defaultStyle = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15;";
+        String hoverStyle = "-fx-background-color: #1E293B; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-cursor: hand;";
+
         card.setStyle(defaultStyle);
 
         ImageView iv = new ImageView();
@@ -276,17 +282,16 @@ public class afficherFrontChargeController {
 
         HBox actionBox = new HBox(8);
         actionBox.setAlignment(Pos.CENTER);
-
         Button btnMod = new Button("✎");
-        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 8;");
+        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-background-radius: 8;");
         btnMod.setOnAction(e -> openModifierForm(charge));
 
         Button btnSup = new Button("🗑");
-        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 8;");
+        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 8;");
         btnSup.setOnAction(e -> supprimerCharge(charge));
 
         Button btnPdf = new Button("PDF");
-        btnPdf.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold; -fx-background-radius: 8;");
+        btnPdf.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-background-radius: 8;");
         btnPdf.setOnAction(e -> genererFicheChargePDF(charge));
 
         actionBox.getChildren().addAll(btnMod, btnSup, btnPdf);
@@ -302,29 +307,21 @@ public class afficherFrontChargeController {
         FileChooser fc = new FileChooser();
         fc.setTitle("Exporter PDF");
         fc.setInitialFileName("Charge_" + charge.getTitre().replace(" ", "_") + ".pdf");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
         File file = fc.showSaveDialog(gridCharges.getScene().getWindow());
 
         if (file != null) {
             try (PdfWriter writer = new PdfWriter(file.getAbsolutePath());
                  PdfDocument pdf = new PdfDocument(writer);
                  Document doc = new Document(pdf)) {
-
-                doc.add(new Paragraph("Rapport de Charge").setBold().setFontSize(18));
-                doc.add(new Paragraph("Boussole Management System\n\n"));
-
+                doc.add(new Paragraph("Rapport de Charge - Boussole").setBold().setFontSize(18));
                 Table table = new Table(UnitValue.createPercentArray(new float[]{40, 60})).useAllAvailableWidth();
                 table.addCell("Titre :"); table.addCell(charge.getTitre());
                 table.addCell("Montant :"); table.addCell(charge.getMontant() + " DT");
-                table.addCell("Date :"); table.addCell(charge.getDateCharge().toString());
                 table.addCell("Catégorie :"); table.addCell(charge.getType().toString());
                 table.addCell("Statut :"); table.addCell(charge.getStatusValidation().toString());
-
                 doc.add(table);
                 showAlert("Succès", "PDF généré !");
-            } catch (Exception e) {
-                showAlert("Erreur", "Erreur PDF: " + e.getMessage());
-            }
+            } catch (Exception e) { showAlert("Erreur", "Erreur PDF: " + e.getMessage()); }
         }
     }
 

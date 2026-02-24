@@ -34,25 +34,33 @@
                     <font><Font size="13.0" /></font>
                 </Label>
                 <Label text="|" textFill="#374151" />
+
                 <Label fx:id="lblMeteo" text="Chargement météo..." textFill="#0EA5E9">
                     <font><Font name="System Bold" size="13.0" /></font>
                 </Label>
+
                 <Label text="|" textFill="#374151" />
-                <Label text="Flash Business:" textFill="#00E5CC" style="-fx-font-weight: bold;">
-                    <font><Font size="13.0" /></font>
-                </Label>
-                <Label fx:id="lblNews" text="Chargement des news..." textFill="#8892A4" maxWidth="400.0">
-                    <font><Font name="System Italic" size="13.0" /></font>
-                </Label>
+
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="Flash Business:" textFill="#00E5CC" style="-fx-font-weight: bold;">
+                        <font><Font size="13.0" /></font>
+                    </Label>
+                    <Label fx:id="lblNews" text="Chargement des news..." textFill="#8892A4"
+                           maxWidth="450.0" wrapText="false" ellipsisString="..."
+                           style="-fx-cursor: hand; -fx-hover-text-fill: #0EA5E9;">
+                        <font><Font name="System Italic" size="13.0" /></font>
+                    </Label>
+                </HBox>
             </HBox>
         </VBox>
-        <Button fx:id="btnAjouter" text="+ Ajouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20 10 20; -fx-cursor: hand;" />
+        <Button fx:id="btnAjouter" text="+ Ajouter"
+                style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
     </HBox>
 
     <HBox spacing="15.0">
         <TextField fx:id="txtRecherche" prefHeight="42.0" prefWidth="380.0"
                    promptText="🔍 Rechercher par nom..."
-                   style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15 0 15;" />
+                   style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15;" />
         <ComboBox fx:id="comboTri" prefHeight="42.0" promptText="Trier par"
                   style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
     </HBox>
@@ -81,7 +89,7 @@
                     style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
         </HBox>
         <TextArea fx:id="txtReponseIA" editable="false" prefHeight="80.0" wrapText="true"
-                  promptText="Cliquez sur le bouton pour obtenir une analyse de vos fournisseurs par l'IA..."
+                  promptText="Cliquez pour obtenir une analyse rapide..."
                   style="-fx-control-inner-background: #06080F; -fx-text-fill: #E8EDF5; -fx-background-color: transparent; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 5;" />
     </VBox>
 
