@@ -30,7 +30,7 @@
     <HBox spacing="15.0" alignment="CENTER_LEFT">
         <ImageView fitHeight="50.0" fitWidth="50.0" preserveRatio="true">
             <image>
-                <Image url="@images/boussole_logo_n.png" />
+                <Image url="@images/boussolenouvlogo.jpg" />
             </image>
         </ImageView>
         <VBox>

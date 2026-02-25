@@ -51,7 +51,7 @@ public class afficherFrontFournisseurController {
     private List<Fournisseur> displayedFournisseurs = new ArrayList<>();
 
     // --- CONFIGURATION OPENROUTER ---
-    private static final String OPENROUTER_API_KEY = "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";
+    private static final String OPENROUTER_API_KEY = "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";
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
     private String businessNewsUrl = "https://www.boursier.com/actualites/economie";
@@ -77,19 +77,33 @@ public class afficherFrontFournisseurController {
     }
 
     private void startExternalAPIs() {
+        // 1. Tâche Météo
         Task<String> weatherTask = new Task<>() {
             @Override
             protected String call() throws Exception {
-                URL url = new URL("https://wttr.in/Tunis?format=%c+%t");
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
-                    return reader.readLine();
+                try {
+                    HttpClient client = HttpClient.newHttpClient();
+                    // Test en HTTP (plus simple pour Java) au lieu de HTTPS
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .uri(URI.create("http://wttr.in/Tunis?format=%c+%t"))
+                            .header("User-Agent", "Mozilla/5.0")
+                            .build();
+
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                    if (response.statusCode() == 200) {
+                        return response.body().trim();
+                    } else {
+                        return "Indisponible (Code " + response.statusCode() + ")";
+                    }
+                } catch (Exception e) {
+                    // Affiche l'erreur réelle dans la console d'IntelliJ pour comprendre le problème
+                    e.printStackTrace();
+                    return "Erreur réseau";
                 }
             }
         };
-        weatherTask.setOnSucceeded(e -> lblMeteo.setText(weatherTask.getValue()));
-        weatherTask.setOnFailed(e -> lblMeteo.setText("Météo indisponible"));
-
+        //flash business
         Task<String> newsTask = new Task<>() {
             @Override
             protected String call() throws Exception {
