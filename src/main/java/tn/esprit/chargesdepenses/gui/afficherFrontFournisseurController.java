@@ -17,6 +17,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import tn.esprit.chargesdepenses.models.Fournisseur;
 import tn.esprit.chargesdepenses.services.FournisseurService;
 
@@ -25,6 +27,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,7 +41,7 @@ public class afficherFrontFournisseurController {
 
     @FXML private GridPane gridFournisseurs;
     @FXML private Button btnPrecedent, btnSuivant, btnAjouter, btnIA;
-    @FXML private Label lblPageInfo, lblMeteo, lblNews; // lblNews correspond à fx:id="lblNews" dans ton FXML
+    @FXML private Label lblPageInfo, lblMeteo, lblNews;
     @FXML private TextField txtRecherche;
     @FXML private ComboBox<String> comboTri;
     @FXML private TextArea txtReponseIA;
@@ -44,9 +50,11 @@ public class afficherFrontFournisseurController {
     private List<Fournisseur> allFournisseurs = new ArrayList<>();
     private List<Fournisseur> displayedFournisseurs = new ArrayList<>();
 
-    // URL pour l'option "Lire plus"
-    private String businessNewsUrl = "https://www.boursier.com/actualites/economie";
+    // --- CONFIGURATION OPENROUTER ---
+    private static final String OPENROUTER_API_KEY = "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";
+    private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
+    private String businessNewsUrl = "https://www.boursier.com/actualites/economie";
     private static final int ITEMS_PER_PAGE = 3;
     private int currentPage = 0;
     private int totalPages = 0;
@@ -58,28 +66,23 @@ public class afficherFrontFournisseurController {
         txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
 
         loadData();
-
-        // --- LANCEMENT DES APIS EXTERNES ---
         startExternalAPIs();
 
         btnPrecedent.setOnAction(e -> { if (currentPage > 0) { currentPage--; updateView(); } });
         btnSuivant.setOnAction(e -> { if (currentPage < totalPages - 1) { currentPage++; updateView(); } });
         btnAjouter.setOnAction(e -> openAjoutForm());
 
-        // Rendre le label news cliquable pour "Lire Plus"
         lblNews.setCursor(javafx.scene.Cursor.HAND);
         lblNews.setOnMouseClicked(e -> openBusinessLink());
     }
 
     private void startExternalAPIs() {
-        // Task pour la Météo corrigée (Gestion UTF-8)
         Task<String> weatherTask = new Task<>() {
             @Override
             protected String call() throws Exception {
                 URL url = new URL("https://wttr.in/Tunis?format=%c+%t");
-                // On précise explicitement StandardCharsets.UTF_8 ici
                 try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(url.openStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                        new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                     return reader.readLine();
                 }
             }
@@ -87,12 +90,10 @@ public class afficherFrontFournisseurController {
         weatherTask.setOnSucceeded(e -> lblMeteo.setText(weatherTask.getValue()));
         weatherTask.setOnFailed(e -> lblMeteo.setText("Météo indisponible"));
 
-        // 2. Task Flash Business (Simulation de News Réelles)
         Task<String> newsTask = new Task<>() {
             @Override
             protected String call() throws Exception {
-                // On pourrait utiliser un flux RSS ici, voici un titre d'exemple
-                return "Inflation : Les prix à la production chutent de 0.5% ce mois. (Lire plus...)";
+                return "Analyse Marché : Les coûts de logistique sont en baisse de 3%. (Lire plus...)";
             }
         };
         newsTask.setOnSucceeded(e -> lblNews.setText(newsTask.getValue()));
@@ -101,28 +102,71 @@ public class afficherFrontFournisseurController {
         new Thread(newsTask).start();
     }
 
-    private void openBusinessLink() {
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(new URI(businessNewsUrl));
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lien : " + e.getMessage());
-        }
-    }
-
     @FXML
     private void handleAnalyseIA() {
-        // Version locale pour éviter l'erreur 403 (Gemini désactivé temporairement)
         if (allFournisseurs.isEmpty()) {
             showAlert("Information", "Aucun fournisseur à analyser.");
             return;
         }
-        txtReponseIA.setText("💡 Analyse Boussole : Avec vos " + allFournisseurs.size() +
-                " partenaires, nous suggérons de consolider vos achats chez le fournisseur le plus ancien pour obtenir des remises sur volume.");
-    }
 
-    // --- LOGIQUE DE CHARGEMENT & CRUD (INCHANGÉE POUR LE DESIGN) ---
+        btnIA.setDisable(true);
+        txtReponseIA.setText("🤖 Analyse OpenRouter en cours...");
+
+        String noms = allFournisseurs.stream()
+                .map(Fournisseur::getNom)
+                .collect(Collectors.joining(", "));
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                JSONObject payload = new JSONObject();
+                //modele utilisé
+                payload.put("model", "minimax/minimax-m2.5");
+                JSONArray messages = new JSONArray();
+                JSONObject msg = new JSONObject();
+                msg.put("role", "user");
+                msg.put("content", "En tant qu'expert logistique, donne 2 conseils courts et stratégiques pour gérer ces fournisseurs : " + noms);
+                messages.put(msg);
+
+                payload.put("messages", messages);
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(OPENROUTER_URL))
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + OPENROUTER_API_KEY.trim())
+                        .header("HTTP-Referer", "http://localhost")
+                        .header("X-Title", "Gestion Fournisseurs Esprit")
+                        .POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    JSONObject resObj = new JSONObject(response.body());
+                    return resObj.getJSONArray("choices")
+                            .getJSONObject(0)
+                            .getJSONObject("message")
+                            .getString("content").trim();
+                } else {
+                    System.err.println("ERREUR OPENROUTER : " + response.body());
+                    return "Erreur technique (Code " + response.statusCode() + ")";
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            txtReponseIA.setText("💡 CONSEILS IA :\n" + task.getValue());
+            btnIA.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            txtReponseIA.setText("❌ Erreur de connexion au service OpenRouter.");
+            btnIA.setDisable(false);
+        });
+
+        new Thread(task).start();
+    }
 
     private void loadData() {
         try {
@@ -176,7 +220,6 @@ public class afficherFrontFournisseurController {
 
         String defaultStyle = "-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15;";
         String hoverStyle = "-fx-background-color: #1E293B; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-cursor: hand;";
-
         card.setStyle(defaultStyle);
 
         Label lblNom = new Label(fournisseur.getNom());
@@ -195,9 +238,12 @@ public class afficherFrontFournisseurController {
 
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER);
-        Button btnMod = new Button("Modifier"); btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-background-radius: 8;");
+        Button btnMod = new Button("Modifier");
+        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-background-radius: 8;");
         btnMod.setOnAction(e -> openModifierForm(fournisseur));
-        Button btnSup = new Button("Supprimer"); btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 8;");
+
+        Button btnSup = new Button("Supprimer");
+        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 8;");
         btnSup.setOnAction(e -> supprimerFournisseur(fournisseur));
 
         actionBox.getChildren().addAll(btnMod, btnSup);
@@ -216,9 +262,7 @@ public class afficherFrontFournisseurController {
             stage.setScene(new Scene(loader.load()));
             stage.showAndWait();
             loadData();
-        } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ouvrir l'ajout.");
-        }
+        } catch (Exception e) { showAlert("Erreur", "Impossible d'ouvrir l'ajout."); }
     }
 
     private void openModifierForm(Fournisseur f) {
@@ -231,18 +275,19 @@ public class afficherFrontFournisseurController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
             loadData();
-        } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ouvrir la modification.");
-        }
+        } catch (Exception e) { showAlert("Erreur", "Impossible d'ouvrir la modification."); }
     }
 
     private void supprimerFournisseur(Fournisseur fournisseur) {
         try {
             fournisseurService.deleteOne(fournisseur);
             loadData();
-        } catch (SQLException e) {
-            showAlert("Erreur", "Échec de suppression.");
-        }
+        } catch (SQLException e) { showAlert("Erreur", "Échec de suppression."); }
+    }
+
+    private void openBusinessLink() {
+        try { if (Desktop.isDesktopSupported()) Desktop.getDesktop().browse(new URI(businessNewsUrl)); }
+        catch (Exception e) { System.err.println("Erreur lien : " + e.getMessage()); }
     }
 
     private void showAlert(String titre, String message) {
