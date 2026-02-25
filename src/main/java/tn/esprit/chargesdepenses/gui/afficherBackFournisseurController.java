@@ -1,11 +1,13 @@
 package tn.esprit.chargesdepenses.gui;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -14,6 +16,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Fournisseur;
 import tn.esprit.chargesdepenses.services.FournisseurService;
+import tn.esprit.chargesdepenses.services.EmailFournisseurService; // Importation du service mail
+
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -32,6 +36,7 @@ public class afficherBackFournisseurController {
     @FXML private TextField txtRecherche;
 
     private final FournisseurService fournisseurService = new FournisseurService();
+    private final EmailFournisseurService emailFournisseurService = new EmailFournisseurService(); // Instance du service mail
     private final ObservableList<Fournisseur> fournisseursList = FXCollections.observableArrayList();
     private FilteredList<Fournisseur> filteredData;
     private SortedList<Fournisseur> sortedData;
@@ -39,6 +44,21 @@ public class afficherBackFournisseurController {
     @FXML
     public void initialize() {
         tableFournisseurs.setEditable(true);
+
+        // --- AJOUT DU CLIC DROIT POUR L'EMAIL ---
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem itemPartager = new MenuItem("📧 Partager par Email");
+        itemPartager.setOnAction(event -> {
+            Fournisseur selected = tableFournisseurs.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                partagerFournisseurParEmail(selected);
+            } else {
+                showAlert("Information", "Veuillez sélectionner un fournisseur dans la table.");
+            }
+        });
+        contextMenu.getItems().add(itemPartager);
+        tableFournisseurs.setContextMenu(contextMenu);
+        // ----------------------------------------
 
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colNom.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -90,6 +110,32 @@ public class afficherBackFournisseurController {
         if (btnFront != null) btnFront.setOnAction(e -> openFrontOffice());
     }
 
+    // --- NOUVELLE MÉTHODE POUR L'ENVOI D'EMAIL ---
+    private void partagerFournisseurParEmail(Fournisseur f) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Partage par Email");
+        dialog.setHeaderText("Partager les infos de : " + f.getNom());
+        dialog.setContentText("Entrez l'adresse email de destination :");
+
+        dialog.showAndWait().ifPresent(emailCible -> {
+            String sujet = "Fiche Fournisseur - Boussole";
+            String corps = "Voici les informations du fournisseur :\n\n" +
+                    "Nom : " + f.getNom() + "\n" +
+                    "Matricule Fiscal : " + f.getMatriculeFiscal() + "\n" +
+                    "Téléphone : " + f.getTelephone() + "\n\n" +
+                    "Envoyé depuis l'application Boussole.";
+
+            new Thread(() -> {
+                try {
+                    emailFournisseurService.envoyerFicheFournisseur(emailCible, sujet, corps);
+                    Platform.runLater(() -> showAlert("Succès", "L'email a été envoyé avec succès !"));
+                } catch (Exception e) {
+                    Platform.runLater(() -> showAlert("Erreur", "Échec de l'envoi : " + e.getMessage()));
+                }
+            }).start();
+        });
+    }
+
     private void updateFournisseurInDB(Fournisseur f) {
         try {
             fournisseurService.updateOne(f);
@@ -132,7 +178,12 @@ public class afficherBackFournisseurController {
             }
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                    setAlignment(Pos.CENTER);
+                }
             }
         });
     }
@@ -146,7 +197,12 @@ public class afficherBackFournisseurController {
             }
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                    setAlignment(Pos.CENTER);
+                }
             }
         });
     }
@@ -194,11 +250,10 @@ public class afficherBackFournisseurController {
             Parent root = loader.load();
             Stage stage = new Stage();
             Scene scene = new Scene(root);
-            
-            // Chargement dynamique du CSS
+
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             scene.getStylesheets().add(css);
-            
+
             stage.setScene(scene);
             stage.setTitle("Fournisseurs - Front Office");
             stage.show();
@@ -211,6 +266,7 @@ public class afficherBackFournisseurController {
     private void showAlert(String titre, String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titre);
+        alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
     }
