@@ -76,3 +76,37 @@
     -fx-background-color: #1E293B;
     -fx-background-radius: 5;
 }
+
+/* --- STYLE POUR LES BOÎTES DE DIALOGUE (ALERTS) --- */
+.dialog-pane {
+    -fx-background-color: #0C0F1A;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #1E293B;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #E8EDF5;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: #CBD5F5;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: #0EA5E9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #38BDF8;
+}

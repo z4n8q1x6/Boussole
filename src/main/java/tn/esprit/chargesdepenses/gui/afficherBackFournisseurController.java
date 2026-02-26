@@ -117,6 +117,15 @@ public class afficherBackFournisseurController {
         dialog.setHeaderText("Partager les infos de : " + f.getNom());
         dialog.setContentText("Entrez l'adresse email de destination :");
 
+        // --- DESIGN SOMBRE POUR LE DIALOGUE DE SAISIE ---
+        DialogPane dialogPane = dialog.getDialogPane();
+        String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(css);
+        dialogPane.getStyleClass().add("dialog-pane");
+
+        // Style spécifique pour le champ de texte à l'intérieur du dialogue
+        dialog.getEditor().setStyle("-fx-background-color: #06080F; -fx-text-fill: white; -fx-border-color: #0EA5E9; -fx-background-radius: 5; -fx-border-radius: 5;");
+
         dialog.showAndWait().ifPresent(emailCible -> {
             String sujet = "Fiche Fournisseur - Boussole";
             String corps = "Voici les informations du fournisseur :\n\n" +
@@ -268,6 +277,13 @@ public class afficherBackFournisseurController {
         alert.setTitle(titre);
         alert.setHeaderText(null);
         alert.setContentText(msg);
+
+        // --- DESIGN SOMBRE ---
+        DialogPane dialogPane = alert.getDialogPane();
+        String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(css);
+        dialogPane.getStyleClass().add("dialog-pane");
+
         alert.showAndWait();
     }
 }

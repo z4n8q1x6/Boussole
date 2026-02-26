@@ -45,8 +45,6 @@
             <type>pom</type>
             </dependency>
 
-
-
             <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
@@ -59,7 +57,6 @@
             </dependency>
 
             <dependency>
-                <!-- Plus léger et suffisant pour ton code actuel -->
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>20231013</version>
@@ -72,19 +69,10 @@
             </dependency>
 
             <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20231013</version>
-            </dependency>
-
-            <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.1</version>
             </dependency>
-
-
-
 
     </dependencies>
     <build>
@@ -94,7 +82,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>tn.esprit.chargesdepenses.gui.Main</mainClass>
+                    <mainClass>tn.esprit.chargesdepenses.gui.MainChargesdepenses</mainClass>
                 </configuration>
             </plugin>
         </plugins>

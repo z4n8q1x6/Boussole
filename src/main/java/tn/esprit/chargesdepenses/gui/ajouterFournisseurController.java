@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import tn.esprit.chargesdepenses.models.Fournisseur;
@@ -19,7 +20,7 @@ public class ajouterFournisseurController {
     @FXML private TextField nomInput;
     @FXML private TextField matriculeInput;
     @FXML private TextField telephoneInput;
-    @FXML private TextField franchiseIdInput; // Saisie du NOM de la franchise
+    @FXML private TextField franchiseIdInput; // Saisie du NOM
     @FXML private Button btnListe;
     @FXML private Button btnValider;
     @FXML private Button btnVersCharge;
@@ -28,7 +29,12 @@ public class ajouterFournisseurController {
 
     @FXML
     public void initialize() {
-        // Pas de validation numérique sur franchiseIdInput car c'est un nom
+        // --- BLOC 1 : STYLE DES CHAMPS ---
+        String fieldStyle = "-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: #1E293B; -fx-border-radius: 5; -fx-padding: 5;";
+        nomInput.setStyle(fieldStyle);
+        matriculeInput.setStyle(fieldStyle);
+        telephoneInput.setStyle(fieldStyle);
+        franchiseIdInput.setStyle(fieldStyle);
     }
 
     @FXML
@@ -40,7 +46,6 @@ public class ajouterFournisseurController {
         }
 
         try {
-            // Récupération de l'ID à partir du NOM saisi
             String nomFranchise = franchiseIdInput.getText().trim();
             int franchiseId = fournisseurService.getFranchiseIdByName(nomFranchise);
 
@@ -53,7 +58,7 @@ public class ajouterFournisseurController {
                     nomInput.getText().trim(),
                     matriculeInput.getText().trim(),
                     telephoneInput.getText().trim(),
-                    franchiseId // Utilisation de l'ID trouvé
+                    franchiseId
             );
 
             fournisseurService.insertOne(nouveauFournisseur);
@@ -70,18 +75,19 @@ public class ajouterFournisseurController {
     @FXML
     private void handleAfficherListe() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackFournisseur.fxml")); 
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/afficherBackFournisseur.fxml"));
             Parent root = loader.load();
-            
+
             Scene currentScene = btnListe.getScene();
             if (currentScene == null) currentScene = nomInput.getScene();
-            
+
             Stage stage = (Stage) currentScene.getWindow();
             Scene newScene = new Scene(root);
-            
+
+            // --- BLOC 2 : CHARGEMENT DU CSS POUR LA NOUVELLE SCENE ---
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
-            
+
             stage.setScene(newScene);
             stage.setTitle("Boussole - Liste des Fournisseurs");
             stage.show();
@@ -98,10 +104,11 @@ public class ajouterFournisseurController {
             Parent root = loader.load();
             Stage stage = (Stage) btnListe.getScene().getWindow();
             Scene newScene = new Scene(root);
-            
+
+            // --- CHARGEMENT DU CSS ---
             String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
             newScene.getStylesheets().add(css);
-            
+
             stage.setScene(newScene);
             stage.setTitle("Ajouter une Charge");
             stage.show();
@@ -117,11 +124,18 @@ public class ajouterFournisseurController {
         return null;
     }
 
+    // --- BLOC 3 : ALERTE STYLISÉE ---
     private void showAlert(String title, String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
+
+        DialogPane dialogPane = alert.getDialogPane();
+        String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(css);
+        dialogPane.getStyleClass().add("dialog-pane");
+
         alert.showAndWait();
     }
 }

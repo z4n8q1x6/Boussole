@@ -21,7 +21,7 @@ public class addChargeController {
     @FXML private ComboBox<Charge.TypeCharge> typeCombo;
     @FXML private TextField preuveImageInput;
     @FXML private ComboBox<Charge.StatusValidation> statusCombo;
-    @FXML private TextField franchiseIdInput; // Saisie du NOM de la franchise ici
+    @FXML private TextField franchiseIdInput; // Saisie du NOM de la franchise
     @FXML private Button btnListe; 
     @FXML private Button btnVersFournisseur;
     @FXML private Button btnValider;
@@ -30,6 +30,17 @@ public class addChargeController {
 
     @FXML
     public void initialize() {
+        // --- DESIGN DES CHAMPS (SANS TOUCHER AU FXML) ---
+        String fieldStyle = "-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: #1E293B; -fx-border-radius: 5;";
+        titreInput.setStyle(fieldStyle);
+        montantInput.setStyle(fieldStyle);
+        dateInput.setStyle("-fx-control-inner-background: #0C0F1A; -fx-border-color: #1E293B;");
+        typeCombo.setStyle("-fx-background-color: #0C0F1A; -fx-border-color: #1E293B;");
+        statusCombo.setStyle("-fx-background-color: #0C0F1A; -fx-border-color: #1E293B;");
+        franchiseIdInput.setStyle(fieldStyle);
+        preuveImageInput.setStyle(fieldStyle);
+
+        // --- LOGIQUE EXISTANTE ---
         typeCombo.getItems().setAll(Charge.TypeCharge.values());
         statusCombo.getItems().setAll(Charge.StatusValidation.values());
         dateInput.setValue(LocalDate.now());
@@ -37,8 +48,6 @@ public class addChargeController {
         montantInput.textProperty().addListener((obs, old, newValue) -> {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
         });
-        
-        // J'ai retiré la validation "chiffres uniquement" pour franchiseIdInput car on saisit un NOM
     }
 
     @FXML
@@ -66,7 +75,7 @@ public class addChargeController {
                     dateInput.getValue(),
                     typeCombo.getValue(),
                     preuveImageInput.getText().trim(),
-                    franchiseId // Utilisation de l'ID trouvé
+                    franchiseId
             );
             nouvelleCharge.setStatusValidation(statusCombo.getValue());
 
@@ -133,11 +142,21 @@ public class addChargeController {
     }
 
     private String validerFormulaire() {
-        if (titreInput.getText().isEmpty() || montantInput.getText().isEmpty() ||
+        String titre = titreInput.getText().trim();
+
+        // 1. Vérification des champs vides (ton code d'origine)
+        if (titre.isEmpty() || montantInput.getText().isEmpty() ||
                 dateInput.getValue() == null || typeCombo.getValue() == null ||
                 statusCombo.getValue() == null || franchiseIdInput.getText().isEmpty()) {
             return "Tous les champs sont obligatoires.";
         }
+
+        // 2. Nouveau contrôle : Le titre ne doit pas être uniquement numérique
+        // La regex ".*[a-zA-Z].*" vérifie qu'il y a au moins une lettre quelque part
+        if (!titre.matches(".*[a-zA-Z].*")) {
+            return "Le titre de la charge doit contenir au moins quelques lettres (pas uniquement des chiffres).";
+        }
+
         return null;
     }
 
@@ -146,6 +165,14 @@ public class addChargeController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
+
+        // --- APPLICATION DU DESIGN SOMBRE BOUSSOLE ---
+        DialogPane dialogPane = alert.getDialogPane();
+        String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(css);
+        dialogPane.getStyleClass().add("dialog-pane");
+
+        // --- NE PAS OUBLIER CETTE LIGNE ---
         alert.showAndWait();
     }
 }

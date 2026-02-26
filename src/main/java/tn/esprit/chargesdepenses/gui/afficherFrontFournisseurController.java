@@ -51,7 +51,7 @@ public class afficherFrontFournisseurController {
     private List<Fournisseur> displayedFournisseurs = new ArrayList<>();
 
     // --- CONFIGURATION OPENROUTER ---
-    private static final String OPENROUTER_API_KEY = "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";
+    private static final String OPENROUTER_API_KEY = "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";
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
     private String businessNewsUrl = "https://www.boursier.com/actualites/economie";
@@ -61,6 +61,9 @@ public class afficherFrontFournisseurController {
 
     @FXML
     public void initialize() {
+        // --- AJOUTE CES DEUX LIGNES ICI ---
+        txtReponseIA.setStyle("-fx-control-inner-background: #0C0F1A; -fx-text-fill: #00E5CC; -fx-font-family: 'Segoe UI';");
+        txtReponseIA.setPromptText("L'analyse de l'IA apparaîtra ici...");
         comboTri.setItems(FXCollections.observableArrayList("Matricule Croissant", "Matricule Décroissant"));
         comboTri.setOnAction(e -> applyFilters());
         txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
@@ -306,7 +309,20 @@ public class afficherFrontFournisseurController {
 
     private void showAlert(String titre, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(titre); alert.setHeaderText(null); alert.setContentText(message);
+        alert.setTitle(titre);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+
+        // --- APPLICATION DU DESIGN SOMBRE ---
+        DialogPane dialogPane = alert.getDialogPane();
+
+        // Chargement du fichier CSS
+        String cssPath = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(cssPath);
+
+        // Application de la classe parente
+        dialogPane.getStyleClass().add("dialog-pane");
+
         alert.showAndWait();
     }
 }

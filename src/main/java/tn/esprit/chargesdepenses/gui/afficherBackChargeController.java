@@ -25,24 +25,40 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class afficherBackChargeController {
-    @FXML private TableView<Charge> tableCharges;
-    @FXML private TableColumn<Charge, String> colTitre;
-    @FXML private TableColumn<Charge, Double> colMontant;
-    @FXML private TableColumn<Charge, String> colDate;
-    @FXML private TableColumn<Charge, Charge.TypeCharge> colType;
-    @FXML private TableColumn<Charge, Charge.StatusValidation> colStatus;
-    @FXML private TableColumn<Charge, String> colFranchiseId;
-    @FXML private TableColumn<Charge, Void> colModifier;
-    @FXML private TableColumn<Charge, Void> colSupprimer;
-    @FXML private Button btnAjouter;
-    @FXML private Button btnFront;
-    @FXML private ComboBox<String> comboTri;
-    @FXML private Label lblTotal;
-    @FXML private TextField txtRecherche;
+    @FXML
+    private TableView<Charge> tableCharges;
+    @FXML
+    private TableColumn<Charge, String> colTitre;
+    @FXML
+    private TableColumn<Charge, Double> colMontant;
+    @FXML
+    private TableColumn<Charge, String> colDate;
+    @FXML
+    private TableColumn<Charge, Charge.TypeCharge> colType;
+    @FXML
+    private TableColumn<Charge, Charge.StatusValidation> colStatus;
+    @FXML
+    private TableColumn<Charge, String> colFranchiseId;
+    @FXML
+    private TableColumn<Charge, Void> colModifier;
+    @FXML
+    private TableColumn<Charge, Void> colSupprimer;
+    @FXML
+    private Button btnAjouter;
+    @FXML
+    private Button btnFront;
+    @FXML
+    private ComboBox<String> comboTri;
+    @FXML
+    private Label lblTotal;
+    @FXML
+    private TextField txtRecherche;
 
     // ÉLÉMENTS CORRIGÉS POUR L'API
-    @FXML private Label lblTaux;      // Liaison avec fx:id="lblTaux"
-    @FXML private Label lblTotalEur;   // Liaison avec fx:id="lblTotalEur"
+    @FXML
+    private Label lblTaux;      // Liaison avec fx:id="lblTaux"
+    @FXML
+    private Label lblTotalEur;   // Liaison avec fx:id="lblTotalEur"
     private final CurrencyService currencyService = new CurrencyService();
     private double tauxActuel = 0.30; // Valeur par défaut (fallback)
 
@@ -55,15 +71,28 @@ public class afficherBackChargeController {
     public void initialize() {
         tableCharges.setEditable(true);
 
-        // Configuration des colonnes
+        // --- CONFIGURATION COLONNE TITRE (AVEC VALIDATION) ---
         colTitre.setCellValueFactory(new PropertyValueFactory<>("titre"));
         colTitre.setCellFactory(TextFieldTableCell.forTableColumn());
         colTitre.setOnEditCommit(event -> {
+            String nouveauTitre = event.getNewValue();
             Charge c = event.getRowValue();
-            c.setTitre(event.getNewValue());
-            updateChargeInDB(c);
+
+            // Vérification : Le titre ne doit pas être composé uniquement de chiffres
+            // La regex ".*[a-zA-Z].*" vérifie la présence d'au moins une lettre
+            if (nouveauTitre != null && nouveauTitre.trim().matches(".*[a-zA-Z].*")) {
+                c.setTitre(nouveauTitre.trim());
+                updateChargeInDB(c);
+            } else {
+                // Affichage de l'alerte stylisée "Boussole"
+                showAlert("Erreur de saisie", "Le titre ne peut pas être composé uniquement de chiffres.");
+
+                // On force le tableau à réafficher l'ancienne valeur stockée dans l'objet
+                tableCharges.refresh();
+            }
         });
 
+        // --- CONFIGURATION COLONNE MONTANT ---
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
         colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         colMontant.setOnEditCommit(event -> {
@@ -73,6 +102,7 @@ public class afficherBackChargeController {
             calculerTotal();
         });
 
+        // --- AUTRES COLONNES ---
         colDate.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDateCharge().toString()));
 
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -93,10 +123,11 @@ public class afficherBackChargeController {
 
         colFranchiseId.setCellValueFactory(new PropertyValueFactory<>("franchiseName"));
 
+        // --- BOUTONS D'ACTION ---
         addModifierButtonToTable();
         addSupprimerButtonToTable();
 
-        // Recherche et Tri
+        // --- RECHERCHE ET TRI ---
         filteredData = new FilteredList<>(chargesList, p -> true);
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableCharges.comparatorProperty());
@@ -113,9 +144,9 @@ public class afficherBackChargeController {
         comboTri.setItems(FXCollections.observableArrayList("Montant Croissant", "Montant Décroissant"));
         comboTri.setOnAction(e -> trierCharges());
 
-        // INITIALISATION DES DONNÉES ET DE L'API
+        // --- INITIALISATION DES DONNÉES ET DE L'API ---
         loadCharges();
-        chargerTauxDeChange(); // Récupère le taux réel via ExchangeRate API
+        chargerTauxDeChange(); // Récupère le taux réel via CurrencyService
 
         btnAjouter.setOnAction(e -> openAjoutForm());
         if (btnFront != null) btnFront.setOnAction(e -> openFrontOffice());
@@ -191,11 +222,14 @@ public class afficherBackChargeController {
     private void addModifierButtonToTable() {
         colModifier.setCellFactory(param -> new TableCell<>() {
             private final Button btn = new Button("✎");
+
             {
                 btn.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-cursor: hand;");
                 btn.setOnAction(e -> openModifierForm(getTableView().getItems().get(getIndex())));
             }
-            @Override protected void updateItem(Void item, boolean empty) {
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
             }
@@ -205,11 +239,14 @@ public class afficherBackChargeController {
     private void addSupprimerButtonToTable() {
         colSupprimer.setCellFactory(param -> new TableCell<>() {
             private final Button btn = new Button("🗑");
+
             {
                 btn.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-cursor: hand;");
                 btn.setOnAction(e -> supprimerCharge(getTableView().getItems().get(getIndex())));
             }
-            @Override protected void updateItem(Void item, boolean empty) {
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
             }
@@ -267,7 +304,19 @@ public class afficherBackChargeController {
     private void showAlert(String titre, String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titre);
+        alert.setHeaderText(null); // Optionnel : nettoie l'en-tête pour un look plus moderne
         alert.setContentText(msg);
+
+        // --- INJECTION DU STYLE SOMBRE (BOUSSOLE THEME) ---
+        DialogPane dialogPane = alert.getDialogPane();
+
+        // On récupère le fichier CSS (vérifie que le chemin est bien celui-ci)
+        String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+        dialogPane.getStylesheets().add(css);
+
+        // On applique la classe parente définie dans ton CSS
+        dialogPane.getStyleClass().add("dialog-pane");
+
         alert.showAndWait();
     }
 }
