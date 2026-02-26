@@ -1,0 +1,26 @@
+/* TextArea inner background */
+.text-area .content {
+  -fx-background-color: #0c0f1a;
+}
+
+/* TextArea scroll pane viewport */
+.text-area > .scroll-pane {
+  -fx-background-color: #0c0f1a;
+}
+
+.text-area > .scroll-pane > .viewport {
+  -fx-background-color: #0c0f1a;
+}
+
+/* TextField inner background */
+.text-field {
+  -fx-background-color: #0c0f1a;
+  -fx-highlight-fill: rgba(0, 229, 204, 0.3);
+  -fx-highlight-text-fill: white;
+}
+
+/* Text selection highlight for TextArea too */
+.text-area {
+  -fx-highlight-fill: rgba(0, 229, 204, 0.3);
+  -fx-highlight-text-fill: white;
+}

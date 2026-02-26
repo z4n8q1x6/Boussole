@@ -1,0 +1,84 @@
+package tn.esprit.boussole.models;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
+
+public class Reclamation {
+
+  private int id;
+  private String sujet;
+  private String description;
+  private StatutReclamation statut;
+  private Timestamp dateCreation;
+  private int franchiseId;
+
+  // Constructors
+  public Reclamation() {}
+
+  public Reclamation(
+      int id,
+      String sujet,
+      String description,
+      StatutReclamation statut,
+      Timestamp dateCreation,
+      int franchiseId) {
+    this.id = id;
+    this.sujet = sujet;
+    this.description = description;
+    this.statut = statut;
+    this.dateCreation = dateCreation;
+    this.franchiseId = franchiseId;
+  }
+
+  // Getters and Setters
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getSujet() {
+    return sujet;
+  }
+
+  public int getFranchiseId() {
+    return franchiseId;
+  }
+
+  public void setFranchiseId(int franchiseId) {
+    this.franchiseId = franchiseId;
+  }
+
+  public void setSujet(String sujet) {
+    this.sujet = sujet;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public StatutReclamation getStatut() {
+    return statut;
+  }
+
+  public void setStatut(StatutReclamation statut) {
+    this.statut = statut;
+  }
+
+  @JsonProperty("dateCreation_formatted")
+  public String getDateCreation() {
+    if (dateCreation == null) return null;
+    return dateCreation.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+  }
+
+  public void setDateCreation(Timestamp dateCreation) {
+    this.dateCreation = dateCreation;
+  }
+}

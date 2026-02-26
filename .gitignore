@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -41,3 +42,41 @@ build/
 
 ### Mac OS ###
 .DS_Store
+=======
+# --- Build Artifacts ---
+target/
+*.class
+*.log
+
+# --- IDEs ---
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.settings/
+.classpath
+.project
+.factorypath
+
+# VS Code
+.vscode/
+bin/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+*.tmp
+
+# --- Secrets & Notes ---
+.env
+temp_key.txt
+*.properties
+*.md
+
+# --- Project Specific ---
+# Ignore the generated-sources folder if you use one
+src/main/generated/
+
+>>>>>>> e94015978ac89d427a5800471b51c55ad3927b46

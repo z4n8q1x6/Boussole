@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainAnchorPane"
+  prefHeight="600.0"
+  prefWidth="550.0"
+  style="-fx-background-color: #06080F;
+                   -fx-background-radius: 15;
+                   -fx-border-color: rgba(0, 229, 204, 0.3);
+                   -fx-border-radius: 15;
+                   -fx-border-width: 1;"
+  xmlns="http://javafx.com/javafx/21"
+  xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="tn.esprit.boussole.gui.AddReclamationController"
+  stylesheets="/tn/esprit/boussole/support/css/addReclamation.css"
+>
+  <children>
+
+    <!-- Header -->
+    <VBox layoutX="40.0"
+      layoutY="30.0"
+      spacing="5.0"
+      AnchorPane.leftAnchor="40.0"
+      AnchorPane.topAnchor="30.0">
+
+      <children>
+
+        <Label text="Nouvelle Réclamation"
+          textFill="#E8EDF5">
+
+          <font>
+            <Font name="System Bold" size="26.0" />
+          </font>
+
+        </Label>
+
+        <Label text="Complétez les informations pour créer la réclamation"
+          textFill="#8892A4">
+
+          <font>
+            <Font size="13.0" />
+          </font>
+
+        </Label>
+
+      </children>
+
+    </VBox>
+
+
+    <!-- Form -->
+    <ScrollPane fitToWidth="true"
+      hbarPolicy="NEVER"
+      layoutY="110.0"
+      prefHeight="490.0"
+      prefWidth="550.0"
+      style="-fx-background-color: transparent;
+                           -fx-background: transparent;"
+      AnchorPane.topAnchor="110.0"
+      AnchorPane.bottomAnchor="0.0"
+      AnchorPane.leftAnchor="0.0"
+      AnchorPane.rightAnchor="0.0">
+
+      <content>
+
+        <VBox spacing="20.0">
+
+          <padding>
+            <Insets top="10.0"
+              right="40.0"
+              bottom="40.0"
+              left="40.0" />
+          </padding>
+
+          <children>
+
+            <!-- SECTION -->
+            <Label text="INFORMATIONS"
+              textFill="#00E5CC">
+
+              <font>
+                <Font name="System Bold"
+                  size="12.0" />
+              </font>
+
+            </Label>
+
+
+            <!-- Sujet -->
+            <VBox spacing="8.0">
+
+              <Label text="Sujet"
+                textFill="#8892A4" />
+
+              <TextField fx:id="txtSujet"
+                promptText="Ex: Problème de connexion"
+                style="-fx-background-color: #0C0F1A;
+                                              -fx-text-fill: white;
+                                              -fx-border-color: rgba(255,255,255,0.1);
+                                              -fx-background-radius: 8;
+                                              -fx-border-radius: 8;
+                                              -fx-padding: 10;" />
+
+            </VBox>
+
+
+            <!-- Description -->
+            <VBox spacing="8.0">
+
+              <Label text="Description"
+                textFill="#8892A4" />
+
+              <TextArea fx:id="txtDescription"
+                prefHeight="180.0"
+                wrapText="true"
+                promptText="Décrivez le problème en détail..."
+                style="-fx-background-color: #0C0F1A;
+                                             -fx-text-fill: white;
+                                             -fx-border-color: rgba(255,255,255,0.1);
+                                             -fx-background-radius: 8;
+                                             -fx-border-radius: 8;
+                                             -fx-padding: 10;" />
+
+            </VBox>
+
+
+            <!-- Error label -->
+            <Label fx:id="lblError"
+              visible="false"
+              managed="false"
+              textFill="#F43F5E"
+              style="-fx-font-weight: bold;" />
+
+
+            <!-- Buttons -->
+            <HBox alignment="CENTER_RIGHT"
+              spacing="15.0">
+
+              <children>
+
+                <Button text="Annuler"
+                  onAction="#handleCancel"
+                  prefWidth="100"
+                  prefHeight="40"
+                  style="-fx-background-color: transparent;
+                                               -fx-text-fill: #8892A4;
+                                               -fx-cursor: hand;
+                                               -fx-border-color: rgba(255,255,255,0.1);
+                                               -fx-border-radius: 8;" />
+
+
+                <Button fx:id="btnCreate"
+                  text="CRÉER"
+                  onAction="#handleCreate"
+                  prefWidth="180"
+                  prefHeight="40"
+                  style="-fx-background-color: #00E5CC;
+                                               -fx-text-fill: #06080F;
+                                               -fx-background-radius: 8;
+                                               -fx-font-weight: bold;
+                                               -fx-cursor: hand;" />
+
+              </children>
+
+              <VBox.margin>
+                <Insets top="10" />
+              </VBox.margin>
+
+            </HBox>
+
+
+          </children>
+
+        </VBox>
+
+      </content>
+
+    </ScrollPane>
+
+  </children>
+
+</AnchorPane>
