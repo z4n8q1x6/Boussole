@@ -6,12 +6,12 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.model.Userinfo;
 import javafx.animation.*;
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -22,6 +22,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -30,9 +31,17 @@ import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.videoio.VideoCapture;
 import tn.esprit.boussole.utils.MyBdConnexion;
 import tn.esprit.boussole.service.AuthService;
+import tn.esprit.boussole.service.FacePlusPlusService; // Import du service Face++
+import tn.esprit.boussole.utils.NotificationManager;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,9 +51,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 public class loginController {
+
+    static {
+        // Charger la librairie native OpenCV
+        try {
+            nu.pattern.OpenCV.loadLocally();
+        } catch (Exception e) {
+            System.err.println("Erreur chargement OpenCV : " + e.getMessage());
+        }
+    }
 
     @FXML private StackPane rootPane;
     @FXML private ImageView backgroundImage;
@@ -63,6 +84,7 @@ public class loginController {
 
     private final Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
     private final AuthService authService = new AuthService();
+    private final FacePlusPlusService faceService = new FacePlusPlusService(); // Service Face++
 
     private GraphicsContext gc;
     private List<Particle> particles;
@@ -72,6 +94,11 @@ public class loginController {
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
     private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
+
+    // Webcam
+    private VideoCapture capture;
+    private ScheduledExecutorService timer;
+    private Stage cameraStage;
 
     @FXML
     public void initialize() {
@@ -116,21 +143,20 @@ public class loginController {
         String password = passwordField.getText();
 
         if (email.isEmpty() || password.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Champs vides", "Veuillez remplir tous les champs.");
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.WARNING, "Champs vides", "Veuillez remplir tous les champs.");
             return;
         }
 
         AuthInfo info = fetchAuthInfo(email);
 
         if (info == null || !verifyPassword(password, info.storedPassword)) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de connexion", "Email ou mot de passe incorrect.");
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur de connexion", "Email ou mot de passe incorrect.");
             passwordField.clear();
             return;
         }
 
         if (!info.isActif) {
-            showAlert(Alert.AlertType.ERROR, "Compte Verrouillé",
-                    "Bonjour " + info.prenom + ",\n\nVotre compte est actuellement désactivé.");
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Compte Verrouillé", "Bonjour " + info.prenom + ", votre compte est désactivé.");
             passwordField.clear();
             return;
         }
@@ -140,72 +166,145 @@ public class loginController {
 
     @FXML
     private void handleFaceAuth() {
-        String email = emailField.getText().trim();
-        if (email.isEmpty() || !email.contains("@")) {
-            showAlert(Alert.AlertType.WARNING, "Email manquant", "Veuillez entrer votre email avant de lancer la reconnaissance faciale.");
-            return;
-        }
+        // Ouvrir une fenêtre modale pour la caméra
+        cameraStage = new Stage();
+        cameraStage.setTitle("Reconnaissance Faciale");
+        
+        ImageView cameraView = new ImageView();
+        cameraView.setFitWidth(640);
+        cameraView.setFitHeight(480);
+        
+        Button btnCapture = new Button("📷 Scanner mon visage");
+        btnCapture.setStyle("-fx-background-color: #00E5CC; -fx-text-fill: #06080F; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 20; -fx-background-radius: 20;");
+        btnCapture.setOnAction(e -> processFaceCapture());
 
-        AuthInfo info = fetchAuthInfo(email);
-        if (info == null) {
-            showAlert(Alert.AlertType.ERROR, "Utilisateur inconnu", "Aucun compte n'est associé à cet email.");
-            return;
-        }
+        VBox layout = new VBox(10, cameraView, btnCapture);
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #06080F; -fx-padding: 20;");
+        
+        Scene scene = new Scene(layout);
+        cameraStage.setScene(scene);
+        cameraStage.setOnCloseRequest(e -> stopCamera());
+        cameraStage.show();
 
-        Alert infoAlert = new Alert(Alert.AlertType.INFORMATION, "Lancement de la reconnaissance faciale...");
-        infoAlert.setTitle("Reconnaissance faciale");
-        infoAlert.setHeaderText("Veuillez regarder la caméra.");
-        infoAlert.show();
-
-        new Thread(() -> {
-            try {
-                String pythonPath = "python";
-                String scriptPath = new File("python_scripts/face_auth.py").getAbsolutePath();
-
-                ProcessBuilder pb = new ProcessBuilder(pythonPath, scriptPath, email);
-                pb.redirectErrorStream(true);
-
-                Process process = pb.start();
-
-                StringBuilder output = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        System.out.println("Python script: " + line);
-                        output.append(line);
-                    }
-                }
-
-                process.waitFor();
-                String finalOutput = output.toString();
-
-                Platform.runLater(() -> {
-                    infoAlert.close();
-                    if (finalOutput.contains("AUTH_SUCCESS")) {
-                        showAlert(Alert.AlertType.INFORMATION, "Succès", "Visage reconnu ! Connexion en cours...");
-                        proceedToLogin(info);
-                    } else {
-                        showAlert(Alert.AlertType.ERROR, "Échec", "La reconnaissance faciale a échoué.");
-                    }
-                });
-
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    infoAlert.close();
-                    showAlert(Alert.AlertType.ERROR, "Erreur d'exécution", "Impossible de lancer le script.");
-                });
-            }
-        }).start();
+        startCamera(cameraView);
     }
 
+    private void startCamera(ImageView view) {
+        capture = new VideoCapture(0); // 0 = Webcam par défaut
+        if (capture.isOpened()) {
+            timer = Executors.newSingleThreadScheduledExecutor();
+            timer.scheduleAtFixedRate(() -> {
+                Mat frame = new Mat();
+                if (capture.read(frame)) {
+                    Image imageToShow = mat2Image(frame);
+                    Platform.runLater(() -> view.setImage(imageToShow));
+                }
+            }, 0, 33, TimeUnit.MILLISECONDS); // ~30 FPS
+        } else {
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur Caméra", "Impossible d'ouvrir la webcam.");
+            cameraStage.close();
+        }
+    }
+
+    private void stopCamera() {
+        if (timer != null && !timer.isShutdown()) {
+            timer.shutdown();
+            try {
+                timer.awaitTermination(33, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (capture != null && capture.isOpened()) {
+            capture.release();
+        }
+    }
+
+    private void processFaceCapture() {
+        if (capture != null && capture.isOpened()) {
+            Mat frame = new Mat();
+            if (capture.read(frame)) {
+                // Convertir Mat en byte[]
+                MatOfByte buffer = new MatOfByte();
+                Imgcodecs.imencode(".png", frame, buffer);
+                byte[] imageBytes = buffer.toArray();
+
+                // Arrêter la caméra et fermer la fenêtre
+                stopCamera();
+                cameraStage.close();
+
+                // Envoyer à Face++
+                NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.INFO, "Analyse", "Vérification du visage en cours...");
+                
+                new Thread(() -> {
+                    try {
+                        String faceToken = faceService.searchFace(imageBytes);
+                        
+                        Platform.runLater(() -> {
+                            if (faceToken != null) {
+                                // Trouver l'utilisateur avec ce token
+                                AuthInfo info = fetchAuthInfoByFaceToken(faceToken);
+                                if (info != null) {
+                                    if (!info.isActif) {
+                                        NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Compte Verrouillé", "Votre compte est désactivé.");
+                                    } else {
+                                        NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Succès", "Visage reconnu !");
+                                        proceedToLogin(info);
+                                    }
+                                } else {
+                                    NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Inconnu", "Visage reconnu mais non associé à un utilisateur.");
+                                }
+                            } else {
+                                NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Échec", "Visage non reconnu ou non enregistré.");
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur API", "Problème de connexion avec Face++."));
+                    }
+                }).start();
+            }
+        }
+    }
+
+    private Image mat2Image(Mat frame) {
+        MatOfByte buffer = new MatOfByte();
+        Imgcodecs.imencode(".png", frame, buffer);
+        return new Image(new ByteArrayInputStream(buffer.toArray()));
+    }
+
+    private AuthInfo fetchAuthInfoByFaceToken(String faceToken) {
+        String sql = "SELECT email, mot_de_passe, role, prenom, actif FROM utilisateur WHERE face_token = ? LIMIT 1";
+        Connection conn = MyBdConnexion.getinstance().getCnx();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, faceToken);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new AuthInfo(
+                            rs.getString("email"),
+                            rs.getString("mot_de_passe"),
+                            rs.getString("role"),
+                            rs.getString("prenom"),
+                            rs.getBoolean("actif")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ... (Reste du code inchangé : handleGoogleLogin, fetchGoogleUserInfo, handleUserDatabaseLogin, createGoogleUser, proceedToLogin, fetchAuthInfo, AuthInfo, showSuccessAlert, navigateToRoleInterface, verifyPassword, setupVisuals, updateParticles, setupButtonHoverEffects, handleForgotPassword, Particle)
+    
     @FXML
     private void handleGoogleLogin() {
         new Thread(() -> {
             try {
                 InputStream in = loginController.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
                 if (in == null) {
-                    Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur Config", "Fichier credentials.json introuvable."));
+                    Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur Config", "Fichier credentials.json introuvable."));
                     return;
                 }
 
@@ -224,7 +323,7 @@ public class loginController {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur Google", "Échec de la connexion Google : " + e.getMessage()));
+                Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur Google", "Échec de la connexion Google : " + e.getMessage()));
             }
         }).start();
     }
@@ -246,7 +345,7 @@ public class loginController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Erreur API", "Impossible de récupérer les infos Google."));
+            Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur API", "Impossible de récupérer les infos Google."));
         }
     }
 
@@ -255,7 +354,7 @@ public class loginController {
 
         if (info != null) {
             if (!info.isActif) {
-                showAlert(Alert.AlertType.ERROR, "Compte Verrouillé", "Votre compte est désactivé.");
+                NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Compte Verrouillé", "Votre compte est désactivé.");
                 return;
             }
             proceedToLogin(info);
@@ -279,7 +378,7 @@ public class loginController {
             System.out.println("Nouvel utilisateur Google créé : " + email);
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur DB", "Impossible de créer le compte Google.");
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur DB", "Impossible de créer le compte Google.");
         }
     }
 
@@ -295,7 +394,11 @@ public class loginController {
         if (rememberMeCheckbox.isSelected()) prefs.put("rememberedEmail", info.email);
         else prefs.remove("rememberedEmail");
 
-        showSuccessAlert(info.prenom);
+        NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Connexion réussie", "Bienvenue " + info.prenom + " !");
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(1.5));
+        delay.setOnFinished(e -> navigateToRoleInterface(info.role));
+        delay.play();
     }
 
     private AuthInfo fetchAuthInfo(String email) {
@@ -316,7 +419,7 @@ public class loginController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur DB", "Impossible de contacter la base de données.");
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur DB", "Impossible de contacter la base de données.");
         }
         return null;
     }
@@ -369,24 +472,19 @@ public class loginController {
             
             Stage stage = (Stage) rootPane.getScene().getWindow();
             if (stage != null) {
-                // 1. Configurer la scène
                 Scene scene = new Scene(root);
                 stage.setScene(scene);
 
-                // 2. Forcer la taille de l'écran (Workaround pour le bug de redimensionnement)
                 Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
                 stage.setX(screenBounds.getMinX());
                 stage.setY(screenBounds.getMinY());
                 stage.setWidth(screenBounds.getWidth());
                 stage.setHeight(screenBounds.getHeight());
 
-                // 3. Appliquer Maximized avec une "secousse"
                 stage.setMaximized(false);
                 stage.setMaximized(true);
-
+                
                 stage.show();
-            } else {
-                System.err.println("Erreur critique : Impossible de récupérer la fenêtre principale.");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -452,12 +550,6 @@ public class loginController {
         loginButton.setOnMouseExited(e -> loginButton.setStyle("-fx-background-color: #0EA5E9; -fx-background-radius: 10; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;"));
     }
 
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert a = new Alert(type);
-        a.setTitle(title); a.setHeaderText(null); a.setContentText(content);
-        a.showAndWait();
-    }
-
     private void handleForgotPassword() {
         ParallelTransition pt = new ParallelTransition();
         if (brandingVBox != null) {
@@ -484,7 +576,7 @@ public class loginController {
                 stage.show();
             } catch (IOException ex) {
                 ex.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page.");
+                NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "Impossible d'ouvrir la page.");
             }
         });
         pt.play();

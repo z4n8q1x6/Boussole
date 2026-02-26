@@ -11,16 +11,14 @@ public class user {
     private String role;
     private Boolean actif;
     private LocalDateTime dateCreation;
-    private Integer idFranchise
-            ;
-
-
-
+    private Integer idFranchise;
+    private String faceToken; // Nouveau champ
 
     public enum Role {
         SIEGE,
         ENTREPRISE
     }
+    
     public user(){};
 
     public user(Integer idFranchise, LocalDateTime dateCreation, Boolean actif, String role, String motDePasse, String email, String prenom, String nom, Integer idUser) {
@@ -86,6 +84,11 @@ public class user {
     public Boolean getActif() {
         return actif;
     }
+    
+    // Méthode utilitaire pour PropertyValueFactory
+    public Boolean isActif() {
+        return actif;
+    }
 
     public void setActif(Boolean actif) {
         this.actif = actif;
@@ -105,6 +108,14 @@ public class user {
 
     public void setidFranchise(Integer idFranchisee) {this.idFranchise = idFranchisee;}
 
+    public String getFaceToken() {
+        return faceToken;
+    }
+
+    public void setFaceToken(String faceToken) {
+        this.faceToken = faceToken;
+    }
+
     @Override
     public String toString() {
         return "utilisateur{" +
@@ -117,7 +128,7 @@ public class user {
                 ", actif=" + actif +
                 ", dateCreation=" + dateCreation +
                 ", idFranchise=" + idFranchise +
+                ", faceToken='" + faceToken + '\'' +
                 '}';
     }
 }
-

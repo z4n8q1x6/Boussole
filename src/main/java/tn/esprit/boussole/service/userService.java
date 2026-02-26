@@ -19,7 +19,8 @@ public class userService implements crud<user> {
 
     @Override
     public void insertone(user user) throws SQLException {
-        String req = "INSERT INTO utilisateur(nom, prenom, email, mot_de_passe, role, actif, date_creation, id_franchise) VALUES (?,?,?,?,?,?,?,?)";
+        // Ajout de la colonne face_token
+        String req = "INSERT INTO utilisateur(nom, prenom, email, mot_de_passe, role, actif, date_creation, id_franchise, face_token) VALUES (?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getNom());
@@ -33,9 +34,11 @@ public class userService implements crud<user> {
             if (user.getidFranchise() != null && user.getidFranchise() > 0) {
                 ps.setInt(8, user.getidFranchise());
             } else {
-
                 ps.setInt(8, 0);
             }
+            
+            // Enregistrement du face_token (peut être null)
+            ps.setString(9, user.getFaceToken());
 
             ps.executeUpdate();
 
@@ -77,7 +80,7 @@ public class userService implements crud<user> {
 
 
             user.setidFranchise(idFranchise);
-            insertone(user);
+            insertone(user); // Appelle la méthode mise à jour
 
             cnx.commit();
         } catch (Exception e) {
@@ -123,7 +126,8 @@ public class userService implements crud<user> {
     }
     @Override
     public void updateone(user user) throws SQLException {
-        String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, actif = ?, date_creation = ?, id_franchise = ? WHERE id_user = ?";
+        // Mise à jour incluant face_token si nécessaire (optionnel, mais bon à avoir)
+        String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, actif = ?, date_creation = ?, id_franchise = ?, face_token = ? WHERE id_user = ?";
         try (PreparedStatement ps = cnx.prepareStatement(req)) {
             ps.setString(1, user.getNom());
             ps.setString(2, user.getPrenom());
@@ -138,8 +142,9 @@ public class userService implements crud<user> {
             } else {
                 ps.setInt(8, 0);
             }
-
-            ps.setInt(9, user.getIdUser());
+            
+            ps.setString(9, user.getFaceToken());
+            ps.setInt(10, user.getIdUser());
             ps.executeUpdate();
         }
     }
@@ -154,11 +159,64 @@ public class userService implements crud<user> {
         }
     }
 
+    public void deleteUserAndFranchise(user user) throws SQLException {
+        try {
+            cnx.setAutoCommit(false);
+
+            // 1. Supprimer l'utilisateur
+            deleteone(user);
+
+            // 2. Si une franchise est liée, la supprimer aussi
+            if (user.getidFranchise() != null && user.getidFranchise() > 0) {
+                String reqFranchise = "DELETE FROM franchises WHERE id = ?";
+                try (PreparedStatement ps = cnx.prepareStatement(reqFranchise)) {
+                    ps.setInt(1, user.getidFranchise());
+                    ps.executeUpdate();
+                }
+            }
+
+            cnx.commit();
+        } catch (SQLException e) {
+            cnx.rollback();
+            throw e;
+        } finally {
+            cnx.setAutoCommit(true);
+        }
+    }
+
+    public void deleteFranchiseAndUser(franchise f) throws SQLException {
+        try {
+            cnx.setAutoCommit(false);
+
+            // 1. Supprimer la franchise
+            String reqFranchise = "DELETE FROM franchises WHERE id = ?";
+            try (PreparedStatement ps = cnx.prepareStatement(reqFranchise)) {
+                ps.setInt(1, f.getId());
+                ps.executeUpdate();
+            }
+
+            // 2. Supprimer l'utilisateur lié
+            String reqUser = "DELETE FROM utilisateur WHERE id_franchise = ?";
+            try (PreparedStatement ps = cnx.prepareStatement(reqUser)) {
+                ps.setInt(1, f.getId());
+                ps.executeUpdate();
+            }
+
+            cnx.commit();
+        } catch (SQLException e) {
+            cnx.rollback();
+            throw e;
+        } finally {
+            cnx.setAutoCommit(true);
+        }
+    }
+
 
     @Override
     public List<user> selectAll(user ignored) throws SQLException {
         List<user> list = new ArrayList<>();
-        String req = "SELECT id_user, nom, prenom, email, mot_de_passe, role, actif, date_creation, id_franchise FROM utilisateur";
+        // Ajout de face_token dans le SELECT
+        String req = "SELECT id_user, nom, prenom, email, mot_de_passe, role, actif, date_creation, id_franchise, face_token FROM utilisateur";
         try (PreparedStatement ps = cnx.prepareStatement(req);
              ResultSet rs = ps.executeQuery()) {
 
@@ -174,6 +232,7 @@ public class userService implements crud<user> {
                 Timestamp ts = rs.getTimestamp("date_creation");
                 if (ts != null) u.setDateCreation(ts.toLocalDateTime());
                 u.setidFranchise(rs.getInt("id_franchise"));
+                u.setFaceToken(rs.getString("face_token")); // Récupération du token
                 list.add(u);
             }
         }

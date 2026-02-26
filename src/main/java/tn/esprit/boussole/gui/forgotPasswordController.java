@@ -1,6 +1,5 @@
 package tn.esprit.boussole.gui;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
@@ -15,17 +14,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.mindrot.jbcrypt.BCrypt;
+import tn.esprit.boussole.utils.EmailService; // Import du nouveau service
 import tn.esprit.boussole.utils.MyBdConnexion;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.Random;
 
 public class forgotPasswordController {
@@ -92,32 +88,30 @@ public class forgotPasswordController {
             return;
         }
 
-        // 1. Vérifier si l'email existe
         if (!checkEmailExists(email)) {
             showAlert(Alert.AlertType.ERROR, "Email inconnu", "Aucun compte n'est associé à cet email.");
             return;
         }
 
-        // 2. Générer un nouveau mot de passe
         String newPassword = generateRandomPassword(10);
-
-        // 3. Hacher le mot de passe
         String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 
-        // 4. Mettre à jour la base de données
         if (updatePasswordInDB(email, hashedPassword)) {
-            // 5. Envoyer l'email
-            sendEmail(email, newPassword);
+            // Utilisation du nouveau service d'email
+            String subject = "Réinitialisation de votre mot de passe - Boussole";
+            String title = "Votre nouveau mot de passe";
+            String body = "Vous avez demandé une réinitialisation de mot de passe. Voici votre nouveau mot de passe temporaire. Veuillez vous connecter et le changer dès que possible.";
+            EmailService.sendHtmlEmail(email, subject, title, body, newPassword);
+
             showAlert(Alert.AlertType.INFORMATION, "Succès", 
                     "Un nouveau mot de passe a été envoyé à " + email + ".\nVeuillez vérifier votre boîte de réception.");
-            handleBack(); // Retour à la page de connexion
+            handleBack();
         } else {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de mettre à jour le mot de passe. Veuillez réessayer.");
         }
     }
 
     private boolean checkEmailExists(String email) {
-        // Correction : Sélectionner 'email' au lieu de 'id' pour éviter l'erreur si la colonne id n'existe pas
         String sql = "SELECT email FROM utilisateur WHERE email = ?";
         Connection conn = MyBdConnexion.getinstance().getCnx();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -155,46 +149,7 @@ public class forgotPasswordController {
         return sb.toString();
     }
 
-    private void sendEmail(String recipient, String newPassword) {
-        // Configuration SMTP (Gmail par défaut)
-        Dotenv dotenv = Dotenv.load();
-        final String username = dotenv.get("EMAIL_USER"); // Remplace par ton email
-        final String password = dotenv.get("EMAIL_PASSWORD"); // Remplace par ton mot de passe d'application
-
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-
-        Session session = Session.getInstance(props, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("support@boussole.tn"));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-            message.setSubject("Réinitialisation de votre mot de passe - Boussole");
-            message.setText("Bonjour,\n\n"
-                    + "Votre mot de passe a été réinitialisé avec succès.\n"
-                    + "Voici votre nouveau mot de passe temporaire : " + newPassword + "\n\n"
-                    + "Veuillez vous connecter et changer ce mot de passe dès que possible.\n\n"
-                    + "Cordialement,\nL'équipe Boussole.");
-
-            Transport.send(message);
-            System.out.println("Email envoyé avec succès à " + recipient);
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur d'envoi", "Impossible d'envoyer l'email. Vérifiez votre connexion internet.");
-        }
-    }
-
     private void handleBack() {
-        // Animation de sortie pour le formulaire
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), formVBox);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);

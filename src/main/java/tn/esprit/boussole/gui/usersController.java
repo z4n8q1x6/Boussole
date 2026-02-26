@@ -15,10 +15,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.user;
 import tn.esprit.boussole.service.userService;
+import tn.esprit.boussole.utils.DialogManager;
+import tn.esprit.boussole.utils.NotificationManager;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class usersController {
 
@@ -26,27 +29,30 @@ public class usersController {
     @FXML private TableColumn<user, String> colNom, colPrenom, colEmail, colRole;
     @FXML private TableColumn<user, Void> colActions;
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> statusFilter;
     @FXML private Label lblPagination;
-    @FXML private Button btnNewUser; // Injecté pour l'animation
+    @FXML private Button btnNewUser;
+
+    @FXML private Label lblTotalUsers;
+    @FXML private Label lblActiveUsers;
+    @FXML private Label lblInactiveUsers;
 
     private ObservableList<user> userList = FXCollections.observableArrayList();
     private userService userService = new userService();
 
     @FXML
     public void initialize() {
-        // 1. Rendre la table éditable
         tableUsers.setEditable(true);
-
-        // 2. Configurer les colonnes pour l'édition directe
         setupEditableColumns();
-
-        // 3. Boutons d'actions (uniquement Supprimer)
         setupActionButtons();
-
-        // 4. Animation du bouton ajouter
         setupButtonHover();
 
-        // 5. Charger les données
+        if (statusFilter != null) {
+            statusFilter.setItems(FXCollections.observableArrayList("Tous", "Actifs", "Inactifs"));
+            statusFilter.setValue("Tous");
+            statusFilter.setOnAction(e -> handleSearch());
+        }
+
         loadUsers();
     }
 
@@ -87,21 +93,25 @@ public class usersController {
     private void updateUserInDB(user u) {
         try {
             userService.updateone(u);
-            System.out.println("Utilisateur mis à jour : " + u.getEmail());
+            updateStatistics();
+            NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Mise à jour", "Utilisateur modifié avec succès.");
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de sauvegarder.");
+            NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "Impossible de sauvegarder les modifications.");
             loadUsers();
         }
     }
 
-    // METHODE MANQUANTE QUI CAUSAIT LE CRASH
     @FXML
     private void handleNewUser() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/adduser.fxml"));
             Parent root = loader.load();
             addUserController controller = loader.getController();
-            controller.setOnUserCreated(this::loadUsers);
+            
+            controller.setOnUserCreated(() -> {
+                this.loadUsers();
+                NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Succès", "Nouvel utilisateur ajouté avec succès.");
+            });
 
             Stage stage = new Stage();
             stage.setTitle("Ajouter un membre");
@@ -109,7 +119,7 @@ public class usersController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Fichier adduser.fxml introuvable.");
+            NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "Fichier adduser.fxml introuvable.");
         }
     }
 
@@ -140,40 +150,66 @@ public class usersController {
             userList.setAll(userService.selectAll(null));
             tableUsers.setItems(userList);
             updatePaginationLabel();
+            updateStatistics();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private void updateStatistics() {
+        if (userList == null) return;
+
+        long total = userList.size();
+        long active = userList.stream().filter(user::getActif).count();
+        long inactive = total - active;
+
+        if (lblTotalUsers != null) lblTotalUsers.setText(String.valueOf(total));
+        if (lblActiveUsers != null) lblActiveUsers.setText(String.valueOf(active));
+        if (lblInactiveUsers != null) lblInactiveUsers.setText(String.valueOf(inactive));
+    }
+
     private void handleDeleteUser(user u) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer " + u.getEmail() + " ?", ButtonType.YES, ButtonType.NO);
-        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+        Optional<ButtonType> result = DialogManager.showConfirmationDialog(
+            tableUsers.getScene().getWindow(),
+            "Supprimer l'utilisateur ?",
+            "Voulez-vous vraiment supprimer " + u.getEmail() + " ? Cette action supprimera également la franchise associée."
+        );
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                userService.deleteone(u);
+                userService.deleteUserAndFranchise(u);
                 loadUsers();
+                NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Suppression", "Utilisateur supprimé avec succès.");
             } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Suppression échouée.");
+                NotificationManager.show(tableUsers.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "La suppression a échoué.");
             }
         }
     }
 
     @FXML
     private void handleSearch() {
-        String filter = searchField.getText().toLowerCase();
-        tableUsers.setItems(userList.filtered(u ->
-                u.getNom().toLowerCase().contains(filter) || u.getEmail().toLowerCase().contains(filter)));
+        String filterText = searchField.getText().toLowerCase();
+        String status = statusFilter != null ? statusFilter.getValue() : "Tous";
+
+        ObservableList<user> filteredList = userList.filtered(u -> {
+            boolean matchesText = u.getNom().toLowerCase().contains(filterText) || 
+                                  u.getEmail().toLowerCase().contains(filterText);
+
+            boolean matchesStatus = true;
+            if ("Actifs".equals(status)) {
+                matchesStatus = u.getActif();
+            } else if ("Inactifs".equals(status)) {
+                matchesStatus = !u.getActif();
+            }
+
+            return matchesText && matchesStatus;
+        });
+
+        tableUsers.setItems(filteredList);
         updatePaginationLabel();
     }
 
     private void updatePaginationLabel() {
         lblPagination.setText("Total: " + tableUsers.getItems().size() + " utilisateur(s)");
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert a = new Alert(type);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(content);
-        a.show();
     }
 }

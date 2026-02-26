@@ -11,10 +11,13 @@ import javafx.geometry.Pos;
 import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.boussole.models.franchise;
 import tn.esprit.boussole.service.franchiseService;
-import tn.esprit.boussole.service.userService; // IMPORTANT : Ajout du service utilisateur
+import tn.esprit.boussole.service.userService;
+import tn.esprit.boussole.utils.DialogManager;
+import tn.esprit.boussole.utils.NotificationManager;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class entrepriseController {
 
@@ -25,30 +28,27 @@ public class entrepriseController {
     @FXML private TableColumn<franchise, Void> colActions;
 
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> statusFilter;
     @FXML private Label lblPagination;
 
     private ObservableList<franchise> entrepriseList = FXCollections.observableArrayList();
     private franchiseService franchiseService = new franchiseService();
-    private userService userService = new userService(); // IMPORTANT : Pour la synchronisation
+    private userService userService = new userService();
 
     @FXML
     public void initialize() {
-        // 1. Activer l'édition sur la table
         tableEntreprises.setEditable(true);
-
-        // 2. Configurer les colonnes texte
         setupEditableColumns();
-
-        // 3. Configurer le statut (Synchronisé avec les utilisateurs)
         setupStatusColumn();
-
-        // 4. Configurer le solde
         setupSoldeColumn();
-
-        // 5. Boutons d'actions
         setupActionButtons();
 
-        // 6. Charger les données
+        if (statusFilter != null) {
+            statusFilter.setItems(FXCollections.observableArrayList("Tous", "Actifs", "Inactifs"));
+            statusFilter.setValue("Tous");
+            statusFilter.setOnAction(e -> handleSearch());
+        }
+
         loadEntreprises();
     }
 
@@ -106,13 +106,13 @@ public class entrepriseController {
                     badge.setOnMouseClicked(e -> {
                         franchise f = getTableView().getItems().get(getIndex());
                         f.setActif(!f.getActif());
-                        updateEntrepriseInDB(f); // Ici on déclenche la double mise à jour
+                        updateEntrepriseInDB(f);
                         tableEntreprises.refresh();
                     });
 
                     setGraphic(badge);
                     setAlignment(Pos.CENTER);
-                    setTooltip(new Tooltip("Cliquez pour changer le statut (bloque aussi les accès utilisateurs)"));
+                    setTooltip(new Tooltip("Cliquez pour changer le statut"));
                 }
             }
         });
@@ -147,15 +147,11 @@ public class entrepriseController {
 
     private void updateEntrepriseInDB(franchise f) {
         try {
-            // 1. Mise à jour de la franchise elle-même
             franchiseService.updateone(f);
-
-            // 2. SYNCHRONISATION : Bloquer/Débloquer les utilisateurs rattachés
             userService.updateFranchiseStatus(f.getId(), f.getActif());
-
-            System.out.println("✅ Franchise " + f.getNom() + " et utilisateurs synchronisés.");
+            NotificationManager.show(tableEntreprises.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Mise à jour", "Franchise modifiée avec succès.");
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "La mise à jour ou la synchronisation a échoué.");
+            NotificationManager.show(tableEntreprises.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "La mise à jour a échoué.");
             loadEntreprises();
         }
     }
@@ -172,22 +168,43 @@ public class entrepriseController {
     }
 
     private void handleDeleteEntreprise(franchise f) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer l'entreprise " + f.getNom() + " ?", ButtonType.YES, ButtonType.NO);
-        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+        Optional<ButtonType> result = DialogManager.showConfirmationDialog(
+            tableEntreprises.getScene().getWindow(),
+            "Supprimer l'entreprise ?",
+            "Voulez-vous vraiment supprimer " + f.getNom() + " ? Cette action supprimera également l'utilisateur associé."
+        );
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                franchiseService.deleteone(f);
+                userService.deleteFranchiseAndUser(f);
                 loadEntreprises();
+                NotificationManager.show(tableEntreprises.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Suppression", "Entreprise supprimée avec succès.");
             } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Suppression impossible.");
+                NotificationManager.show(tableEntreprises.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur", "Suppression impossible.");
             }
         }
     }
 
     @FXML
     private void handleSearch() {
-        String filter = searchField.getText().toLowerCase();
-        tableEntreprises.setItems(entrepriseList.filtered(f ->
-                f.getNom().toLowerCase().contains(filter) || f.getEmail().toLowerCase().contains(filter)));
+        String filterText = searchField.getText().toLowerCase();
+        String status = statusFilter != null ? statusFilter.getValue() : "Tous";
+
+        ObservableList<franchise> filteredList = entrepriseList.filtered(f -> {
+            boolean matchesText = f.getNom().toLowerCase().contains(filterText) || 
+                                  f.getEmail().toLowerCase().contains(filterText);
+
+            boolean matchesStatus = true;
+            if ("Actifs".equals(status)) {
+                matchesStatus = f.getActif();
+            } else if ("Inactifs".equals(status)) {
+                matchesStatus = !f.getActif();
+            }
+
+            return matchesText && matchesStatus;
+        });
+
+        tableEntreprises.setItems(filteredList);
         updatePaginationLabel();
     }
 
@@ -195,13 +212,5 @@ public class entrepriseController {
         if (lblPagination != null) {
             lblPagination.setText("Total : " + tableEntreprises.getItems().size() + " entreprise(s)");
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert a = new Alert(type);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(content);
-        a.show();
     }
 }

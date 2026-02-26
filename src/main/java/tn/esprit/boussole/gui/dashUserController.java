@@ -1,5 +1,6 @@
 package tn.esprit.boussole.gui;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -12,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import tn.esprit.boussole.utils.ThemeManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -42,11 +44,18 @@ public class dashUserController {
     @FXML private Button btnPret;
     @FXML private Button btnTransaction;
     @FXML private Button btnLogout;
-    
+    @FXML private Button btnTheme; // Bouton pour le thème
+
     private List<Button> menuButtons;
 
     @FXML
     public void initialize() {
+        // Appliquer le thème au démarrage
+        Platform.runLater(() -> {
+            ThemeManager.applyTheme(btnTheme.getScene());
+            updateThemeButtonIcon();
+        });
+
         // Initialiser la liste des boutons de menu
         menuButtons = new ArrayList<>();
         if (btnDashboard.getParent() instanceof VBox) {
@@ -91,6 +100,20 @@ public class dashUserController {
         btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Transactions", null));
 
         btnLogout.setOnAction(e -> handleLogout());
+    }
+    
+    @FXML
+    private void handleThemeToggle() {
+        ThemeManager.toggleTheme(btnTheme.getScene());
+        updateThemeButtonIcon();
+    }
+
+    private void updateThemeButtonIcon() {
+        if (ThemeManager.isDarkMode()) {
+            btnTheme.setText("☀️"); // Icône pour passer en mode clair
+        } else {
+            btnTheme.setText("🌙"); // Icône pour passer en mode sombre
+        }
     }
 
     private void handleMenuClick(Button button, String title, String fxmlPath) {

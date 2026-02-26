@@ -99,6 +99,9 @@
                     <TextField promptText="Rechercher..." styleClass="search-field"/>
                 </HBox>
 
+                <!-- Bouton Thème -->
+                <Button fx:id="btnTheme" text="🌙" styleClass="icon-button" onAction="#handleThemeToggle"/>
+
                 <Button text="🔔" styleClass="icon-button"/>
                 <Button text="⚙️" styleClass="icon-button"/>
             </HBox>

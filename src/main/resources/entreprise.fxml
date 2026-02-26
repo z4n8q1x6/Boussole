@@ -26,6 +26,10 @@
     </HBox>
 
     <HBox spacing="15.0">
+        <ComboBox fx:id="statusFilter" onAction="#handleSearch" prefHeight="42.0" prefWidth="180.0"
+                  promptText="Tous les statuts"
+                  style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-mark-color: white;" />
+
         <TextField fx:id="searchField" onKeyReleased="#handleSearch" prefHeight="42.0" prefWidth="380.0"
                    promptText="🔍 Rechercher une entreprise (nom, email...)"
                    style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15 0 15;" />
