@@ -2,6 +2,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -36,6 +37,7 @@
                     </graphic>
                 </Button>
 
+                <!-- Bouton sidebar renommé en 'Journal Complet' -->
                 <Button fx:id="btnHistorique" text="Journal Complet" onAction="#versHistorique" styleClass="nav-button" maxWidth="Infinity" />
 
                 <!-- Spacer -->
@@ -85,12 +87,14 @@
                             </children>
                         </VBox>
 
-                        <!-- Limite Dépenses Card -->
-                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS" minWidth="240">
+                        <!-- Carte LIMITE DEPENSES à la place de '5 Dernières Transactions + lien' -->
+                        <VBox styleClass="kpi-card" HBox.hgrow="ALWAYS">
                              <children>
-                                <Label text="LIMITE DÉPENSES" styleClass="kpi-title" />
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="LIMITE DÉPENSES" styleClass="kpi-title" />
+                                </HBox>
                                 <Pane prefHeight="15"/>
-                                <Label fx:id="lblLimiteDepenses" text="— TND" styleClass="kpi-value" style="-fx-text-fill: #F87171;" />
+                                <Label fx:id="lblLimiteDepenses" text="— TND" styleClass="kpi-value" style="-fx-text-fill: #FFA726;" />
                              </children>
                         </VBox>
 
@@ -142,7 +146,6 @@
                                 <HBox alignment="CENTER_LEFT">
                                     <Label text="Derniers Mouvements" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;" />
                                     <Pane HBox.hgrow="ALWAYS" />
-                                    <!-- Potentially filters here -->
                                 </HBox>
 
                                 <TableView fx:id="tableMovements" VBox.vgrow="ALWAYS">

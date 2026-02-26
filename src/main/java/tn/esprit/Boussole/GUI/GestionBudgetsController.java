@@ -4,27 +4,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType; // Added
-import javafx.scene.control.ContextMenu; // Added
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.MenuItem; // Added
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell; // Added
-import javafx.scene.layout.HBox;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
-import javafx.util.converter.DoubleStringConverter; // Added
+import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.Boussole.Models.Charge;
 import tn.esprit.Boussole.Models.budget_previsionnel;
+import tn.esprit.Boussole.Models.franchise;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
@@ -37,6 +26,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.util.StringConverter;
+import javafx.util.Callback;
+import javafx.collections.FXCollections;
+
 public class GestionBudgetsController implements Initializable {
 
     @FXML private Button btnDashboard;
@@ -47,7 +41,7 @@ public class GestionBudgetsController implements Initializable {
     @FXML private ComboBox<budget_previsionnel.TypeBudget> cbTypeBudget;
     @FXML private ComboBox<String> cbCategorie;
     @FXML private TextField txtMontant;
-    @FXML private CheckBox chkReseau;
+    @FXML private ListView<franchise> listFranchises; // Changed from CheckBox to ListView
     @FXML private Button btnSauvegarder;
     @FXML private Button btnVider;
     @FXML private TableView<budget_previsionnel> tableBudgets;
@@ -65,7 +59,29 @@ public class GestionBudgetsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         serviceBudget = new ServiceBudgetPrevisionnel();
 
-        // 1. Configuration des ComboBox
+        listFranchises.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
+        // Configuration de l'affichage (nom seulement)
+        listFranchises.setCellFactory(new Callback<ListView<franchise>, ListCell<franchise>>() {
+            @Override
+            public ListCell<franchise> call(ListView<franchise> param) {
+                return new ListCell<franchise>() {
+                    @Override
+                    protected void updateItem(franchise item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            setText(item.getNom());
+                        }
+                    }
+                };
+            }
+        });
+        
+        chargerFranchises();
+
+        // 1. Configuration des ComboBox de formulaire
         for (int mois = 1; mois <= 12; mois++) cbMois.getItems().add(mois);
         cbMois.getSelectionModel().selectFirst();
 
@@ -84,42 +100,121 @@ public class GestionBudgetsController implements Initializable {
         colCategorie.setCellValueFactory(new PropertyValueFactory<>("categorie"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montantCible"));
 
-        // *** UX MODERNE : TABLE ÉDITABLE ***
-        tableBudgets.setEditable(true); // Activer l'édition sur le tableau
+        tableBudgets.setEditable(true);
 
-        // Configuration pour l'édition du montant
+        Integer[] moisArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        colMois.setCellFactory(ComboBoxTableCell.forTableColumn(moisArray));
+        colMois.setOnEditCommit(event -> {
+            budget_previsionnel budget = event.getRowValue();
+            Integer nvMois = event.getNewValue();
+            if (nvMois != null) {
+                budget.setMois(nvMois);
+                try {
+                    serviceBudget.updateOne(budget);
+                    afficherMessageSucces("Mois modifié !");
+                } catch (Exception e) {
+                    afficherMessageErreur("Erreur : " + e.getMessage());
+                    tableBudgets.refresh();
+                }
+            }
+        });
+
+        Integer[] anneeArray = {2024, 2025, 2026, 2027, 2028, 2029, 2030};
+        colAnnee.setCellFactory(ComboBoxTableCell.forTableColumn(anneeArray));
+        colAnnee.setOnEditCommit(event -> {
+            budget_previsionnel budget = event.getRowValue();
+            Integer nvAnnee = event.getNewValue();
+            if (nvAnnee != null) {
+                budget.setAnnee(nvAnnee);
+                try {
+                    serviceBudget.updateOne(budget);
+                    afficherMessageSucces("Année modifiée !");
+                } catch (Exception e) {
+                    afficherMessageErreur("Erreur : " + e.getMessage());
+                    tableBudgets.refresh();
+                }
+            }
+        });
+
+        // Type Budget éditable via ComboBox (Typed ComboBoxTableCell)
+        colType.setCellFactory(column -> new ComboBoxTableCell<budget_previsionnel, Object>(
+                new StringConverter<Object>() {
+                    @Override
+                    public String toString(Object object) {
+                        return object == null ? "" : object.toString();
+                    }
+
+                    @Override
+                    public Object fromString(String string) {
+                        return string == null ? null : budget_previsionnel.TypeBudget.valueOf(string);
+                    }
+                },
+                (Object[]) budget_previsionnel.TypeBudget.values()
+        ));
+
+        colType.setOnEditCommit(event -> {
+            budget_previsionnel budget = event.getRowValue();
+            Object newVal = event.getNewValue();
+            if (!(newVal instanceof budget_previsionnel.TypeBudget)) return;
+            budget_previsionnel.TypeBudget nouveauType = (budget_previsionnel.TypeBudget) newVal;
+            budget.setType_budget(nouveauType);
+
+            if (nouveauType == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
+                budget.setCategorie("GLOBAL");
+            }
+
+            try {
+                serviceBudget.updateOne(budget);
+            } catch (Exception e) {
+                afficherMessageErreur("Erreur lors de la mise à jour du type : " + e.getMessage());
+                tableBudgets.refresh();
+            }
+        });
+
+        // Configuration correcte de la colonne CATEGORIE en ComboBox éditable
+        java.util.List<String> categoriesList = new java.util.ArrayList<>();
+        categoriesList.add("GLOBAL");
+        java.util.Arrays.stream(Charge.TypeCharge.values())
+                .map(Enum::name)
+                .forEach(categoriesList::add);
+        String[] categories = categoriesList.toArray(new String[0]);
+
+        colCategorie.setCellFactory(ComboBoxTableCell.forTableColumn(categories));
+
+        colCategorie.setOnEditCommit(event -> {
+            budget_previsionnel budget = event.getRowValue();
+            String nouvelleCategorie = event.getNewValue();
+            if (nouvelleCategorie == null || nouvelleCategorie.isEmpty()) return;
+            budget.setCategorie(nouvelleCategorie);
+            try {
+                serviceBudget.updateOne(budget);
+            } catch (Exception e) {
+                afficherMessageErreur("Erreur lors de la mise à jour de la catégorie : " + e.getMessage());
+                tableBudgets.refresh();
+            }
+        });
+
+
+        // Montant éditable
         colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         colMontant.setOnEditCommit(event -> {
             budget_previsionnel budget = event.getRowValue();
             Double nouveauMontant = event.getNewValue();
-
-            // Validation simple
             if (nouveauMontant == null || nouveauMontant <= 0) {
                 afficherMessageErreur("Le montant doit être valide et supérieur à 0.");
-                tableBudgets.refresh(); // Annuler visuellement
+                tableBudgets.refresh();
                 return;
             }
-
             budget.setMontantCible(nouveauMontant);
-
             try {
-                // Mise à jour immédiate en BDD
                 serviceBudget.updateOne(budget);
-                // System.out.println("DEBUG: Update montant effectué via édition cellule");
             } catch (Exception e) {
                 afficherMessageErreur("Erreur lors de la mise à jour : " + e.getMessage());
                 tableBudgets.refresh();
             }
         });
 
-        // *** UX MODERNE : MENU CONTEXTUEL POUR SUPPRESSION ***
-        // Suppression de l'ancienne colonne Actions
-        if (tableBudgets.getColumns().size() > 5) { // Sécurité basique
-             // tableBudgets.getColumns().remove(colActions); // Si injecté via FXML, il faut le retirer
-             // Note: Si colActions est injecté mais non utilisé, il reste null si je l'enlève du FXML.
-             // Ici je vais créer le context menu.
-        }
-
+        // Menu contextuel pour suppression (on garde)
         ContextMenu contextMenu = new ContextMenu();
         MenuItem itemSupprimer = new MenuItem("🗑️ Supprimer cette ligne");
         itemSupprimer.setOnAction(e -> {
@@ -130,22 +225,35 @@ public class GestionBudgetsController implements Initializable {
         });
         contextMenu.getItems().add(itemSupprimer);
 
-        // Assigner le menu contextuel à chaque ligne (row)
         tableBudgets.setRowFactory(tv -> {
-            javafx.scene.control.TableRow<budget_previsionnel> row = new javafx.scene.control.TableRow<>();
+            TableRow<budget_previsionnel> row = new TableRow<budget_previsionnel>() {
+                @Override
+                protected void updateItem(budget_previsionnel item, boolean empty) {
+                    super.updateItem(item, empty);
+                    getStyleClass().removeAll("row-revenu", "row-depense");
+                    if (item != null && !empty) {
+                        if (item.getType_budget() == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
+                            getStyleClass().add("row-revenu");
+                        } else {
+                            getStyleClass().add("row-depense");
+                        }
+                    }
+                }
+            };
+            // Dark-mode & effet au survol pour respecter la template
+            row.getStyleClass().add("table-row-dark");
             row.contextMenuProperty().bind(
                 javafx.beans.binding.Bindings.when(row.emptyProperty())
-                .then((ContextMenu) null)
-                .otherwise(contextMenu)
+                    .then((ContextMenu) null)
+                    .otherwise(contextMenu)
             );
             return row;
         });
 
-
-        // 4. Chargement initial des données
+        // Chargement initial des données
         rafraichirTable();
 
-        // 5. Gestion des Événements
+        // Navigation & autres listeners existants
         btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"));
         btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
         btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
@@ -156,10 +264,8 @@ public class GestionBudgetsController implements Initializable {
             btnVider.setOnAction(event -> nettoyerFormulaire());
         }
 
-        // Modification : Le clic simple/double clic remplit toujours le formulaire pour information
-        tableBudgets.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) modifierBudget(newSelection); // Remplit le formulaire du haut
-        });
+        // Modification : la modification se fait en ligne et non depuis le formulaire.
+        // Listener supprimé.
     }
 
     /**
@@ -168,12 +274,18 @@ public class GestionBudgetsController implements Initializable {
     private void rafraichirTable() {
         try {
             tableBudgets.getItems().clear();
-            // Récupère l'ID franchise de la session (ou 1 par défaut si session vide/siège pour test)
-            int franchiseId = SessionManager.getInstance().getIdFranchise();
-            if (franchiseId == 0) franchiseId = 1; // Fallback pour voir les données en mode Siège/Test
-
-            List<budget_previsionnel> budgets = serviceBudget.getAllByFranchise(franchiseId);
-            tableBudgets.getItems().addAll(budgets);
+            
+            String role = SessionManager.getInstance().getRole();
+            if ("SIEGE".equals(role) || role == null) {
+                // Le siège voit tous les budgets
+                List<budget_previsionnel> budgets = serviceBudget.selectAll();
+                tableBudgets.getItems().addAll(budgets);
+            } else {
+                // La franchise ne voit que ses propres budgets
+                int franchiseId = SessionManager.getInstance().getIdFranchise();
+                List<budget_previsionnel> budgets = serviceBudget.getAllByFranchise(franchiseId);
+                tableBudgets.getItems().addAll(budgets);
+            }
         } catch (Exception e) {
             Logger.getLogger(GestionBudgetsController.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -198,30 +310,95 @@ public class GestionBudgetsController implements Initializable {
     }
 
     /**
+     * Charge la liste des franchises pour la ListView
+     */
+    private void chargerFranchises() {
+        System.out.println("--- DÉBUT chargerFranchises() ---");
+        listFranchises.getItems().clear();
+        
+        // Pseudo-franchise pour "Tous le réseau"
+        franchise tous = new franchise();
+        tous.setId(0);
+        tous.setNom("Tous le réseau");
+        listFranchises.getItems().add(tous);
+        
+        String sql = "SELECT id, nom FROM franchises";
+        int count = 0;
+        
+        java.sql.Connection cnx = tn.esprit.Boussole.Utilis.MyBDConnexion.getInstance().getCnx();
+        try (java.sql.PreparedStatement ps = cnx.prepareStatement(sql);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                franchise f = new franchise();
+                f.setId(rs.getInt("id"));
+                f.setNom(rs.getString("nom"));
+                listFranchises.getItems().add(f);
+                count++;
+            }
+            System.out.println("Franchises trouvées et ajoutées à la liste : " + count);
+        } catch (java.sql.SQLException e) {
+            System.out.println("Erreur SQL chargement franchises: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erreur INCONNUE chargement franchises: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("--- FIN chargerFranchises() ---");
+    }
+
+    /**
      * Sauvegarde ou modifie un budget
-     * UPDATE si idBudgetAModifier != null, sinon INSERT
+     * UPDATE si idBudgetAModifier != null, sinon INSERT par franchise sélectionnée
      */
     private void sauvegarderBudget() {
         if (!validerSaisie()) {
             return;
         }
 
-        try {
-            budget_previsionnel budget = new budget_previsionnel();
-            budget.setMois(cbMois.getValue());
-            budget.setAnnee(cbAnnee.getValue());
-            budget.setType_budget(cbTypeBudget.getValue());
-            budget.setCategorie(cbCategorie.isDisabled() ? "GLOBAL" : cbCategorie.getValue());
-            budget.setMontantCible(Double.parseDouble(txtMontant.getText()));
-            budget.setFranchiseId(SessionManager.getInstance().getIdFranchise());
+        List<franchise> selection = listFranchises.getSelectionModel().getSelectedItems();
+        if (selection == null || selection.isEmpty()) {
+            afficherMessageErreur("Veuillez sélectionner au moins une franchise cible.");
+            return;
+        }
 
-            if (idBudgetAModifier != null) {
-                budget.setId(idBudgetAModifier);
-                serviceBudget.updateOne(budget);
-                afficherMessageSucces("Budget modifié avec succès !");
+        try {
+            boolean isModification = (idBudgetAModifier != null);
+            
+            // Vérifier si "Tous le réseau" est sélectionné
+            boolean applyToAll = selection.stream().anyMatch(f -> f.getId() != null && f.getId() == 0);
+            
+            List<franchise> finalTargets = new java.util.ArrayList<>();
+            if (applyToAll) {
+                // Ajouter toutes les franchises réelles (id != 0)
+                listFranchises.getItems().stream()
+                        .filter(f -> f.getId() != null && f.getId() != 0)
+                        .forEach(finalTargets::add);
             } else {
-                serviceBudget.add(budget);
-                afficherMessageSucces("Budget ajouté avec succès.");
+                finalTargets.addAll(selection);
+            }
+
+            for (franchise f : finalTargets) {
+                int fId = f.getId();
+                
+                budget_previsionnel budget = new budget_previsionnel();
+                budget.setMois(cbMois.getValue());
+                budget.setAnnee(cbAnnee.getValue());
+                budget.setType_budget(cbTypeBudget.getValue());
+                budget.setCategorie(cbCategorie.isDisabled() ? "GLOBAL" : cbCategorie.getValue());
+                budget.setMontantCible(Double.parseDouble(txtMontant.getText()));
+                budget.setFranchiseId(fId);
+
+                if (isModification) {
+                    budget.setId(idBudgetAModifier);
+                    serviceBudget.updateOne(budget);
+                } else {
+                    serviceBudget.add(budget);
+                }
+            }
+            
+            if (isModification) {
+                afficherMessageSucces("Budget(s) modifié(s) avec succès !");
+            } else {
+                afficherMessageSucces("Budget(s) ajouté(s) avec succès !");
             }
 
             rafraichirTable();
@@ -274,6 +451,16 @@ public class GestionBudgetsController implements Initializable {
         cbTypeBudget.setValue(b.getType_budget());
         cbCategorie.setValue(b.getCategorie());
         txtMontant.setText(String.valueOf(b.getMontantCible()));
+        
+        // Sélectionner la franchise correspondante dans la ListView
+        listFranchises.getSelectionModel().clearSelection();
+        for (franchise item : listFranchises.getItems()) {
+            if (item.getId() != null && item.getId() == b.getFranchiseId()) {
+                listFranchises.getSelectionModel().select(item);
+                break;
+            }
+        }
+        
         btnSauvegarder.setText("Modifier");
     }
 
@@ -309,18 +496,12 @@ public class GestionBudgetsController implements Initializable {
         cbTypeBudget.getSelectionModel().selectFirst();
         mettreAJourCategories();
         txtMontant.clear();
-        chkReseau.setSelected(false);
+        listFranchises.getSelectionModel().clearSelection();
         idBudgetAModifier = null;
         btnSauvegarder.setText("Sauvegarder");
     }
 
-    private void viderFormulaire() {
-        cbMois.getSelectionModel().clearSelection();
-        cbAnnee.getSelectionModel().clearSelection();
-        cbTypeBudget.getSelectionModel().clearSelection();
-        cbCategorie.getSelectionModel().clearSelection();
-        txtMontant.clear();
-    }
+
 
     /**
      * Affiche un message de succès (Alert INFORMATION)
@@ -359,11 +540,7 @@ public class GestionBudgetsController implements Initializable {
             .orElse(false);
     }
 
-    @FXML
-    private void initialize() {
-        cbMois.getItems().addAll(IntStream.rangeClosed(1, 12).boxed().collect(Collectors.toList()));
-        btnVider.setOnAction(event -> viderFormulaire());
-    }
+
 
     private void changerPage(ActionEvent event, String fxmlPath) {
         try {

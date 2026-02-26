@@ -3,20 +3,22 @@ package tn.esprit.Boussole.GUI;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
+import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Utilis.SessionManager;
@@ -27,23 +29,27 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
- * Contrôleur fusionné "Journal Complet"
- * Combine les fonctionnalités de JournalTransactions (KPIs, filtres, export CSV)
- * et JournalFranchise (Actions: Modifier / Supprimer avec gestion des droits).
+ * Contrôleur "Pro" Journal Complet
  */
 public class JournalFranchiseController implements Initializable {
 
     // --- FXML Bindings ---
-    @FXML private DatePicker dpDateDebut;
-    @FXML private DatePicker dpDateFin;
+    @FXML private MenuButton btnPeriode;
+    @FXML private MenuItem miCeMois;
+    @FXML private MenuItem miMoisDernier;
+    @FXML private MenuItem miCetteAnnee;
+    @FXML private DatePicker dpPeriodeDu;
+    @FXML private DatePicker dpPeriodeAu;
+    @FXML private Button btnPeriodeOk;
+
     @FXML private ComboBox<String> cbTypeFiltre;
-    @FXML private Button btnRechercher;
+    @FXML private TextField txtRechercheGlobal;
     @FXML private Button btnReinitialiser;
     @FXML private Button btnExporter;
     @FXML private Button btnDashboard;
@@ -64,7 +70,15 @@ public class JournalFranchiseController implements Initializable {
     // --- Data ---
     private ServiceTransaction serviceTransaction;
     private int franchiseId;
-    private ObservableList<transaction> toutesLesTransactions = FXCollections.observableArrayList();
+
+    // Listes pour le filtrage avancé
+    private final ObservableList<transaction> masterData = FXCollections.observableArrayList();
+    private FilteredList<transaction> filteredData;
+    private SortedList<transaction> sortedData;
+
+    // Période de filtrage
+    private LocalDate filterDateDebut;
+    private LocalDate filterDateFin;
 
     // =========================================================================
     // INITIALISATION
@@ -76,124 +90,324 @@ public class JournalFranchiseController implements Initializable {
         franchiseId = SessionManager.getInstance().getIdFranchise();
         if (franchiseId == 0) franchiseId = 1; // Fallback
 
-        // Configurer le filtre Type
+        // 1. Initialiser les filtres UI
         cbTypeFiltre.setItems(FXCollections.observableArrayList("TOUT", "RECETTE", "DEPENSE"));
         cbTypeFiltre.setValue("TOUT");
 
-        // Configurer les colonnes
+        // 2. Configuration avancée de la TableView (Sélection multiple, Suppression Clavier/ContextMenu)
+        setupTable();
+
+        // 3. Configuration des Colonnes (Tri, Édition)
         configurerColonnes();
 
-        // Configurer la colonne Actions (Modifier + Supprimer)
-        configurerColonneActions();
-
-        // Appliquer le style couleur sur les lignes
-        appliquerStyleCouleur();
-
-        // Charger toutes les transactions
+        // 4. Chargement initial des données
         chargerTransactions();
+
+        // 5. Configuration du filtre période hybride
+        setupDateFilters();
+
+        // 6. Mise en place du Filtrage "Smart Filter"
+        setupFilters();
     }
 
     // =========================================================================
-    // CONFIGURATION DES COLONNES
+    // OBJECTIF 1 : SETUP TABLE (Sélection & Suppression Pro)
     // =========================================================================
-    private void configurerColonnes() {
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+    private void setupTable() {
+        tableTransactions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        colType.setCellValueFactory(cellData ->
-            new SimpleStringProperty(
-                cellData.getValue().getType() != null ? cellData.getValue().getType().toString() : ""
-            )
-        );
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem itemRefresh = new MenuItem("🔄 Rafraîchir");
+        MenuItem itemDelete = new MenuItem("🗑️ Supprimer la sélection");
 
-        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+        itemRefresh.setOnAction(e -> chargerTransactions());
+        itemDelete.setOnAction(e -> supprimerSelection());
 
-        // Formatter Montant avec couleurs
-        colMontant.setCellFactory(column -> new TableCell<transaction, Double>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(String.format("%.2f TND", item));
-                    transaction t = getTableView().getItems().get(getIndex());
-                    if (t.getType() == transaction.Type.RECETTE) {
-                        setStyle("-fx-text-fill: #2e7d32; -fx-font-weight: bold;");
-                    } else if (t.getType() == transaction.Type.DEPENSE) {
-                        setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold;");
-                    } else {
-                        setStyle("");
-                    }
-                }
+        contextMenu.getItems().addAll(itemRefresh, new SeparatorMenuItem(), itemDelete);
+
+        tableTransactions.setRowFactory(tv -> {
+            TableRow<transaction> row = new TableRow<>();
+            row.contextMenuProperty().bind(
+                javafx.beans.binding.Bindings.when(row.emptyProperty())
+                    .then((ContextMenu) null)
+                    .otherwise(contextMenu)
+            );
+            return row;
+        });
+
+        tableTransactions.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE) {
+                supprimerSelection();
             }
         });
     }
 
     // =========================================================================
-    // COLONNE ACTIONS (MODIFIER + SUPPRIMER) - DROITS RECETTE SEULEMENT
+    // OBJECTIF 1 : LOGIQUE DE SUPPRESSION DE MASSE
     // =========================================================================
-    private void configurerColonneActions() {
-        Callback<TableColumn<transaction, Void>, TableCell<transaction, Void>> cellFactory =
-            new Callback<TableColumn<transaction, Void>, TableCell<transaction, Void>>() {
-                @Override
-                public TableCell<transaction, Void> call(final TableColumn<transaction, Void> param) {
-                    return new TableCell<transaction, Void>() {
+    private void supprimerSelection() {
+        List<transaction> selectedItems = tableTransactions.getSelectionModel().getSelectedItems();
 
-                        private final Button btnEdit = new Button("✏");
-                        private final Button btnDelete = new Button("🗑");
-                        private final HBox pane = new HBox(5, btnEdit, btnDelete);
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            return;
+        }
 
-                        {
-                            // Style Modifier (Orange)
-                            btnEdit.setStyle(
-                                "-fx-background-color: #f39c12; -fx-text-fill: white; " +
-                                "-fx-font-size: 12px; -fx-cursor: hand; -fx-background-radius: 4; -fx-padding: 4 8;"
-                            );
-                            // Style Supprimer (Rouge)
-                            btnDelete.setStyle(
-                                "-fx-background-color: #e74c3c; -fx-text-fill: white; " +
-                                "-fx-font-size: 12px; -fx-cursor: hand; -fx-background-radius: 4; -fx-padding: 4 8;"
-                            );
-                            pane.setAlignment(Pos.CENTER);
+        boolean containsDepense = selectedItems.stream()
+            .anyMatch(t -> t.getType() == transaction.Type.DEPENSE);
 
-                            btnEdit.setOnAction(event -> {
-                                transaction t = getTableView().getItems().get(getIndex());
-                                modifierTransaction(t);
-                            });
+        if (containsDepense) {
+            afficherErreur("Action Interdite", "Impossible de supprimer une DEPENSE validée par le siège.\nVeuillez désélectionner les dépenses.");
+            return;
+        }
 
-                            btnDelete.setOnAction(event -> {
-                                transaction t = getTableView().getItems().get(getIndex());
-                                confirmerEtSupprimer(t);
-                            });
-                        }
+        int count = selectedItems.size();
 
-                        @Override
-                        public void updateItem(Void item, boolean empty) {
-                            super.updateItem(item, empty);
-                            if (empty) {
-                                setGraphic(null);
-                            } else {
-                                transaction t = getTableView().getItems().get(getIndex());
-                                // *** LOGIQUE MÉTIER CRITIQUE ***
-                                // Modifier + Supprimer UNIQUEMENT pour RECETTE
-                                // DEPENSE = facture du siège => pas de modification possible
-                                if (t.getType() == transaction.Type.RECETTE) {
-                                    btnEdit.setVisible(true);
-                                    btnDelete.setVisible(true);
-                                    setGraphic(pane);
-                                } else {
-                                    // DEPENSE : cacher les boutons
-                                    setGraphic(null);
-                                }
-                            }
-                        }
-                    };
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation de suppression");
+        alert.setHeaderText(null);
+        alert.setContentText("Voulez-vous vraiment supprimer ces " + count + " ligne(s) sélectionnée(s) ?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                for (transaction t : selectedItems) {
+                    serviceTransaction.deleteOne(t);
                 }
-            };
 
-        colActions.setCellFactory(cellFactory);
+                masterData.removeAll(selectedItems);
+                calculerTotaux(tableTransactions.getItems());
+                afficherSucces("Suppression réussie", count + " transaction(s) supprimée(s).");
+
+            } catch (Exception e) {
+                afficherErreur("Erreur", "Problème lors de la suppression : " + e.getMessage());
+            }
+        }
+    }
+
+    // =========================================================================
+    // FILTRE DATE HYBRIDE (MenuButton)
+    // =========================================================================
+    private void setupDateFilters() {
+        // Valeur par défaut : Ce Mois
+        appliquerCeMois();
+
+        if (miCeMois != null) {
+            miCeMois.setOnAction(e -> {
+                appliquerCeMois();
+                updatePredicate();
+            });
+        }
+        if (miMoisDernier != null) {
+            miMoisDernier.setOnAction(e -> {
+                appliquerMoisDernier();
+                updatePredicate();
+            });
+        }
+        if (miCetteAnnee != null) {
+            miCetteAnnee.setOnAction(e -> {
+                appliquerCetteAnnee();
+                updatePredicate();
+            });
+        }
+
+        // Plage personnalisée
+        if (btnPeriodeOk != null) {
+            btnPeriodeOk.setOnAction(e -> {
+                LocalDate du = dpPeriodeDu != null ? dpPeriodeDu.getValue() : null;
+                LocalDate au = dpPeriodeAu != null ? dpPeriodeAu.getValue() : null;
+
+                if (du == null || au == null) {
+                    afficherErreur("Période invalide", "Veuillez choisir une date de début et une date de fin.");
+                    return;
+                }
+                if (au.isBefore(du)) {
+                    afficherErreur("Période invalide", "La date de fin doit être après la date de début.");
+                    return;
+                }
+
+                filterDateDebut = du;
+                filterDateFin = au;
+
+                if (btnPeriode != null) {
+                    btnPeriode.setText("📅 Période : " + du + " → " + au);
+                }
+
+                updatePredicate();
+
+                // UX : fermer le menu après validation
+                if (btnPeriode != null) {
+                    btnPeriode.hide();
+                }
+            });
+        }
+
+        // Bonus UX : si l'utilisateur choisit du / au et appuie Enter dans un DatePicker, on peut valider pareil
+        if (dpPeriodeDu != null) {
+            dpPeriodeDu.setOnAction(e -> { /* ne filtre pas encore, attente OK */ });
+        }
+        if (dpPeriodeAu != null) {
+            dpPeriodeAu.setOnAction(e -> { /* ne filtre pas encore, attente OK */ });
+        }
+    }
+
+    private void appliquerCeMois() {
+        LocalDate today = LocalDate.now();
+        YearMonth ym = YearMonth.from(today);
+        filterDateDebut = ym.atDay(1);
+        filterDateFin = today;
+        if (btnPeriode != null) btnPeriode.setText("📅 Période : Ce Mois");
+
+        // Synchroniser le custom range (optionnel)
+        if (dpPeriodeDu != null) dpPeriodeDu.setValue(filterDateDebut);
+        if (dpPeriodeAu != null) dpPeriodeAu.setValue(filterDateFin);
+    }
+
+    private void appliquerMoisDernier() {
+        LocalDate today = LocalDate.now();
+        YearMonth ym = YearMonth.from(today).minusMonths(1);
+        filterDateDebut = ym.atDay(1);
+        filterDateFin = ym.atEndOfMonth();
+        if (btnPeriode != null) btnPeriode.setText("📅 Période : Mois Dernier");
+
+        if (dpPeriodeDu != null) dpPeriodeDu.setValue(filterDateDebut);
+        if (dpPeriodeAu != null) dpPeriodeAu.setValue(filterDateFin);
+    }
+
+    private void appliquerCetteAnnee() {
+        LocalDate today = LocalDate.now();
+        filterDateDebut = LocalDate.of(today.getYear(), 1, 1);
+        filterDateFin = LocalDate.of(today.getYear(), 12, 31);
+        if (btnPeriode != null) btnPeriode.setText("📅 Période : Cette Année");
+
+        if (dpPeriodeDu != null) dpPeriodeDu.setValue(filterDateDebut);
+        if (dpPeriodeAu != null) dpPeriodeAu.setValue(filterDateFin);
+    }
+
+    private void appliquerTout() {
+        filterDateDebut = null;
+        filterDateFin = null;
+        if (btnPeriode != null) btnPeriode.setText("📅 Période : Tout");
+        if (dpPeriodeDu != null) dpPeriodeDu.setValue(null);
+        if (dpPeriodeAu != null) dpPeriodeAu.setValue(null);
+    }
+
+    // =========================================================================
+    // OBJECTIF 2 : FILTRAGE AVANCÉ & INSTANTANÉ
+    // =========================================================================
+    private void setupFilters() {
+        filteredData = new FilteredList<>(masterData, p -> true);
+
+        if (txtRechercheGlobal != null) {
+            txtRechercheGlobal.textProperty().addListener((observable, oldValue, newValue) -> updatePredicate());
+        }
+        if (cbTypeFiltre != null) {
+            cbTypeFiltre.valueProperty().addListener((observable, oldValue, newValue) -> updatePredicate());
+        }
+
+        sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(tableTransactions.comparatorProperty());
+        tableTransactions.setItems(sortedData);
+
+        updatePredicate();
+    }
+
+    private void updatePredicate() {
+        if (filteredData == null) return;
+
+        filteredData.setPredicate(t -> {
+            // 1. Filtre Global (Texte)
+            String searchText = (txtRechercheGlobal != null && txtRechercheGlobal.getText() != null)
+                ? txtRechercheGlobal.getText().toLowerCase() : "";
+
+            if (!searchText.isEmpty()) {
+                boolean matchDesc = t.getDescription() != null &&
+                    t.getDescription().toLowerCase().contains(searchText);
+                if (!matchDesc) return false;
+            }
+
+            // 2. Filtre Type
+            String typeSelect = cbTypeFiltre != null ? cbTypeFiltre.getValue() : null;
+            if (typeSelect != null && !"TOUT".equals(typeSelect)) {
+                if (t.getType() == null || !t.getType().toString().equals(typeSelect)) {
+                    return false;
+                }
+            }
+
+            // 3. Filtre Dates (période)
+            if (filterDateDebut != null && filterDateFin != null && t.getDate() != null) {
+                LocalDate tDate = new java.sql.Date(t.getDate().getTime()).toLocalDate();
+                if (tDate.isBefore(filterDateDebut) || tDate.isAfter(filterDateFin)) return false;
+            }
+
+            return true;
+        });
+
+        calculerTotaux(sortedData);
+    }
+
+    // =========================================================================
+    // CONFIGURATION DES COLONNES (OBJ 3: TRI)
+    // =========================================================================
+    private void configurerColonnes() {
+        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+        colDate.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.StringConverter<Date>() {
+            @Override public String toString(Date object) { return object != null ? object.toString() : ""; }
+            @Override public Date fromString(String string) {
+                try { return Date.valueOf(string); } catch (Exception e) { return null; }
+            }
+        }));
+
+        colDate.setOnEditCommit(event -> {
+            transaction t = event.getRowValue();
+            if (t.getType() == transaction.Type.RECETTE) {
+                if (event.getNewValue() != null) {
+                    t.setDate(event.getNewValue());
+                    serviceTransaction.updateOne(t);
+                }
+            } else {
+                afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
+                tableTransactions.refresh();
+            }
+        });
+
+        colType.setCellValueFactory(cellData -> new SimpleStringProperty(
+            cellData.getValue().getType() != null ? cellData.getValue().getType().toString() : ""
+        ));
+
+        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+
+        if (colActions != null) colActions.setVisible(false);
+
+        tableTransactions.setEditable(true);
+
+        colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
+        colDescription.setOnEditCommit(event -> {
+            transaction t = event.getRowValue();
+            if (t.getType() == transaction.Type.RECETTE) {
+                t.setDescription(event.getNewValue());
+                serviceTransaction.updateOne(t);
+            } else {
+                afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
+                tableTransactions.refresh();
+            }
+        });
+
+        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colMontant.setOnEditCommit(event -> {
+            transaction t = event.getRowValue();
+            if (t.getType() == transaction.Type.RECETTE) {
+                if (event.getNewValue() != null && event.getNewValue() > 0) {
+                    t.setMontant(event.getNewValue());
+                    serviceTransaction.updateOne(t);
+                    updatePredicate();
+                }
+            } else {
+                afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
+                tableTransactions.refresh();
+            }
+        });
     }
 
     // =========================================================================
@@ -202,209 +416,55 @@ public class JournalFranchiseController implements Initializable {
     private void chargerTransactions() {
         try {
             List<transaction> list = serviceTransaction.getAllByFranchise(franchiseId);
-            toutesLesTransactions.setAll(list);
-            tableTransactions.setItems(toutesLesTransactions);
-            calculerTotaux(toutesLesTransactions);
+            masterData.setAll(list);
+
+            if (sortedData != null) {
+                calculerTotaux(sortedData);
+            }
         } catch (Exception e) {
             afficherErreur("Erreur", "Impossible de charger les transactions : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // =========================================================================
-    // FILTRES
-    // =========================================================================
-    @FXML
-    private void appliquerFiltres() {
-        LocalDate dateDebut = dpDateDebut.getValue();
-        LocalDate dateFin = dpDateFin.getValue();
-        String typeFiltre = cbTypeFiltre.getValue();
-
-        List<transaction> resultat = toutesLesTransactions.stream()
-            .filter(t -> {
-                if (t.getDate() == null) return false;
-                LocalDate tDate = new java.sql.Date(t.getDate().getTime()).toLocalDate();
-
-                if (dateDebut != null && tDate.isBefore(dateDebut)) return false;
-                if (dateFin != null && tDate.isAfter(dateFin)) return false;
-
-                if (typeFiltre != null && !"TOUT".equals(typeFiltre)) {
-                    if (t.getType() == null || !t.getType().name().equals(typeFiltre)) return false;
-                }
-                return true;
-            })
-            .collect(Collectors.toList());
-
-        ObservableList<transaction> listeFiltree = FXCollections.observableArrayList(resultat);
-        tableTransactions.setItems(listeFiltree);
-        calculerTotaux(listeFiltree);
-    }
-
     @FXML
     private void reinitialiserFiltres() {
-        dpDateDebut.setValue(null);
-        dpDateFin.setValue(null);
-        cbTypeFiltre.setValue("TOUT");
-        tableTransactions.setItems(toutesLesTransactions);
-        calculerTotaux(toutesLesTransactions);
+        appliquerTout();
+        if (cbTypeFiltre != null) cbTypeFiltre.setValue("TOUT");
+        if (txtRechercheGlobal != null) txtRechercheGlobal.clear();
+        updatePredicate();
+    }
+
+    @FXML
+    private void appliquerFiltres() {
+        updatePredicate();
     }
 
     // =========================================================================
-    // CALCUL DES KPI (appelé après filtre, suppression, modification)
+    // CALCUL DES KPI
     // =========================================================================
-    private void calculerTotaux(ObservableList<transaction> liste) {
-        // Nombre total
+    private void calculerTotaux(List<transaction> liste) {
+        if (liste == null) return;
+
         lblNombreTransactions.setText(String.valueOf(liste.size()));
 
-        // Total Recettes
         double totalRecettes = liste.stream()
             .filter(t -> t.getType() == transaction.Type.RECETTE)
             .mapToDouble(transaction::getMontant)
             .sum();
 
-        // Total Charges
         double totalCharges = liste.stream()
             .filter(t -> t.getType() == transaction.Type.DEPENSE)
             .mapToDouble(transaction::getMontant)
             .sum();
 
-        // Solde
-        double solde = totalRecettes - totalCharges;
-
         lblTotalRecettes.setText(String.format("%.2f TND", totalRecettes));
         lblTotalCharges.setText(String.format("%.2f TND", totalCharges));
-        lblSoldeFiltre.setText(String.format("%.2f TND", solde));
-
-        // Couleur : bleu profond adapté à l'interface
-        lblSoldeFiltre.setStyle("-fx-text-fill: #0b3d91; -fx-font-size:22px; -fx-font-weight:bold;");
+        lblSoldeFiltre.setText(String.format("%.2f TND", totalRecettes - totalCharges));
     }
 
     // =========================================================================
-    // MODIFIER TRANSACTION (Dialog)
-    // =========================================================================
-    private void modifierTransaction(transaction t) {
-        Dialog<transaction> dialog = new Dialog<>();
-        dialog.setTitle("Modifier Transaction");
-        dialog.setHeaderText("Modifier les détails de la recette");
-
-        ButtonType btnValider = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(btnValider, ButtonType.CANCEL);
-
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
-
-        DatePicker datePick = new DatePicker();
-        if (t.getDate() != null) {
-            datePick.setValue(new java.sql.Date(t.getDate().getTime()).toLocalDate());
-        }
-        TextField tfMontant = new TextField(String.valueOf(t.getMontant()));
-        TextField tfDescription = new TextField(t.getDescription());
-
-        grid.add(new Label("Date :"), 0, 0);
-        grid.add(datePick, 1, 0);
-        grid.add(new Label("Montant (TND) :"), 0, 1);
-        grid.add(tfMontant, 1, 1);
-        grid.add(new Label("Description :"), 0, 2);
-        grid.add(tfDescription, 1, 2);
-
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == btnValider) {
-                try {
-                    t.setMontant(Double.parseDouble(tfMontant.getText()));
-                    t.setDescription(tfDescription.getText());
-                    if (datePick.getValue() != null) {
-                        t.setDate(java.sql.Date.valueOf(datePick.getValue()));
-                    }
-                    return t;
-                } catch (NumberFormatException e) {
-                    afficherErreur("Erreur", "Montant invalide.");
-                    return null;
-                }
-            }
-            return null;
-        });
-
-        Optional<transaction> result = dialog.showAndWait();
-        result.ifPresent(updated -> {
-            serviceTransaction.updateOne(updated);
-            chargerTransactions(); // Recharge tout + recalcule KPIs
-            afficherSucces("Succès", "Transaction modifiée avec succès !");
-        });
-    }
-
-    // =========================================================================
-    // SUPPRIMER TRANSACTION (Confirmation)
-    // =========================================================================
-    private void confirmerEtSupprimer(transaction t) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation de suppression");
-        alert.setHeaderText("Supprimer cette recette ?");
-        alert.setContentText("Description : " + t.getDescription() + "\nMontant : " + String.format("%.2f", t.getMontant()) + " TND");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            serviceTransaction.deleteOne(t);
-            chargerTransactions(); // Recharge tout + recalcule KPIs
-            afficherSucces("Supprimé", "Recette supprimée avec succès.");
-        }
-    }
-
-    // =========================================================================
-    // EXPORT CSV
-    // =========================================================================
-    @FXML
-    private void exporterCSV() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Exporter en CSV");
-        fileChooser.setInitialFileName("journal_" + LocalDate.now() + ".csv");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-
-        File file = fileChooser.showSaveDialog(btnExporter.getScene().getWindow());
-        if (file != null) {
-            try (FileWriter writer = new FileWriter(file)) {
-                writer.write("Date,Type,Montant (TND),Description\n");
-                for (transaction t : tableTransactions.getItems()) {
-                    String dateStr = (t.getDate() != null) ? t.getDate().toString() : "";
-                    String typeStr = (t.getType() != null) ? t.getType().toString() : "";
-                    String descStr = (t.getDescription() != null) ? t.getDescription().replace(",", ";") : "";
-                    writer.write(String.format("%s,%s,%.2f,%s\n", dateStr, typeStr, t.getMontant(), descStr));
-                }
-                afficherSucces("Export Réussi", "Fichier enregistré : " + file.getName());
-            } catch (IOException e) {
-                afficherErreur("Erreur Export", "Impossible d'écrire le fichier : " + e.getMessage());
-            }
-        }
-    }
-
-    // =========================================================================
-    // STYLE COULEUR DES LIGNES
-    // =========================================================================
-    private void appliquerStyleCouleur() {
-        tableTransactions.setRowFactory(tv -> new TableRow<transaction>() {
-            @Override
-            protected void updateItem(transaction item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) {
-                    setStyle("");
-                } else {
-                    if (item.getType() == transaction.Type.RECETTE) {
-                        setStyle("-fx-background-color: #e8f5e9;"); // Vert très clair
-                    } else if (item.getType() == transaction.Type.DEPENSE) {
-                        setStyle("-fx-background-color: #ffebee;"); // Rouge très clair
-                    } else {
-                        setStyle("");
-                    }
-                }
-            }
-        });
-    }
-
-    // =========================================================================
-    // NAVIGATION
+    // NAVIGATION & EXPORT
     // =========================================================================
     @FXML
     void versDashboard(ActionEvent event) {
@@ -420,13 +480,34 @@ public class JournalFranchiseController implements Initializable {
             try {
                 URL cssUrl = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css");
                 if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             stage.setScene(scene);
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
             afficherErreur("Erreur Navigation", "Impossible de charger : " + fxmlPath);
+        }
+    }
+
+    @FXML
+    private void exporterCSV() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter en CSV");
+        fileChooser.setInitialFileName("journal_export.csv");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = fileChooser.showSaveDialog(btnExporter.getScene().getWindow());
+        if (file != null) {
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write("Date,Type,Montant,Description\n");
+                for (transaction t : tableTransactions.getItems()) {
+                    writer.write(String.format("%s,%s,%.2f,%s\n", t.getDate(), t.getType(), t.getMontant(), t.getDescription()));
+                }
+                afficherSucces("Export réussie", "Fichier sauvegardé : " + file.getName());
+            } catch (IOException e) {
+                afficherErreur("Erreur", "Erreur écriture fichier.");
+            }
         }
     }
 

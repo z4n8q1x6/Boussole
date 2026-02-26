@@ -9,14 +9,14 @@ import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.control.Hyperlink; // Added
 import tn.esprit.Boussole.Models.budget_previsionnel;
 import tn.esprit.Boussole.Models.budget_previsionnel.TypeBudget;
 import tn.esprit.Boussole.Models.transaction;
@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors; // Added
+import javafx.util.Callback;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class DashboardFranchiseController implements Initializable {
@@ -139,11 +141,15 @@ public class DashboardFranchiseController implements Initializable {
                 dpDate.setValue(LocalDate.now());
             }
 
-            // Configure table columns
+            // Configure table columns (LECTURE SEULE)
             if (colDate != null) colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
             if (colType != null) colType.setCellValueFactory(new PropertyValueFactory<>("type"));
             if (colDescription != null) colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
             if (colMontant != null) colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+
+            // IMPORTANT: Désactivation de l'édition et du menu contextuel pour le Dashboard
+            tableMovements.setEditable(false);
+            tableMovements.setContextMenu(null);
 
             // Load initial data
             if (franchiseId != 0) {
@@ -155,7 +161,7 @@ public class DashboardFranchiseController implements Initializable {
                 }
 
                 chargerSolde();
-                chargerTransactions();
+                chargerDerniersMouvements(); // Renamed/Modified method
                 chargerBudgets();
             }
 
@@ -164,47 +170,48 @@ public class DashboardFranchiseController implements Initializable {
                 btnValider.setOnAction(this::validerRecette);
             }
 
-            // --- MENU CONTEXTUEL (Clic Droit) ---
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem itemModifier = new MenuItem("Modifier");
-            MenuItem itemSupprimer = new MenuItem("Supprimer");
+            appliquerCellFactoryMontant();
 
-            itemModifier.setOnAction(e -> {
-                transaction selected = tableMovements.getSelectionModel().getSelectedItem();
-                if (selected != null) modifierTransaction(selected);
-            });
-
-            itemSupprimer.setOnAction(e -> {
-                transaction selected = tableMovements.getSelectionModel().getSelectedItem();
-                if (selected != null) supprimerTransaction(selected);
-            });
-
-            contextMenu.getItems().addAll(itemModifier, itemSupprimer);
-            tableMovements.setContextMenu(contextMenu);
-
-            // Enable professional sorting for the TableView
-            tableMovements.getSortOrder().add(colDate); // Set default sorting by Date
-
-            // Corrected comparator for the Montant column
-            colMontant.setComparator(Comparator.comparingDouble(Double::doubleValue));
-
-            // Allow multi-column sorting with simple logic to avoid type complexity issues
-            tableMovements.setSortPolicy(table -> {
-                FXCollections.sort(table.getItems(), (t1, t2) -> {
-                    if (t1.getDate() == null || t2.getDate() == null) return 0;
-                    return t2.getDate().compareTo(t1.getDate()); // Default sort: desc date
-                });
-                return true;
-            });
-
-            // Correction du tri professionnel
-            configurerTriTable(); // Removed to avoid complexity issues for now
+            // Cleaned up unused sorting/context menu code...
 
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR during Dashboard initialization: " + e.getMessage());
             Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
             afficherMessageErreur("Erreur inattendue au chargement: " + e.getMessage());
         }
+    }
+
+    private void appliquerCellFactoryMontant() {
+        colMontant.setCellFactory(new Callback<TableColumn<transaction, Double>, TableCell<transaction, Double>>() {
+            @Override
+            public TableCell<transaction, Double> call(TableColumn<transaction, Double> column) {
+                return new TableCell<transaction, Double>() {
+                    @Override
+                    protected void updateItem(Double montant, boolean empty) {
+                        super.updateItem(montant, empty);
+                        if (empty || montant == null) {
+                            setText(null);
+                            setStyle("");
+                            return;
+                        }
+                        setText(String.format("%.2f", montant));
+                        transaction tx = getTableView().getItems().get(getIndex());
+                        if (tx != null && tx.getType() != null) {
+                            String type = tx.getType().name();
+                            if ("RECETTE".equalsIgnoreCase(type)) {
+                                setStyle("-fx-background-color: rgba(46,125,50,0.2); -fx-text-fill: #E5E7EB;");
+                            } else if ("DEPENSE".equalsIgnoreCase(type)) {
+                                setStyle("-fx-background-color: rgba(198,40,40,0.2); -fx-text-fill: #E5E7EB;");
+                            } else {
+                                setStyle("");
+                            }
+                        } else {
+                            setStyle("");
+                        }
+                    }
+                };
+            }
+        });
     }
 
     /**
@@ -261,16 +268,27 @@ public class DashboardFranchiseController implements Initializable {
     }
 
     /**
-     * Load all transactions (both Recettes and Dépenses) for this franchise
+     * Load LAST 5 transactions for this franchise
      */
-    private void chargerTransactions() {
+    private void chargerDerniersMouvements() {
         try {
             List<transaction> transactions = serviceTransaction.getAllByFranchise(franchiseId);
-            ObservableList<transaction> data = FXCollections.observableArrayList(transactions);
+
+            // Limit to 5 most recent
+            List<transaction> denieresTransactions = transactions.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+
+            ObservableList<transaction> data = FXCollections.observableArrayList(denieresTransactions);
             tableMovements.setItems(data);
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement des transactions : " + e.getMessage());
         }
+    }
+
+    // chargerTransactions replaced by chargerDerniersMouvements, keeping helper method name consistent with FXML actions if any
+    private void chargerTransactions() {
+        chargerDerniersMouvements();
     }
 
     /**
@@ -375,73 +393,9 @@ public class DashboardFranchiseController implements Initializable {
         }
     }
 
-    private void modifierTransaction(transaction t) {
-        tfMontant.setText(String.valueOf(t.getMontant()));
-        tfDescription.setText(t.getDescription());
-        if (t.getDate() != null) {
-            dpDate.setValue(new java.sql.Date(t.getDate().getTime()).toLocalDate());
-        }
-        btnValider.setText("Modifier");
-    }
-
-    private void supprimerTransaction(transaction t) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation de suppression");
-        alert.setHeaderText("Supprimer la transaction ?");
-        alert.setContentText("Voulez-vous vraiment supprimer : " + t.getDescription() + " (" + t.getMontant() + " TND) ?");
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                serviceTransaction.deleteOne(t);
-                chargerTransactions();
-                chargerSolde();
-                afficherMessageSucces("Transaction supprimée.");
-                viderFormulaire(); // Au cas où on modifiait celle-ci
-            }
-        });
-    }
-
-    private void viderFormulaire() {
-        tfMontant.clear();
-        tfDescription.clear();
-        dpDate.setValue(LocalDate.now());
-        btnValider.setText("Valider Recette");
-    }
-
-    /**
-     * Change scene to historique view
-     */
-    @FXML
-    void versHistorique(javafx.event.ActionEvent event) {
-        changerScene(event, "/tn/esprit/Boussole/GUI/JournalFranchise.fxml", "Journal des Opérations");
-    }
-
-    // Correction des paramètres inutilisés dans changerScene (valeurs constantes)
-    // Je vais modifier la méthode pour utiliser les arguments
-    private void changerScene(javafx.event.ActionEvent event, String fxmlPath, String title) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent root = loader.load();
-            javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new javafx.scene.Scene(root));
-            stage.setTitle(title);
-            stage.show();
-        } catch (IOException e) {
-            Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
-            afficherMessageErreur("Impossible de charger la vue : " + fxmlPath + "\n" + e.getMessage());
-        }
-    }
-
-
     // Correction de la méthode refreshTable
     private void refreshTable() {
-        try {
-            List<transaction> transactions = serviceTransaction.getAllByFranchise(franchiseId);
-            ObservableList<transaction> data = FXCollections.observableArrayList(transactions);
-            tableMovements.setItems(data);
-        } catch (Exception e) {
-            afficherMessageErreur("Erreur lors du rafraîchissement de la table : " + e.getMessage());
-        }
+        chargerDerniersMouvements();
     }
 
     // Ajout des méthodes manquantes pour gérer les messages d'erreur et de succès
@@ -461,40 +415,25 @@ public class DashboardFranchiseController implements Initializable {
         alert.showAndWait();
     }
 
-    // Correction de la méthode configurerTriTable avec un tri professionnel et sans warnings
-    private void configurerTriTable() {
-        tableMovements.setSortPolicy(table -> {
-            ObservableList<transaction> items = table.getItems();
-            if (items == null || items.isEmpty()) return true;
+    /**
+     * Change scene to historique view
+     */
+    @FXML
+    void versHistorique(javafx.event.ActionEvent event) {
+        changerScene(event, "/tn/esprit/Boussole/GUI/JournalFranchise.fxml", "Journal des Opérations");
+    }
 
-            Comparator<transaction> comparator = (o1, o2) -> 0;
-
-            for (TableColumn<transaction, ?> col : table.getSortOrder()) {
-                Comparator<transaction> colComparator = (t1, t2) -> {
-                    Object v1 = col.getCellData(t1);
-                    Object v2 = col.getCellData(t2);
-                    if (v1 == null && v2 == null) return 0;
-                    if (v1 == null) return 1;
-                    if (v2 == null) return -1;
-                    if (v1 instanceof Comparable && v2 instanceof Comparable) {
-                        try {
-                            return ((Comparable) v1).compareTo(v2);
-                        } catch (Exception e) {
-                            return 0;
-                        }
-                    }
-                    return 0;
-                };
-
-                if (col.getSortType() == TableColumn.SortType.DESCENDING) {
-                    colComparator = colComparator.reversed();
-                }
-
-                comparator = comparator.thenComparing(colComparator);
-            }
-
-            FXCollections.sort(items, comparator);
-            return true;
-        });
+    private void changerScene(javafx.event.ActionEvent event, String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.setTitle(title);
+            stage.show();
+        } catch (IOException e) {
+            Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
+            afficherMessageErreur("Impossible de charger la vue : " + fxmlPath + "\n" + e.getMessage());
+        }
     }
 }

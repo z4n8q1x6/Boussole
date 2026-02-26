@@ -3,6 +3,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -12,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.GestionBudgetsController" fx:id="contentPane" prefWidth="1280" prefHeight="800" stylesheets="@styles.css">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.GestionBudgetsController" fx:id="contentPane" stylesheets="@styles.css">
 
     <!-- Sidebar gauche -->
     <left>
@@ -96,7 +97,11 @@
                                     <TextField fx:id="txtMontant" promptText="0.00" />
                                 </VBox>
 
-                                <CheckBox fx:id="chkReseau" text="Appliquer à tout le réseau" style="-fx-text-fill: #CBD5E1; -fx-font-size:12px;" />
+                                <!-- Cible(s) via ListView pour sélection multiple -->
+                                <VBox spacing="5" VBox.vgrow="NEVER">
+                                    <Label text="Cible(s) :" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <ListView fx:id="listFranchises" prefHeight="100" styleClass="franchise-list" />
+                                </VBox>
 
                                 <Pane VBox.vgrow="ALWAYS" />
 
@@ -114,12 +119,13 @@
                             </padding>
                             <children>
                                 <Label text="Budgets Configurés" style="-fx-font-size:16px; -fx-font-weight: bold; -fx-text-fill: white;" />
-                                <TableView fx:id="tableBudgets" VBox.vgrow="ALWAYS">
+                                <TableView fx:id="tableBudgets" VBox.vgrow="ALWAYS" styleClass="journal-table-view"
+                                           style="-fx-background-color: transparent; -fx-padding: 4;">
                                     <columns>
                                         <TableColumn fx:id="colMois" text="MOIS" prefWidth="60" />
-                                        <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="70" />
-                                        <TableColumn fx:id="colType" text="TYPE" prefWidth="140" />
-                                        <TableColumn fx:id="colCategorie" text="CATÉGORIE" prefWidth="150" />
+                                        <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="80" />
+                                        <TableColumn fx:id="colType" text="TYPE" prefWidth="150" />
+                                        <TableColumn fx:id="colCategorie" text="CATÉGORIE" prefWidth="200" />
                                         <TableColumn fx:id="colMontant" text="MONTANT (TND)" prefWidth="120" />
                                     </columns>
                                     <columnResizePolicy>

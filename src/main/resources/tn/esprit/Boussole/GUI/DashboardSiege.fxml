@@ -63,7 +63,6 @@
                         <Label text="Suivi de la performance globale du réseau" styleClass="page-subtitle" />
                     </VBox>
                     <Pane HBox.hgrow="ALWAYS" />
-                    <Button fx:id="btnRefresh" text="RAFRAÎCHIR" styleClass="button-primary" />
                     <ProgressIndicator fx:id="progress" visible="false" prefWidth="24" prefHeight="24" />
                 </HBox>
 
@@ -101,32 +100,20 @@
                     <tabs>
                         <Tab text="Statistiques Globales">
                             <content>
-                                <HBox spacing="20" styleClass="kpi-card" style="-fx-padding:20;">
+                                <!-- Full-width BarChart Comparatif Réel vs Budget -->
+                                <VBox spacing="10" styleClass="kpi-card" style="-fx-padding:20;" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <!-- BarChart Comparatif Réel vs Budget (60%) -->
-                                        <VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="600">
-                                            <children>
-                                                <Label text="Réel vs Budget (Derniers 3 mois)" style="-fx-font-weight:bold; -fx-text-fill:white; -fx-font-size:14px;"/>
-                                                <BarChart fx:id="barChartComparatif" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
-                                                    <xAxis>
-                                                        <CategoryAxis fx:id="xAxisComp" label="Mois" />
-                                                    </xAxis>
-                                                    <yAxis>
-                                                        <NumberAxis fx:id="yAxisComp" label="Montant (TND)" />
-                                                    </yAxis>
-                                                </BarChart>
-                                            </children>
-                                        </VBox>
-
-                                        <!-- PieChart Répartition des charges (40%) -->
-                                        <VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="400">
-                                            <children>
-                                                <Label text="Répartition des Charges" style="-fx-font-weight:bold; -fx-text-fill:white; -fx-font-size:14px;"/>
-                                                <PieChart fx:id="pieChartCharges" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" legendSide="RIGHT" />
-                                            </children>
-                                        </VBox>
+                                        <Label text="Réel vs Budget (Derniers 3 mois)" style="-fx-font-weight:bold; -fx-text-fill:white; -fx-font-size:14px;"/>
+                                        <BarChart fx:id="barChartComparatif" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" prefWidth="Infinity">
+                                            <xAxis>
+                                                <CategoryAxis fx:id="xAxisComp" label="Mois" />
+                                            </xAxis>
+                                            <yAxis>
+                                                <NumberAxis fx:id="yAxisComp" label="Montant (TND)" />
+                                            </yAxis>
+                                        </BarChart>
                                     </children>
-                                </HBox>
+                                </VBox>
                             </content>
                         </Tab>
                         <Tab text="Radar de Performance">
