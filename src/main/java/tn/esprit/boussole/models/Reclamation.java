@@ -1,6 +1,8 @@
 package tn.esprit.boussole.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 public class Reclamation {
 
@@ -70,8 +72,10 @@ public class Reclamation {
     this.statut = statut;
   }
 
-  public Timestamp getDateCreation() {
-    return dateCreation;
+  @JsonProperty("dateCreation_formatted")
+  public String getDateCreation() {
+    if (dateCreation == null) return null;
+    return dateCreation.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
   }
 
   public void setDateCreation(Timestamp dateCreation) {

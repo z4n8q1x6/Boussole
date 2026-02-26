@@ -1,6 +1,8 @@
 package tn.esprit.boussole.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 public class AlerteIA {
   private int id;
@@ -67,8 +69,10 @@ public class AlerteIA {
     this.score_gravite = score_gravite;
   }
 
-  public Timestamp getDate_detection() {
-    return date_detection;
+  @JsonProperty("date_detection_formatted")
+  public String getDate_detection() {
+    if (date_detection == null) return null;
+    return date_detection.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
   }
 
   public void setDate_detection(Timestamp date_detection) {

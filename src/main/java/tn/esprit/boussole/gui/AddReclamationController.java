@@ -5,6 +5,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.service.ReclamationService;
+import tn.esprit.boussole.utils.UserManager;
 
 public class AddReclamationController {
 
@@ -14,9 +15,17 @@ public class AddReclamationController {
   @FXML private Button btnCreate;
 
   private final ReclamationService reclamationService = new ReclamationService();
-  private int franchiseId;
+  private int franchiseId = -1;
 
-  public void initialize() {}
+  public void initialize() {
+    // Auto-populate franchise ID from logged-in user
+    int franchiseId = UserManager.getCurrentUserFranchiseId();
+    if (!UserManager.isValidFranchiseId(franchiseId)) {
+      showError("Erreur: Aucune franchise assignée à votre compte.");
+    } else {
+      this.franchiseId = franchiseId;
+    }
+  }
 
   // Call this before showing the dialog so the controller knows which franchise
   public void setFranchiseId(int franchiseId) {
@@ -26,6 +35,11 @@ public class AddReclamationController {
   @FXML
   private void handleCreate() {
     if (!validate()) return;
+    
+    if (!UserManager.isValidFranchiseId(franchiseId)) {
+      showError("Erreur: Franchise invalide. Veuillez vous reconnecter.");
+      return;
+    }
 
     Reclamation reclamation = new Reclamation();
     reclamation.setSujet(txtSujet.getText().trim());

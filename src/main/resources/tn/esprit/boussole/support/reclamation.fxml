@@ -97,11 +97,11 @@
 
         <TableColumn fx:id="colStatut"
           text="Statut"
-          style="-fx-text-fill: #E8EDF5;" />
+          style="-fx-text-fill: #E8EDF5;" prefWidth="50" />
 
         <TableColumn fx:id="colDate"
           text="Date"
-          style="-fx-text-fill: #E8EDF5;" />
+          style="-fx-text-fill: #E8EDF5;" prefWidth="60" />
 
       </columns>
 

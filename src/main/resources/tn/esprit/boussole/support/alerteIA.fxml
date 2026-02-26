@@ -70,7 +70,7 @@
           <columns>
             <TableColumn fx:id="colType" text="Nature" prefWidth="250.0" />
             <TableColumn fx:id="colScore" text="Gravité" prefWidth="60.0" />
-            <TableColumn fx:id="colDate" text="Date" prefWidth="130.0" />
+            <TableColumn fx:id="colDate" text="Date" prefWidth="80" />
           </columns>
           <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

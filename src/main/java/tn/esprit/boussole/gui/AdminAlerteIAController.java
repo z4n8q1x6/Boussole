@@ -32,7 +32,6 @@ public class AdminAlerteIAController {
     colType.setCellValueFactory(new PropertyValueFactory<>("type_alerte"));
     colScore.setCellValueFactory(new PropertyValueFactory<>("score_gravite"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("date_detection"));
-    colDate.setCellValueFactory(new PropertyValueFactory<>("date_detection"));
     colFranchise.setCellValueFactory(
         cellData -> {
           return new SimpleStringProperty("nom/ville#" + cellData.getValue().getFranchiseId());
@@ -116,28 +115,32 @@ public class AdminAlerteIAController {
             """
             %s
 
-            Vous êtes un conseiller expert en gestion. Sur la base des alertes ci-dessus, générez un RAPPORT D'ESCALADE URGENT.
+            Vous êtes un conseiller expert en gestion de crise. Analysez ces alertes et identifiez les 3 plus critiques.
 
-            Pour chaque alerte, assignez :
-            1. Niveau de priorité : IMMÉDIAT (24h) / URGENT (cette semaine) / À SURVEILLER (ce mois)
-            2. Responsable : PDG / DAF / Directeur des Opérations / Responsable Financier / Responsable IT
-            3. Action spécifique à entreprendre
+            RÈGLES STRICTES :
+            - Sélectionnez UNIQUEMENT les 3 alertes les plus urgentes
+            - Basez-vous sur le score de gravité ET le type de risque
+            - Soyez ultra-concis, chaque action max 1 ligne
+            - Aucun texte supplémentaire en dehors du format demandé
 
-            Formatez votre réponse exactement comme ceci pour chaque alerte :
+            FORMAT OBLIGATOIRE (respectez exactement) :
 
-            🔴 ACTION IMMÉDIATE REQUISE / 🟡 URGENT / 🟢 À SURVEILLER
-            ├─ Alerte : "[type]" (Gravité X/10)
+            🚨 TOP 3 ALERTES CRITIQUES
+            ━━━━━━━━━━━━━━━━━━━━━━━━
+
+            🔴 #1 — [TYPE ALERTE] (Gravité [X]/10)
             ├─ Franchise : #[id]
-            ├─ Responsable : [rôle]
-            └─ Action : [action spécifique]
+            └─ Action : [action immédiate et précise]
 
-            Terminez avec une section résumé :
-            RÉSUMÉ
-            - X problèmes nécessitent une attention immédiate aujourd'hui
-            - X problèmes nécessitent une attention cette semaine
-            - X problèmes peuvent être planifiés pour une révision mensuelle
+            🟡 #2 — [TYPE ALERTE] (Gravité [X]/10)
+            ├─ Franchise : #[id]
+            └─ Action : [action cette semaine]
 
-            Soyez concis et orienté action. Format prêt pour la direction uniquement.
+            🟢 #3 — [TYPE ALERTE] (Gravité [X]/10)
+            ├─ Franchise : #[id]
+            └─ Action : [action ce mois]
+
+            ━━━━━━━━━━━━━━━━━━━━━━━━
             """,
             alertSummary.toString());
 
