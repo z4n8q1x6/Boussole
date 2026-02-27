@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.service.ReclamationService;
 import tn.esprit.boussole.utils.AlertUtil;
+import tn.esprit.boussole.utils.UserManager; // --- IMPORTÉ POUR RÉCUPÉRER L'ID ---
 
 public class ReclamationController {
   private final ReclamationService service = new ReclamationService();
@@ -22,48 +23,52 @@ public class ReclamationController {
   @FXML private TableColumn<Reclamation, String> colDate;
   @FXML private Button btnNewReclamation;
 
-  // temp (for testing)
-  private int franchise_id = 2;
+  // --- ID DE LA FRANCHISE (Dynamique) ---
+  private int franchise_id = -1;
 
   public void initialize() {
-    // connects the table columns to Reclamation model getters
+    // --- RÉCUPÉRER L'ID DE LA FRANCHISE DE L'UTILISATEUR CONNECTÉ ---
+    this.franchise_id = UserManager.getCurrentUserFranchiseId();
+    System.out.println("ReclamationController DEBUG: Franchise ID chargé = " + this.franchise_id);
+
+    // Connects the table columns to Reclamation model getters
     colSujet.setCellValueFactory(new PropertyValueFactory<>("sujet"));
     colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
     colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("dateCreation"));
 
-    // makes description column scrollable
+    // Makes description column scrollable
     colDescription.setCellFactory(
-        column -> {
-          return new TableCell<Reclamation, String>() {
-            private final TextArea textArea = new TextArea();
+            column -> {
+              return new TableCell<Reclamation, String>() {
+                private final TextArea textArea = new TextArea();
 
-            {
-              textArea.setEditable(false);
-              textArea.setWrapText(true);
+                {
+                  textArea.setEditable(false);
+                  textArea.setWrapText(true);
 
-              // Style it to blend in: no border, transparent background
-              textArea.setStyle(
-                  "-fx-background-color: transparent; "
-                      + "-fx-background-insets: 0; "
-                      + "-fx-padding: 5;");
+                  // Style it to blend in: no border, transparent background
+                  textArea.setStyle(
+                          "-fx-background-color: transparent; "
+                                  + "-fx-background-insets: 0; "
+                                  + "-fx-padding: 5;");
 
-              // pref height
-              textArea.setPrefHeight(40);
-            }
+                  // pref height
+                  textArea.setPrefHeight(40);
+                }
 
-            @Override
-            protected void updateItem(String item, boolean empty) {
-              super.updateItem(item, empty);
-              if (empty || item == null) {
-                setGraphic(null);
-              } else {
-                textArea.setText(item);
-                setGraphic(textArea);
-              }
-            }
-          };
-        });
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                  super.updateItem(item, empty);
+                  if (empty || item == null) {
+                    setGraphic(null);
+                  } else {
+                    textArea.setText(item);
+                    setGraphic(textArea);
+                  }
+                }
+              };
+            });
 
     display();
   }
@@ -71,11 +76,14 @@ public class ReclamationController {
   @FXML
   private void handleAddReclamation() {
     FXMLLoader loader =
-        new FXMLLoader(getClass().getResource("/tn/esprit/boussole/support/addReclamation.fxml"));
+            new FXMLLoader(getClass().getResource("/addReclamation.fxml"));
     try {
       Parent root = loader.load();
       AddReclamationController controller = loader.getController();
-      controller.setFranchiseId(franchise_id);
+
+      // --- PASSER L'ID DYNAMIQUE AU CONTRÔLEUR D'AJOUT ---
+      controller.setFranchiseId(this.franchise_id);
+
       Stage stage = new Stage();
       stage.setTitle("Ajouter une réclamation");
       stage.setScene(new Scene(root));
@@ -88,6 +96,7 @@ public class ReclamationController {
   }
 
   public void display() {
+    // Affiche les réclamations pour la franchise spécifique
     table.setItems(service.getByFranchise(franchise_id));
   }
 
@@ -97,7 +106,7 @@ public class ReclamationController {
 
     if (selected != null) {
       ButtonType result =
-          AlertUtil.showConfirmation("Confirmation", "Supprimer cette réclamation ?");
+              AlertUtil.showConfirmation("Confirmation", "Supprimer cette réclamation ?");
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
@@ -107,7 +116,7 @@ public class ReclamationController {
       }
     } else {
       AlertUtil.showWarning(
-          "Aucune sélection", "Veuillez sélectionner une réclamation à supprimer.");
+              "Aucune sélection", "Veuillez sélectionner une réclamation à supprimer.");
     }
   }
 }

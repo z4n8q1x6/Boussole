@@ -17,25 +17,47 @@ public class AddReclamationController {
   private final ReclamationService reclamationService = new ReclamationService();
   private int franchiseId = -1;
 
+  // Flag pour s'assurer que UserManager a la priorité sur setFranchiseId
+  private boolean initializedByUserManager = false;
+
   public void initialize() {
+    System.out.println("AddReclamationController DEBUG: initialize() appelée.");
+
     // Auto-populate franchise ID from logged-in user
-    int franchiseId = UserManager.getCurrentUserFranchiseId();
-    if (!UserManager.isValidFranchiseId(franchiseId)) {
+    int fetchedFranchiseId = UserManager.getCurrentUserFranchiseId();
+    System.out.println("AddReclamationController DEBUG: ID récupéré par UserManager = " + fetchedFranchiseId);
+
+    if (!UserManager.isValidFranchiseId(fetchedFranchiseId)) {
+      System.err.println("AddReclamationController DEBUG: Franchise ID invalide (-1 ou 0)");
       showError("Erreur: Aucune franchise assignée à votre compte.");
     } else {
-      this.franchiseId = franchiseId;
+      this.franchiseId = fetchedFranchiseId;
+      this.initializedByUserManager = true; // --- Marquer comme initialisé ---
+      System.out.println("AddReclamationController DEBUG: Variable classe franchiseId mise à jour avec: " + this.franchiseId);
     }
   }
 
   // Call this before showing the dialog so the controller knows which franchise
   public void setFranchiseId(int franchiseId) {
+    // --- Ignorer si UserManager a déjà fait le travail ---
+    if (this.initializedByUserManager) {
+      System.out.println("AddReclamationController DEBUG: setFranchiseId(" + franchiseId + ") ignoré (déjà initialisé avec " + this.franchiseId + ")");
+      return;
+    }
+    // -----------------------------------------------------
+
+    System.out.println("AddReclamationController DEBUG: setFranchiseId() appelée avec: " + franchiseId);
     this.franchiseId = franchiseId;
   }
 
   @FXML
   private void handleCreate() {
     if (!validate()) return;
-    
+
+    // --- LOG DE DÉBOGAGE ---
+    System.out.println("AddReclamationController DEBUG: Tentative d'ajout réclamation avec franchiseId = " + this.franchiseId);
+    // -----------------------
+
     if (!UserManager.isValidFranchiseId(franchiseId)) {
       showError("Erreur: Franchise invalide. Veuillez vous reconnecter.");
       return;

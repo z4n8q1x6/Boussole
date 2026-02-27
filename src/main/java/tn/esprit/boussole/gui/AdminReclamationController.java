@@ -106,7 +106,7 @@ public class AdminReclamationController {
     try {
       FXMLLoader loader =
           new FXMLLoader(
-              getClass().getResource("/tn/esprit/boussole/support/updateReclamation.fxml"));
+              getClass().getResource("/updateReclamation.fxml"));
       Parent root = loader.load();
       UpdateReclamationController controller = loader.getController();
       controller.setReclamation(selected);

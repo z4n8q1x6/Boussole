@@ -15,7 +15,7 @@ public class AlertUtil {
         .getStylesheets()
         .add(
             AlertUtil.class
-                .getResource("/tn/esprit/boussole/support/css/alert.css")
+                .getResource("/alert.css")
                 .toExternalForm());
     dialogPane.getStyleClass().add("custom-alert");
     alert.showAndWait();
@@ -30,7 +30,7 @@ public class AlertUtil {
         .getStylesheets()
         .add(
             AlertUtil.class
-                .getResource("/tn/esprit/boussole/support/css/alert.css")
+                .getResource("/alert.css")
                 .toExternalForm());
     dialogPane.getStyleClass().add("custom-alert");
     alert.showAndWait();
@@ -44,7 +44,7 @@ public class AlertUtil {
         .getStylesheets()
         .add(
             AlertUtil.class
-                .getResource("/tn/esprit/boussole/support/css/alert.css")
+                .getResource("/alert.css")
                 .toExternalForm());
     dialogPane.getStyleClass().add("custom-alert");
     alert.showAndWait();
@@ -58,7 +58,7 @@ public class AlertUtil {
         .getStylesheets()
         .add(
             AlertUtil.class
-                .getResource("/tn/esprit/boussole/support/css/alert.css")
+                .getResource("/alert.css")
                 .toExternalForm());
     dialogPane.getStyleClass().add("custom-alert");
     alert.showAndWait();

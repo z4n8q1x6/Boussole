@@ -13,10 +13,10 @@ public class App extends Application {
   @Override
   public void start(Stage stage) {
     String[] views = {
-      "/tn/esprit/boussole/support/reclamation.fxml",
-      "/tn/esprit/boussole/support/adminReclamation.fxml",
-      "/tn/esprit/boussole/support/alerteIA.fxml",
-      "/tn/esprit/boussole/support/adminAlerteIA.fxml",
+            "/reclamation.fxml",
+            "/adminReclamation.fxml",
+            "/alerteIA.fxml",
+            "/adminAlerteIA.fxml",
     };
     FXMLLoader loader = new FXMLLoader(getClass().getResource(views[3]));
     Parent root = null;

@@ -1,198 +1,138 @@
 package tn.esprit.boussole.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.genai.Client;
-import com.google.genai.errors.ClientException;
-import com.google.genai.errors.ServerException;
-import com.google.genai.types.GenerateContentConfig;
-import com.google.genai.types.GenerateContentResponse;
-import com.google.genai.types.Schema;
-import com.google.genai.types.Type.Known;
-import java.util.Optional;
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import tn.esprit.boussole.models.AlerteIA;
 
+import java.io.IOException;
+import java.util.Optional;
+
 public class Gemini {
-  private static String[] myModels = {
-    "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-flash-lite"
-  };
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String API_KEY = dotenv.get("GEMINI_API_KEY"); // Assure-toi que c'est le bon nom dans .env
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
 
-  public static Optional<AlerteIA> generate_alerte() {
-    // Client client = new Client(); // Uses GOOGLE_API_KEY env var
-    String apiKey = Config.get("GEMINI_API");
-    if (apiKey == null) {
-      System.err.println("GEMINI_API_KEY not set.");
-      return Optional.empty();
-    }
-    Client client = Client.builder().apiKey(apiKey).build();
+    private static final OkHttpClient client = new OkHttpClient();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    Schema schema =
-        Schema.builder()
-            .properties(
-                ImmutableMap.of(
-                    "type_alerte",
-                    Schema.builder().type(Known.STRING).minItems(1L).maxLength(35L).build(),
-                    "message",
-                    Schema.builder().type(Known.STRING).minLength(100L).maxLength(1000L).build(),
-                    "score_gravite",
-                    Schema.builder().type(Known.NUMBER).minimum(0.0).maximum(10.0).build()))
-            .type(Known.OBJECT)
-            .build();
+    public static Optional<AlerteIA> generate_alerte() {
+        if (API_KEY == null || API_KEY.isEmpty()) {
+            System.err.println("GEMINI_API_KEY not set in .env");
+            return Optional.empty();
+        }
 
-    GenerateContentConfig config =
-        GenerateContentConfig.builder()
-            .responseMimeType("application/json")
-            .candidateCount(1)
-            .responseSchema(schema)
-            .temperature(1.75f)
-            .build();
+        // Données simulées (à remplacer par des données réelles)
+        String franchiseName = "Tunis Downtown";
+        int year = 2024;
+        int month = 2;
+        double totalRecettes = 450000.00;
+        double totalCharges = 240000.00;
+        double resultatNet = totalRecettes - totalCharges;
+        double budgetRevenuCible = 500000.00;
+        double variance = ((totalRecettes - budgetRevenuCible) / budgetRevenuCible) * 100;
 
-    // Simulated data variables (will be replaced with DB queries after integration)
-    String franchiseName = "Tunis Downtown";
-    int year = 2024;
-    int month = 2;
-    double totalRecettes = 450000.00;
-    double totalChargesExploitation = 180000.00;
-    double totalChargesFinanciere = 45000.00;
-    double totalChargesExceptionnelle = 15000.00;
-    double resultatNet =
-        totalRecettes
-            - (totalChargesExploitation + totalChargesFinanciere + totalChargesExceptionnelle);
-    double soldeActuel = 120000.00;
-    double budgetRevenuCible = 500000.00;
-    double budgetDepenseLimite = 250000.00;
-    double totalCharges =
-        totalChargesExploitation + totalChargesFinanciere + totalChargesExceptionnelle;
-    double variance = ((totalRecettes - budgetRevenuCible) / budgetRevenuCible) * 100;
-    int unpaidRedevancesCount = 2;
-    double unpaidRedevancesAmount = 25000.00;
-    int pendingChargesCount = 5;
-    int rejectedChargesCount = 1;
-    int transactionCount = 47;
-    double recettesDepensesRatio = totalRecettes / totalCharges;
-
-    String prompt =
-        String.format(
+        String promptText = String.format(
             """
             Analyse les données financières de la franchise %s pour %s %d:
-
-            BILAN MENSUEL:
             - Chiffre d'affaires: %,.2f TND
-            - Charges opérationnelles: %,.2f TND
-            - Charges financières: %,.2f TND
-            - Charges exceptionnelles: %,.2f TND
+            - Charges totales: %,.2f TND
             - Résultat net: %,.2f TND
-            - Solde actuel en caisse: %,.2f TND
-
-            BUDGET PRÉVISIONNEL:
-            - Objectif revenu: %,.2f TND (vs réel: %,.2f TND)
-            - Limite dépenses: %,.2f TND (vs réel: %,.2f TND)
+            - Objectif revenu: %,.2f TND
             - Variance: %+.1f%%
 
-            OBLIGATIONS FINANCIÈRES:
-            - Redevances impayées: %d (montant total: %,.2f TND)
-            - Charges en attente de validation: %d
-            - Charges rejetées: %d
-
-            TRANSACTIONS RÉCENTES:
-            - Nombre de transactions ce mois: %d
-            - Ratio recettes/dépenses: %.2f
-
-            Détecte les anomalies, risques financiers ou alertes critiques.
-            Formule une alerte spécifique et sérieuse basée sur ces données.
+            Détecte les anomalies ou risques.
+            Réponds UNIQUEMENT avec un objet JSON valide respectant ce format, sans texte autour (pas de markdown ```json) :
+            {
+              "type_alerte": "Type de l'alerte (ex: Risque Financier)",
+              "message": "Description détaillée du problème et recommandation (max 500 caractères)",
+              "score_gravite": 8.5
+            }
             """,
-            franchiseName,
-            month,
-            year,
-            totalRecettes,
-            totalChargesExploitation,
-            totalChargesFinanciere,
-            totalChargesExceptionnelle,
-            resultatNet,
-            soldeActuel,
-            budgetRevenuCible,
-            totalRecettes,
-            budgetDepenseLimite,
-            totalCharges,
-            variance,
-            unpaidRedevancesCount,
-            unpaidRedevancesAmount,
-            pendingChargesCount,
-            rejectedChargesCount,
-            transactionCount,
-            recettesDepensesRatio);
+            franchiseName, "Février", year, totalRecettes, totalCharges, resultatNet, budgetRevenuCible, variance
+        );
 
-    AlerteIA alerteIA = new AlerteIA();
-    int i = 0;
-    while (i < myModels.length) {
-      try {
-        GenerateContentResponse response =
-            client.models.generateContent(myModels[i], prompt, config);
-        // DEBUG
-        System.out.println(myModels[i]);
-        System.out.println(response.text());
+        // Construction du corps de la requête JSON
+        JSONObject content = new JSONObject();
+        JSONArray parts = new JSONArray();
+        JSONObject part = new JSONObject();
+        part.put("text", promptText);
+        parts.put(part);
+        
+        JSONObject contents = new JSONObject();
+        content.put("contents", new JSONArray().put(new JSONObject().put("parts", parts)));
 
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-          alerteIA = mapper.readValue(response.text(), AlerteIA.class);
-        } catch (JsonMappingException e) {
-          System.err.println("Error mapping json: " + e);
-        } catch (JsonProcessingException e) {
-          System.err.println("Error processing json: " + e);
+        // Configuration de la génération (JSON mode si supporté, sinon prompt engineering)
+        // Pour gemini-2.0-flash, on peut forcer le JSON via le prompt comme fait ci-dessus
+
+        RequestBody body = RequestBody.create(content.toString(), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url(API_URL + API_KEY)
+                .post(body)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.err.println("Erreur API Gemini: " + response.body().string());
+                return Optional.empty();
+            }
+
+            String responseBody = response.body().string();
+            // Parsing de la réponse Gemini
+            JSONObject jsonResponse = new JSONObject(responseBody);
+            JSONArray candidates = jsonResponse.optJSONArray("candidates");
+            
+            if (candidates != null && candidates.length() > 0) {
+                JSONObject candidate = candidates.getJSONObject(0);
+                JSONObject contentResp = candidate.getJSONObject("content");
+                JSONArray partsResp = contentResp.getJSONArray("parts");
+                String textResp = partsResp.getJSONObject(0).getString("text");
+
+                // Nettoyage du markdown éventuel (```json ... ```)
+                textResp = textResp.replaceAll("```json", "").replaceAll("```", "").trim();
+
+                // Conversion en objet AlerteIA
+                AlerteIA alerte = mapper.readValue(textResp, AlerteIA.class);
+                return Optional.of(alerte);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        client.close();
-        return Optional.of(alerteIA);
-      } catch (ServerException e) {
-        // no more tokens for that model or model overloaded... -> try next model
-        System.err.println("Failed to generate content: " + e);
-        i++;
-      } catch (ClientException e) {
-        // problem with client api/model_name... -> no retries
-        System.err.println("Failed to generate content: " + e);
-        break;
-      }
-    }
-    client.close();
-    return Optional.empty();
-  }
 
-  public static Optional<String> generateAdvice(String prompt) {
-    String apiKey = Config.get("GEMINI_API");
-    if (apiKey == null) {
-      System.err.println("GEMINI_API_KEY not set");
-      return Optional.empty();
+        return Optional.empty();
     }
 
-    Client client = Client.builder().apiKey(apiKey).build();
-    int i = 0;
-    while (i < myModels.length) {
-      try {
-        GenerateContentResponse response = client.models.generateContent(myModels[i], prompt, null);
-        // DEBUG
-        System.out.println(myModels[i]);
-        System.out.println(response.text());
-        client.close();
-        return Optional.of(response.text());
-      } catch (ServerException e) {
-        // no more tokens for that model or model overloaded... -> try next model
-        System.err.println("Failed to generate content: " + e);
-        i++;
-      } catch (ClientException e) {
-        // problem with client api/model_name... -> no retries
-        System.err.println("Failed to generate content: " + e);
-        break;
-      }
+    public static Optional<String> generateAdvice(String prompt) {
+        if (API_KEY == null || API_KEY.isEmpty()) return Optional.empty();
+
+        JSONObject content = new JSONObject();
+        JSONArray parts = new JSONArray();
+        parts.put(new JSONObject().put("text", prompt));
+        content.put("contents", new JSONArray().put(new JSONObject().put("parts", parts)));
+
+        RequestBody body = RequestBody.create(content.toString(), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url(API_URL + API_KEY)
+                .post(body)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                String text = jsonResponse.getJSONArray("candidates")
+                        .getJSONObject(0)
+                        .getJSONObject("content")
+                        .getJSONArray("parts")
+                        .getJSONObject(0)
+                        .getString("text");
+                return Optional.of(text);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
-    return Optional.empty();
-  }
 }
-
-// FORMAT (in json):
-// {
-// type_alerte : String;
-// message : string;
-// score_gravite: float;
-// }
-//

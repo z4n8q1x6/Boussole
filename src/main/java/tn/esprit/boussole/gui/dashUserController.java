@@ -89,8 +89,8 @@ public class dashUserController {
         
         btnFournisseur.setOnAction(e -> handleMenuClick(btnFournisseur, "Fournisseurs", null));
         btnFranchises.setOnAction(e -> handleMenuClick(btnFranchises, "Franchises", null));
-        btnAlertes.setOnAction(e -> handleMenuClick(btnAlertes, "Alertes", null));
-        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "Réclamations", null));
+        btnAlertes.setOnAction(e -> handleMenuClick(btnAlertes, "Alertes", "/adminAlerteIA.fxml"));
+        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "Réclamations", "/reclamation.fxml"));
         
         btnBilan.setOnAction(e -> handleMenuClick(btnBilan, "Bilan Financier", null));
         btnBudget.setOnAction(e -> handleMenuClick(btnBudget, "Budget Prévisionnel", null));

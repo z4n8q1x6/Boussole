@@ -17,6 +17,7 @@ import java.util.prefs.Preferences;
 public class dashController {
 
     @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
+    @FXML private Button btnReclamations, btnAlertesIA; // Nouveaux boutons
     @FXML private Label lblUsername;
     @FXML private StackPane contentArea;
 
@@ -35,9 +36,14 @@ public class dashController {
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
         btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
         btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
+        
+        // Nouveaux boutons
+        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
+        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
+        
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 3. Hover effects (Optionnel si tu utilises un CSS externe, mais gardé ici pour ton code)
+        // 3. Hover effects
         setupHoverEffects();
 
         // 4. Page par défaut
@@ -59,6 +65,7 @@ public class dashController {
             var resource = getClass().getResource(fxmlPath);
             if (resource == null) {
                 System.err.println("Erreur: Fichier " + fxmlPath + " introuvable dans resources.");
+                showPlaceholder("Fichier introuvable: " + fxmlPath); // Fallback visuel
                 return;
             }
             Parent view = FXMLLoader.load(resource);
@@ -70,9 +77,11 @@ public class dashController {
     }
 
     private void updateButtonStyle(Button activeButton) {
-        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings};
+        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA};
         for (Button b : allButtons) {
-            b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
+            if (b != null) { // Vérification null au cas où un bouton n'est pas injecté
+                b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
+            }
         }
     }
 
@@ -92,7 +101,9 @@ public class dashController {
     }
 
     private void showPlaceholder(String text) {
-        contentArea.getChildren().setAll(new Label("Page : " + text + " (Bientôt disponible)"));
+        Label placeholder = new Label("Page : " + text + " (Bientôt disponible)");
+        placeholder.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 24px;");
+        contentArea.getChildren().setAll(placeholder);
     }
 
     private void showAlert(String title, String content) {
@@ -103,11 +114,12 @@ public class dashController {
     }
 
     private void setupHoverEffects() {
-        // Implémentation simplifiée : change l'opacité au survol
-        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings};
+        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA};
         for (Button b : allButtons) {
-            b.setOnMouseEntered(e -> { if(!b.getStyle().contains("0.12")) b.setOpacity(0.7); });
-            b.setOnMouseExited(e -> b.setOpacity(1.0));
+            if (b != null) {
+                b.setOnMouseEntered(e -> { if(!b.getStyle().contains("0.12")) b.setOpacity(0.7); });
+                b.setOnMouseExited(e -> b.setOpacity(1.0));
+            }
         }
     }
 }
