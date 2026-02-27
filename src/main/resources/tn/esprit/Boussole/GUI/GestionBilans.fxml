@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -63,12 +64,15 @@
                         <Insets top="20" right="25" bottom="25" left="25"/>
                     </padding>
                     <children>
-                        <!-- Bouton Générer Bilan -->
+                        <!-- Barre d'Outils de Génération -->
                         <HBox spacing="15" alignment="CENTER_LEFT">
-                            <Button fx:id="btnGenererBilan" text="📊 GÉNÉRER BILAN MENSUEL" styleClass="button-primary" />
-                            <Button fx:id="btnExporterPDF" text="📥 EXPORTER PDF" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #3B82F6, #2563EB);" />
+                            <Label text="Période :" style="-fx-text-fill: white; -fx-font-weight: bold;" />
+                            <ComboBox fx:id="comboMois" promptText="Mois" prefWidth="120" />
+                            <ComboBox fx:id="comboAnnee" promptText="Année" prefWidth="100" />
+                            <Button fx:id="btnGenererBilan" text="🔄 GÉNÉRER / RECALCULER" styleClass="button-primary" />
                             <Pane HBox.hgrow="ALWAYS" />
-                            <Label text="Sélectionnez une ligne pour exporter" style="-fx-text-fill: #64748B; -fx-font-style: italic; -fx-font-size: 12px;" />
+                            <Button fx:id="btnExporterPDF" text="📥 EXPORTER PDF" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #3B82F6, #2563EB);" />
+                            <Label text="Sélectionnez pour exporter" style="-fx-text-fill: #64748B; -fx-font-style: italic; -fx-font-size: 12px;" />
                         </HBox>
 
                         <Label text="Historique des Bilans" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;" />
@@ -76,11 +80,12 @@
                         <!-- TableView Historique Bilans -->
                         <TableView fx:id="tableBilans" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colMois" text="MOIS" prefWidth="80" />
-                                <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="80" />
-                                <TableColumn fx:id="colRecettes" text="TOTAL RECETTES (TND)" prefWidth="180" />
-                                <TableColumn fx:id="colCharges" text="TOTAL CHARGES (TND)" prefWidth="180" />
-                                <TableColumn fx:id="colResultat" text="RÉSULTAT NET (TND)" prefWidth="180" />
+                                <TableColumn fx:id="colMois" text="MOIS" prefWidth="60" />
+                                <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="60" />
+                                <TableColumn fx:id="colRecettes" text="TOTAL RECETTES (TND)" prefWidth="150" />
+                                <TableColumn fx:id="colCharges" text="TOTAL CHARGES (TND)" prefWidth="150" />
+                                <TableColumn fx:id="colResultat" text="RÉSULTAT NET (TND)" prefWidth="150" />
+                                <TableColumn fx:id="colStatut" text="RENTABILITÉ" prefWidth="130" />
                             </columns>
                             <columnResizePolicy>
                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

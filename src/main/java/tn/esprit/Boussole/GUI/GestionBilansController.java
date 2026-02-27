@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu; // Added
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -25,12 +26,18 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter; // Added
 import tn.esprit.Boussole.Models.bilan;
+import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceBilan;
+import tn.esprit.Boussole.Utilis.MyBDConnexion;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -47,6 +54,9 @@ public class GestionBilansController implements Initializable {
     @FXML private TableColumn<bilan, Double> colRecettes;
     @FXML private TableColumn<bilan, Double> colCharges;
     @FXML private TableColumn<bilan, Double> colResultat;
+    @FXML private TableColumn<bilan, Double> colStatut;
+    @FXML private ComboBox<String> comboMois;
+    @FXML private ComboBox<Integer> comboAnnee;
     //@FXML private TableColumn<bilan, Void> colActions; // Supprimé
 
     private ServiceBilan serviceBilan;
@@ -76,6 +86,44 @@ public class GestionBilansController implements Initializable {
         colRecettes.setCellValueFactory(new PropertyValueFactory<>("totalRecettes"));
         colCharges.setCellValueFactory(new PropertyValueFactory<>("totalCharges"));
         colResultat.setCellValueFactory(new PropertyValueFactory<>("resultatNet"));
+
+        // Colonne Statut / Rentabilité
+        colStatut.setCellValueFactory(new PropertyValueFactory<>("resultatNet"));
+        colStatut.setCellFactory(column -> new TableCell<bilan, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    if (item > 0) {
+                        setText("✅ Bénéficiaire");
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                    } else if (item < 0) {
+                        setText("⚠️ Déficitaire");
+                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                    } else {
+                        setText("➖ Équilibré");
+                        setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
+
+        // Initialisation de la Barre d'outils
+        comboMois.getItems().addAll(
+            "1 - Janvier", "2 - Février", "3 - Mars", "4 - Avril",
+            "5 - Mai", "6 - Juin", "7 - Juillet", "8 - Août",
+            "9 - Septembre", "10 - Octobre", "11 - Novembre", "12 - Décembre"
+        );
+        int currentMonth = java.time.LocalDate.now().getMonthValue();
+        comboMois.getSelectionModel().select(currentMonth - 1);
+
+        for (int yr = 2024; yr <= 2030; yr++) {
+            comboAnnee.getItems().add(yr);
+        }
+        comboAnnee.getSelectionModel().select(Integer.valueOf(java.time.LocalDate.now().getYear()));
 
         // *** UX MODERNE : TABLE ÉDITABLE ***
         tableBilans.setEditable(true);
@@ -150,6 +198,14 @@ public class GestionBilansController implements Initializable {
         // 4. Chargement initial des données
         rafraichirTable();
 
+        // 4.1 Double-clic pour Drill-Down Transactions
+        tableBilans.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && tableBilans.getSelectionModel().getSelectedItem() != null) {
+                bilan selected = tableBilans.getSelectionModel().getSelectedItem();
+                afficherTransactionsDetails(selected);
+            }
+        });
+
         // 5. Navigation & Actions
         btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"));
         btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
@@ -198,9 +254,12 @@ public class GestionBilansController implements Initializable {
      */
     private void genererBilan() {
         try {
-            // Valeurs actuelles (à remplacer par ComboBox si besoin)
-            int mois = 2;   // TODO : à lier à une ComboBox
-            int annee = 2026; // TODO : à lier à une ComboBox
+            if (comboMois.getSelectionModel().getSelectedIndex() < 0 || comboAnnee.getSelectionModel().getSelectedItem() == null) {
+                afficherMessageErreur("Veuillez sélectionner un mois et une année.");
+                return;
+            }
+            int mois = comboMois.getSelectionModel().getSelectedIndex() + 1;
+            int annee = comboAnnee.getSelectionModel().getSelectedItem();
             int franchiseId = SessionManager.getInstance().getIdFranchise();
 
             // Valider les valeurs
@@ -222,6 +281,68 @@ public class GestionBilansController implements Initializable {
         } catch (Exception e) {
             afficherMessageErreur("Erreur lors de la génération : " + e.getMessage());
         }
+    }
+
+    /**
+     * Affiche la liste des transactions pour un bilan (Drill-Down)
+     */
+    private void afficherTransactionsDetails(bilan b) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Détails du Bilan : " + b.getMois() + " / " + b.getAnnee());
+        dialog.setHeaderText("Liste des transactions de la période");
+
+        dialog.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.CLOSE);
+
+        TableView<transaction> table = new TableView<>();
+        table.setPrefWidth(600);
+        table.setPrefHeight(400);
+
+        TableColumn<transaction, String> colDate = new TableColumn<>("Date");
+        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        colDate.setPrefWidth(120);
+
+        TableColumn<transaction, String> colType = new TableColumn<>("Type");
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colType.setPrefWidth(100);
+
+        TableColumn<transaction, Double> colMontant = new TableColumn<>("Montant");
+        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+        colMontant.setPrefWidth(120);
+
+        TableColumn<transaction, String> colDesc = new TableColumn<>("Description");
+        colDesc.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colDesc.setPrefWidth(240);
+
+        table.getColumns().addAll(colDate, colType, colMontant, colDesc);
+
+        // Récupérer les données
+        try {
+            Connection cnx = MyBDConnexion.getInstance().getCnx();
+            String sql = "SELECT * FROM transaction WHERE franchise_id = ? AND MONTH(date) = ? AND YEAR(date) = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, b.getFranchiseId());
+            ps.setInt(2, b.getMois());
+            ps.setInt(3, b.getAnnee());
+            ResultSet rs = ps.executeQuery();
+
+            javafx.collections.ObservableList<transaction> list = javafx.collections.FXCollections.observableArrayList();
+            while (rs.next()) {
+                transaction t = new transaction();
+                t.setId(rs.getInt("id"));
+                t.setDate(rs.getDate("date"));
+                t.setMontant(rs.getDouble("montant"));
+                t.setType(transaction.Type.valueOf(rs.getString("type").toUpperCase()));
+                t.setDescription(rs.getString("description"));
+                t.setFranchiseId(rs.getInt("franchise_id"));
+                list.add(t);
+            }
+            table.setItems(list);
+        } catch (SQLException e) {
+            System.err.println("Erreur chargement transactions : " + e.getMessage());
+        }
+
+        dialog.getDialogPane().setContent(table);
+        dialog.showAndWait();
     }
 
 
