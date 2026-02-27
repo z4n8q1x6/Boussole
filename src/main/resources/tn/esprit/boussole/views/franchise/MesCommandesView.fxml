@@ -6,104 +6,58 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.MesCommandesController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
+<VBox spacing="20" styleClass="content-area" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.MesCommandesController">
+    <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
 
-    <children>
-        <!-- En-tête -->
-        <HBox alignment="CENTER_LEFT" spacing="15.0">
-            <children>
-                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
-                    <Image url="@/images/orders.png" />
-                </ImageView>
-                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Mes Commandes" />
-            </children>
-        </HBox>
+    <!-- En-tête -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <ImageView fitHeight="28" fitWidth="28" preserveRatio="true">
+            <Image url="@/images/orders.png" />
+        </ImageView>
+        <Label styleClass="page-title" text="Mes commandes" />
+    </HBox>
 
-        <!-- Statistiques -->
-        <HBox spacing="20.0">
-            <children>
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="200">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total commandes" />
-                        <Label fx:id="totalCommandesLabel" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;" text="0" />
-                    </children>
-                </VBox>
+    <!-- Statistiques -->
+    <HBox spacing="15">
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="TOTAL COMMANDES" />
+            <Label fx:id="totalCommandesLabel" styleClass="stat-value" text="0" />
+        </VBox>
+        <VBox styleClass="stat-card" style="-fx-border-color: #0EA5E9;">
+            <Label styleClass="stat-label" text="TOTAL DÉPENSÉ" />
+            <Label fx:id="totalDepenseLabel" styleClass="stat-value" text="0 DT" />
+        </VBox>
+    </HBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="250">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total dépensé" />
-                        <Label fx:id="totalDepenseLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 32px; -fx-font-weight: bold;" text="0 DT" />
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
+    <!-- Filtres -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Label text="Filtrer par statut:" styleClass="form-label" style="-fx-text-fill: #94A3B8;"/>
+        <ComboBox fx:id="filtreStatutCombo" prefWidth="200" prefHeight="38"
+                  style="-fx-background-color: #0F1523; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;"/>
+        <Button onAction="#handleRefresh" styleClass="action-button" text="Rafraîchir" prefHeight="38"/>
+    </HBox>
 
-        <!-- Filtres -->
-        <HBox spacing="15.0" alignment="CENTER_LEFT">
-            <children>
-                <Label style="-fx-text-fill: #94A3B8;" text="Filtrer par statut:" />
-                <ComboBox fx:id="filtreStatutCombo" prefWidth="180" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;" />
+    <!-- Tableau des commandes - EN-TÊTES CORRIGÉS -->
+    <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS" prefHeight="400"
+               style="-fx-background-color: transparent; -fx-border-color: #334155; -fx-border-radius: 12; -fx-background-radius: 12;">
+        <columns>
+            <TableColumn fx:id="colDate" prefWidth="200" text="DATE" />
+            <TableColumn fx:id="colTotal" prefWidth="150" text="TOTAL" />
+            <TableColumn fx:id="colStatut" prefWidth="150" text="STATUT" />
+            <TableColumn fx:id="colActions" prefWidth="150" text="ACTIONS" />
+        </columns>
+    </TableView>
 
-                <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 18; -fx-background-radius: 8; -fx-cursor: hand;">
-                    <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
-                            <Image url="@/images/refresh.png" />
-                        </ImageView>
-                    </graphic>
-                    <text>  Rafraîchir</text>
-                    <tooltip>
-                        <Tooltip text="Actualiser la liste" />
-                    </tooltip>
-                </Button>
-            </children>
-        </HBox>
-
-        <!-- Tableau des commandes -->
-        <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="colDate" prefWidth="200" text="Date" styleClass="date-column" />
-                <TableColumn fx:id="colTotal" prefWidth="150" text="Total" styleClass="montant-column" />
-                <TableColumn fx:id="colStatut" prefWidth="150" text="Statut" />
-                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
-            </columns>
-        </TableView>
-
-        <!-- Boutons de filtre rapide -->
-        <HBox spacing="15.0" alignment="CENTER">
-            <children>
-                <Button onAction="#handleEnAttente" style="-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 10, 0, 0, 0);" text="⏳ En attente">
-                    <tooltip>
-                        <Tooltip text="Afficher les commandes en attente" />
-                    </tooltip>
-                </Button>
-
-                <Button onAction="#handleValidees" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.3), 10, 0, 0, 0);" text="✅ Validées">
-                    <tooltip>
-                        <Tooltip text="Afficher les commandes validées" />
-                    </tooltip>
-                </Button>
-
-                <Button onAction="#handleRefusees" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.3), 10, 0, 0, 0);" text="❌ Refusées">
-                    <tooltip>
-                        <Tooltip text="Afficher les commandes refusées" />
-                    </tooltip>
-                </Button>
-
-                <Button onAction="#handleVoirToutes" style="-fx-background-color: #64748B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand;" text="📋 Toutes">
-                    <tooltip>
-                        <Tooltip text="Afficher toutes les commandes" />
-                    </tooltip>
-                </Button>
-            </children>
-        </HBox>
-    </children>
+    <!-- Boutons de filtre rapide -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button onAction="#handleEnAttente" styleClass="edit-button" text="⏳ En attente" prefHeight="38" prefWidth="120"/>
+        <Button onAction="#handleValidees" styleClass="validate-button" text="✅ Validées" prefHeight="38" prefWidth="120"/>
+        <Button onAction="#handleRefusees" styleClass="delete-button" text="❌ Refusées" prefHeight="38" prefWidth="120"/>
+        <Button onAction="#handleVoirToutes" styleClass="action-button" text="📋 Toutes" prefHeight="38" prefWidth="120"/>
+    </HBox>
 </VBox>

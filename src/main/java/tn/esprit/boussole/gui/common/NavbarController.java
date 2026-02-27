@@ -23,13 +23,15 @@ public class NavbarController implements Initializable {
 
     @FXML private Label lblPanelType;
     @FXML private Label lblPageTitle;
+    @FXML private Label lblPageSubtitle;
     @FXML private Label lblUsername;
+    @FXML private Label lblAvatar;
     @FXML private StackPane contentArea;
     @FXML private VBox menuContainer;
     @FXML private Button btnLogout;
 
     private String userType; // "Franchise" ou "Siege"
-    private int userId = 1; // À remplacer par l'ID de session
+    private int userId = 1;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -38,8 +40,29 @@ public class NavbarController implements Initializable {
 
     public void setUserType(String type) {
         this.userType = type;
-        lblPanelType.setText(type.equals("Siege") ? "PANEL SIÈGE" : "PANEL FRANCHISE");
-        lblUsername.setText(type.equals("Siege") ? "Admin Siège" : "Franchise Tunis");
+
+        // Mettre à jour l'affichage
+        if (lblPanelType != null) {
+            lblPanelType.setText(type.equals("Siege") ? "SIÈGE" : "FRANCHISE");
+        }
+
+        // Avatar avec initiales
+        String initiales = type.equals("Siege") ? "A" : "F";
+        if (lblAvatar != null) {
+            lblAvatar.setText(initiales);
+        }
+
+        // Sous-titre dynamique
+        if (lblPageSubtitle != null) {
+            lblPageSubtitle.setText(type.equals("Siege") ?
+                    "Gérez votre catalogue et les commandes" :
+                    "Achetez vos produits et suivez vos commandes");
+        }
+
+        if (lblUsername != null) {
+            lblUsername.setText(type.equals("Siege") ? "Admin Siège" : "Franchise Tunis");
+        }
+
         chargerMenu();
         chargerAccueil();
     }
@@ -49,21 +72,18 @@ public class NavbarController implements Initializable {
 
         // Titre PRINCIPAL
         Label principalLabel = new Label("PRINCIPAL");
-        principalLabel.setStyle("-fx-text-fill: #64748B; -fx-font-weight: bold;");
-        principalLabel.setPadding(new Insets(5, 0, 5, 10));
+        principalLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 10px; -fx-font-weight: 800; -fx-padding: 25 0 8 18; -fx-letter-spacing: 1.5;");
         menuContainer.getChildren().add(principalLabel);
 
         if ("Siege".equals(userType)) {
             // ========== MENU POUR LE SIÈGE ==========
-            ajouterBoutonMenu("/images/dashboard.png", "Tableau de bord", "dashboard", true);
+            ajouterBoutonMenu("/images/dashboard.png", "Tableau de bord", "dashboard", true); // désactivé par manque d'image
             ajouterBoutonMenu("/images/products.png", "Gestion Produits", "gestionCatalogue", true);
             ajouterBoutonMenu("/images/orders.png", "Commandes reçues", "commandesRecues", true);
-            ajouterBoutonMenu("/images/map.png", "Carte franchises", "carteFranchises", true); // NOUVEAU BOUTON
 
             // Section GESTION
-            Label gestionLabel = new Label("📌 GESTION");
-            gestionLabel.setStyle("-fx-text-fill: #64748B; -fx-font-weight: bold;");
-            gestionLabel.setPadding(new Insets(15, 0, 5, 10));
+            Label gestionLabel = new Label("GESTION");
+            gestionLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 10px; -fx-font-weight: 800; -fx-padding: 25 0 8 18; -fx-letter-spacing: 1.5;");
             menuContainer.getChildren().add(gestionLabel);
 
             ajouterBoutonMenu(null, "Franchises", "franchises", false);
@@ -71,25 +91,23 @@ public class NavbarController implements Initializable {
 
         } else {
             // ========== MENU POUR LA FRANCHISE ==========
-            ajouterBoutonMenu("/images/dashboard.png", "Tableau de bord", "dashboard", true);
+            ajouterBoutonMenu("/images/dashboard.png", "Tableau de bord", "dashboard", true); // désactivé par manque d'image
             ajouterBoutonMenu("/images/marketplace.png", "Marketplace", "catalogue", true);
             ajouterBoutonMenu("/images/cart.png", "Mon panier", "panier", true);
             ajouterBoutonMenu("/images/orders.png", "Mes commandes", "mesCommandes", true);
 
             // Section ACHATS
-            Label achatsLabel = new Label("📌 ACHATS");
-            achatsLabel.setStyle("-fx-text-fill: #64748B; -fx-font-weight: bold;");
-            achatsLabel.setPadding(new Insets(15, 0, 5, 10));
+            Label achatsLabel = new Label("ACHATS");
+            achatsLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 10px; -fx-font-weight: 800; -fx-padding: 25 0 8 18; -fx-letter-spacing: 1.5;");
             menuContainer.getChildren().add(achatsLabel);
 
             ajouterBoutonMenu(null, "Produits favoris", "favoris", false);
             ajouterBoutonMenu(null, "Historique", "historique", false);
         }
 
-        // Section FINANCES (commune)
-        Label financesLabel = new Label("📌 FINANCES");
-        financesLabel.setStyle("-fx-text-fill: #64748B; -fx-font-weight: bold;");
-        financesLabel.setPadding(new Insets(15, 0, 5, 10));
+        // Section FINANCES
+        Label financesLabel = new Label("FINANCES");
+        financesLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 10px; -fx-font-weight: 800; -fx-padding: 25 0 8 18; -fx-letter-spacing: 1.5;");
         menuContainer.getChildren().add(financesLabel);
 
         ajouterBoutonMenu(null, "Bilan", "bilan", false);
@@ -98,7 +116,7 @@ public class NavbarController implements Initializable {
 
     private void ajouterBoutonMenu(String imagePath, String texte, String actionId, boolean actif) {
         Button btn = new Button(texte);
-        btn.getStyleClass().add("menu-button");
+        btn.getStyleClass().add("nav-button");
         btn.setPrefHeight(45);
         btn.setMaxWidth(Double.MAX_VALUE);
         btn.setAlignment(javafx.geometry.Pos.BASELINE_LEFT);
@@ -107,30 +125,30 @@ public class NavbarController implements Initializable {
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
                 ImageView icon = new ImageView(new Image(getClass().getResourceAsStream(imagePath)));
-                icon.setFitHeight(20);
-                icon.setFitWidth(20);
+                icon.getStyleClass().add("nav-icon");
+                icon.setFitHeight(18);
+                icon.setFitWidth(18);
                 icon.setPreserveRatio(true);
                 btn.setGraphic(icon);
-                btn.setGraphicTextGap(15);
+                btn.setGraphicTextGap(12);
             } catch (Exception e) {
                 System.err.println("⚠️ Image non trouvée: " + imagePath);
-                // Ne pas planter, continuer sans image
             }
         }
 
         if (actif) {
             btn.setOnAction(e -> {
-                // Enlever la classe active de tous les boutons
+                // Enlever la classe selected de tous les boutons
                 menuContainer.getChildren().filtered(node -> node instanceof Button)
-                        .forEach(b -> ((Button) b).getStyleClass().remove("active"));
-                // Ajouter la classe active à ce bouton
-                btn.getStyleClass().add("active");
+                        .forEach(b -> ((Button) b).getStyleClass().remove("selected"));
+                // Ajouter la classe selected à ce bouton
+                btn.getStyleClass().add("selected");
                 // Appeler la méthode correspondante
                 handleMenuAction(actionId);
             });
         } else {
             btn.setDisable(true);
-            btn.setStyle("-fx-opacity: 0.5;");
+            btn.setOpacity(0.5);
             btn.setTooltip(new Tooltip("Bientôt disponible"));
         }
 
@@ -141,62 +159,57 @@ public class NavbarController implements Initializable {
         String basePath = "/tn/esprit/boussole/views/";
         String vuePath = "";
         String titre = "";
+        String sousTitre = "";
 
         if ("Siege".equals(userType)) {
-            // ========== VUES POUR LE SIÈGE ==========
             switch (actionId) {
-                case "dashboard":
-                    vuePath = "siege/SiegeMainView.fxml";
-                    titre = "Tableau de bord";
-                    break;
                 case "gestionCatalogue":
                     vuePath = "siege/GestionCatalogueView.fxml";
                     titre = "Gestion du catalogue";
+                    sousTitre = "Gérez vos produits et stocks";
                     break;
                 case "commandesRecues":
                     vuePath = "siege/CommandesRecuesView.fxml";
                     titre = "Commandes reçues";
+                    sousTitre = "Validez ou refusez les commandes";
                     break;
-                case "carteFranchises":
-                    // Pour la carte, on ouvre une nouvelle fenêtre au lieu de charger dans contentArea
-                    ouvrirCarteFranchises();
-                    return; // Ne pas continuer avec chargerVue
                 default:
                     return;
             }
         } else {
-            // ========== VUES POUR LA FRANCHISE ==========
             switch (actionId) {
-                case "dashboard":
-                    vuePath = "franchise/FranchiseMainView.fxml";
-                    titre = "Tableau de bord";
-                    break;
                 case "catalogue":
                     vuePath = "franchise/CatalogueView.fxml";
                     titre = "Marketplace";
+                    sousTitre = "Découvrez tous nos produits";
                     break;
                 case "panier":
                     vuePath = "franchise/PanierView.fxml";
                     titre = "Mon panier";
+                    sousTitre = "Consultez et validez votre panier";
                     break;
                 case "mesCommandes":
                     vuePath = "franchise/MesCommandesView.fxml";
                     titre = "Mes commandes";
+                    sousTitre = "Suivez l'état de vos commandes";
                     break;
                 default:
                     return;
             }
         }
 
-        chargerVue(basePath + vuePath, titre);
+        chargerVue(basePath + vuePath, titre, sousTitre);
     }
 
-    private void chargerVue(String fxmlPath, String titre) {
+    private void chargerVue(String fxmlPath, String titre, String sousTitre) {
         try {
             Parent vue = FXMLLoader.load(getClass().getResource(fxmlPath));
             contentArea.getChildren().clear();
             contentArea.getChildren().add(vue);
             lblPageTitle.setText(titre);
+            if (lblPageSubtitle != null) {
+                lblPageSubtitle.setText(sousTitre);
+            }
             System.out.println("✅ Chargé: " + fxmlPath);
         } catch (IOException e) {
             e.printStackTrace();
@@ -204,29 +217,15 @@ public class NavbarController implements Initializable {
         }
     }
 
-    private void ouvrirCarteFranchises() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/boussole/views/siege/CarteFranchisesView.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("🗺️ Carte des franchises - Boussole");
-            stage.setScene(new Scene(root, 1200, 800));
-            stage.show();
-
-            System.out.println("✅ Carte des franchises ouverte dans une nouvelle fenêtre");
-
-        } catch (IOException e) {
-            System.err.println("❌ Erreur ouverture carte: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private void chargerAccueil() {
         if ("Siege".equals(userType)) {
-            chargerVue("/tn/esprit/boussole/views/siege/SiegeMainView.fxml", "Tableau de bord");
+            chargerVue("/tn/esprit/boussole/views/siege/SiegeMainView.fxml",
+                    "Tableau de bord",
+                    "Vue d'ensemble de votre activité");
         } else {
-            chargerVue("/tn/esprit/boussole/views/franchise/FranchiseMainView.fxml", "Tableau de bord");
+            chargerVue("/tn/esprit/boussole/views/franchise/FranchiseMainView.fxml",
+                    "Tableau de bord",
+                    "Bienvenue sur votre espace");
         }
     }
 }

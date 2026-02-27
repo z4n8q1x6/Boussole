@@ -6,109 +6,65 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="20.0" style="-fx-background-color: #0B0F1A;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.siege.CommandesRecuesController">
+<VBox spacing="20" styleClass="content-area" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.siege.CommandesRecuesController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="25" left="25" right="25" top="25"/>
     </padding>
 
-    <children>
-        <!-- En-tête -->
-        <HBox alignment="CENTER_LEFT" spacing="15.0">
-            <children>
-                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
-                    <Image url="@/images/orders.png" />
-                </ImageView>
-                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Commandes reçues" />
-            </children>
-        </HBox>
+    <!-- En-tête -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <ImageView fitHeight="28" fitWidth="28" preserveRatio="true">
+            <Image url="@/images/orders.png" />
+        </ImageView>
+        <Label styleClass="page-title" text="Commandes reçues" />
+    </HBox>
 
-        <!-- Statistiques -->
-        <HBox spacing="20.0">
-            <children>
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="130">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Total" />
-                        <Label fx:id="totalCommandesLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
-                    </children>
-                </VBox>
+    <!-- Statistiques - SANS wrapWidth -->
+    <HBox spacing="15">
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="TOTAL" />
+            <Label fx:id="totalCommandesLabel" styleClass="stat-value" text="0" />
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="EN ATTENTE" />
+            <Label fx:id="totalAttenteLabel" styleClass="stat-value" text="0" style="-fx-text-fill: #F59E0B;" />
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="VALIDÉES" />
+            <Label fx:id="totalValideesLabel" styleClass="stat-value" text="0" style="-fx-text-fill: #10B981;" />
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="REFUSÉES" />
+            <Label fx:id="totalRefuseesLabel" styleClass="stat-value" text="0" style="-fx-text-fill: #EF4444;" />
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label styleClass="stat-label" text="CHIFFRE AFFAIRES" />
+            <Label fx:id="chiffreAffairesLabel" styleClass="stat-value" text="0 DT" />
+        </VBox>
+    </HBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="130">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="En attente" />
-                        <Label fx:id="totalAttenteLabel" style="-fx-text-fill: #F59E0B; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
-                    </children>
-                </VBox>
+    <!-- Filtres -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Label text="Filtrer par statut:" style="-fx-text-fill: #94A3B8;" />
+        <ComboBox fx:id="filtreStatutCombo" prefWidth="200" prefHeight="35"
+                  style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;" />
+        <Button onAction="#handleRefresh" styleClass="action-button" text="Rafraîchir" />
+        <Button onAction="#handleEnAttente" styleClass="edit-button" text="En attente" />
+    </HBox>
 
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="130">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Validées" />
-                        <Label fx:id="totalValideesLabel" style="-fx-text-fill: #10B981; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
-                    </children>
-                </VBox>
-
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="130">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Refusées" />
-                        <Label fx:id="totalRefuseesLabel" style="-fx-text-fill: #EF4444; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
-                    </children>
-                </VBox>
-
-                <VBox style="-fx-background-color: #1E293B; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);" prefWidth="180">
-                    <children>
-                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Chiffre d'affaires" />
-                        <Label fx:id="chiffreAffairesLabel" style="-fx-text-fill: #0EA5E9; -fx-font-size: 28px; -fx-font-weight: bold;" text="0 DT" />
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
-
-        <!-- Filtres -->
-        <HBox spacing="15.0" alignment="CENTER_LEFT">
-            <children>
-                <Label style="-fx-text-fill: #94A3B8;" text="Filtrer par statut:" />
-                <ComboBox fx:id="filtreStatutCombo" prefWidth="180" style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 8; -fx-background-radius: 8;" />
-
-                <Button onAction="#handleRefresh" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 18; -fx-background-radius: 8; -fx-cursor: hand;">
-                    <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
-                            <Image url="@/images/refresh.png" />
-                        </ImageView>
-                    </graphic>
-                    <text>  Rafraîchir</text>
-                    <tooltip>
-                        <Tooltip text="Actualiser la liste" />
-                    </tooltip>
-                </Button>
-
-                <Button onAction="#handleEnAttente" style="-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 18; -fx-background-radius: 8; -fx-cursor: hand;">
-                    <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true">
-                            <Image url="@/images/pending.png" />
-                        </ImageView>
-                    </graphic>
-                    <text>  En attente</text>
-                    <tooltip>
-                        <Tooltip text="Afficher les commandes en attente" />
-                    </tooltip>
-                </Button>
-            </children>
-        </HBox>
-
-        <!-- Tableau des commandes -->
-        <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="colFranchise" prefWidth="200" text="Franchise" />
-                <TableColumn fx:id="colDate" prefWidth="180" text="Date" styleClass="date-column" />
-                <TableColumn fx:id="colTotal" prefWidth="140" text="Total" styleClass="montant-column" />
-                <TableColumn fx:id="colStatut" prefWidth="140" text="Statut" />
-                <TableColumn fx:id="colActions" prefWidth="240" text="Actions" />
-            </columns>
-        </TableView>
-    </children>
+    <!-- Tableau des commandes -->
+    <TableView fx:id="commandeTable" VBox.vgrow="ALWAYS" prefHeight="450">
+        <columns>
+            <TableColumn fx:id="colFranchise" prefWidth="200" text="FRANCHISE" />
+            <TableColumn fx:id="colDate" prefWidth="180" text="DATE" />
+            <TableColumn fx:id="colTotal" prefWidth="140" text="TOTAL" />
+            <TableColumn fx:id="colStatut" prefWidth="140" text="STATUT" />
+            <TableColumn fx:id="colActions" prefWidth="240" text="ACTIONS" />
+        </columns>
+    </TableView>
 </VBox>
