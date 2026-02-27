@@ -258,76 +258,126 @@
     -fx-border-width: 1;
 }
 
-/* TABLE VIEW */
+/* ============================= */
+/* TABLE VIEW – PREMIUM STYLING  */
+/* ============================= */
 .table-view {
     -fx-background-color: transparent;
     -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-table-cell-border-color: transparent;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: rgba(255, 255, 255, 0.015);
+    -fx-background-color: rgba(6, 8, 15, 0.95);
 }
 
 .table-view .column-header,
 .table-view .filler {
     -fx-background-color: transparent;
-    -fx-border-color: rgba(255, 255, 255, 0.06);
+    -fx-border-color: rgba(0, 229, 204, 0.15);
     -fx-border-width: 0 0 1 0;
     -fx-size: 44px;
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #8892A4;
-    -fx-font-size: 10px;
+    -fx-text-fill: #00E5CC;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-padding: 0 24 0 24;
+    -fx-padding: 0 16 0 16;
+    -fx-opacity: 0.85;
 }
 
+/* --- Lignes alternées (zebra) --- */
 .table-row-cell {
     -fx-background-color: transparent;
-    -fx-border-color: rgba(255, 255, 255, 0.04);
+    -fx-border-color: rgba(255, 255, 255, 0.03);
     -fx-border-width: 0 0 1 0;
 }
 
+.table-row-cell:odd {
+    -fx-background-color: rgba(15, 23, 42, 0.5);
+}
+
+/* --- Hover – lueur subtile teal --- */
 .table-row-cell:hover {
-    -fx-background-color: rgba(0, 229, 204, 0.1);
-    /* Effet survol ligne */
+    -fx-background-color: rgba(0, 229, 204, 0.08);
     -fx-cursor: hand;
 }
 
+/* --- Sélection – bandeau cyan lumineux --- */
 .table-row-cell:selected {
-    -fx-background-color: rgba(0, 229, 204, 0.07);
+    -fx-background-color: linear-gradient(to right, rgba(0, 229, 204, 0.22), rgba(0, 180, 216, 0.15));
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.25), 8, 0, 0, 0);
 }
 
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #00E5CC;
+    -fx-font-weight: bold;
+}
+
+/* --- Cellules normales --- */
 .table-cell {
-    -fx-text-fill: #E8EDF5;
+    -fx-text-fill: #CBD5E1;
     -fx-font-size: 13px;
-    -fx-padding: 14 24 14 24;
+    -fx-padding: 12 16 12 16;
     -fx-border-width: 0;
     -fx-background-color: transparent;
 }
 
+/* --- Champ éditable inline (TextField) – glow néon --- */
 .table-view .text-field-table-cell .text-field {
-    -fx-background-color: #0F172A;
+    -fx-background-color: #0a0f1e;
     -fx-text-fill: #00E5CC;
     -fx-border-color: #00E5CC;
     -fx-border-width: 2px;
-    -fx-border-radius: 4px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.5), 12, 0, 0, 0);
+    -fx-padding: 4 8;
 }
 
+/* --- ComboBox inline (dans le tableau) --- */
+.table-view .combo-box-table-cell .combo-box,
+.table-view .combo-box-table-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #CBD5E1;
+}
+
+.table-view .combo-box-table-cell .combo-box:showing,
+.table-view .combo-box-table-cell:selected .combo-box {
+    -fx-background-color: #0a0f1e;
+    -fx-border-color: #00E5CC;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.45), 10, 0, 0, 0);
+}
+
+/* --- Context menu --- */
 .table-view .context-menu {
-    -fx-background-color: #0F172A;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-radius: 8px;
-    -fx-padding: 5px;
+    -fx-background-color: #0B1120;
+    -fx-border-color: rgba(0, 229, 204, 0.3);
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.2), 15, 0, 0, 4);
 }
 
 .table-view .menu-item:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-color: rgba(0, 229, 204, 0.15);
+    -fx-background-radius: 6px;
 }
 
 .table-view .menu-item .label {
-    -fx-text-fill: white;
+    -fx-text-fill: #E2E8F0;
+}
+
+/* Placeholder (table vide) */
+.table-view .placeholder .label {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+    -fx-font-style: italic;
 }
 
 /* --- TAB PANE STYLING --- */
@@ -456,24 +506,63 @@
 
 /* ListView Franchise - Gestion Budgets */
 .franchise-list {
-    -fx-background-color: #112240;
-    -fx-border-color: #233554;
+    -fx-background-color: #0B1120;
+    -fx-border-color: rgba(0, 229, 204, 0.3);
     -fx-border-width: 1px;
-    -fx-border-radius: 4px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 2;
 }
 
 .franchise-list .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-padding: 8px 12px;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 10px 14px;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-transition: background-color 0.2s, text-fill 0.2s;
 }
 
 .franchise-list .list-cell:hover {
-    -fx-background-color: #233554;
+    -fx-background-color: rgba(0, 229, 204, 0.1);
+    -fx-text-fill: #00E5CC;
 }
 
 .franchise-list .list-cell:selected {
-    -fx-background-color: #3b82f6;
-    /* Couleur de sélection bleue */
+    -fx-background-color: linear-gradient(to right, rgba(0, 229, 204, 0.2), transparent);
+    -fx-text-fill: #00E5CC;
+    -fx-font-weight: bold;
+    -fx-border-color: #00E5CC;
+    -fx-border-width: 0 0 0 3px;
+}
+
+/* === ENHANCEMENTS FOR GESTION BUDGETS === */
+
+/* Form Elements (ComboBox & TextField) */
+.combo-box,
+.text-field {
+    -fx-background-color: #0B1120;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-text-fill: white;
+    -fx-padding: 4px 8px;
+    -fx-transition: border-color 0.3s, effect 0.3s;
+}
+
+.combo-box:hover,
+.text-field:hover {
+    -fx-border-color: rgba(0, 229, 204, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.2), 10, 0, 0, 0);
+}
+
+.combo-box:focused,
+.text-field:focused {
+    -fx-border-color: #00E5CC;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.4), 12, 0, 0, 0);
+}
+
+
+.combo-box .list-cell {
     -fx-text-fill: white;
 }

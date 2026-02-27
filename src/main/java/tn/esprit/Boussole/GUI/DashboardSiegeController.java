@@ -8,11 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,6 +22,8 @@ import tn.esprit.Boussole.Services.ServiceBilan;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +32,16 @@ import java.util.ResourceBundle;
 public class DashboardSiegeController implements Initializable {
 
     @FXML
-    private BarChart<String, Number> barChart;
+    private BarChart<String, Number> barChartComparatif;
 
     @FXML
     private Label lblSolde;
 
     @FXML
-    private CategoryAxis xAxis;
+    private CategoryAxis xAxisComp;
 
     @FXML
-    private NumberAxis yAxis;
+    private NumberAxis yAxisComp;
 
     @FXML
     private Button btnDashboard;
@@ -100,7 +98,9 @@ public class DashboardSiegeController implements Initializable {
             // Initialiser la navigation
             btnBudgets.setOnAction(e -> changerPage(e, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
             btnBilans.setOnAction(e -> changerPage(e, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
-            btnRefresh.setOnAction(e -> chargerDonnees());
+            if (btnRefresh != null) {
+                btnRefresh.setOnAction(e -> chargerDonnees());
+            }
 
             // Chargement initial
             chargerDonnees();
@@ -112,23 +112,99 @@ public class DashboardSiegeController implements Initializable {
 
     private void chargerDonnees() {
         progress.setVisible(true);
-        btnRefresh.setDisable(true);
+            if (btnRefresh != null) btnRefresh.setDisable(true);
+
+        // DEBUG : vérifier les tables existantes
+        try {
+            java.sql.Connection testCnx = tn.esprit.Boussole.Utilis.MyBDConnexion.getInstance().getCnx();
+            System.out.println("=== DEBUG: Connexion DB active ? " + (testCnx != null && !testCnx.isClosed()));
+            java.sql.DatabaseMetaData meta = testCnx.getMetaData();
+            java.sql.ResultSet tables = meta.getTables(null, null, "%transaction%", null);
+            System.out.println("=== DEBUG: Tables contenant 'transaction' :");
+            while (tables.next()) {
+                System.out.println("    -> Table: " + tables.getString("TABLE_NAME"));
+            }
+            tables.close();
+            // Test direct
+            java.sql.Statement stmt = testCnx.createStatement();
+            java.sql.ResultSet rsTest = stmt.executeQuery("SELECT COUNT(*) as cnt FROM transaction");
+            if (rsTest.next()) {
+                System.out.println("=== DEBUG: Nombre de lignes dans 'transaction' : " + rsTest.getInt("cnt"));
+            }
+            rsTest.close();
+            stmt.close();
+        } catch (Exception dbg) {
+            System.out.println("=== DEBUG ERREUR: " + dbg.getMessage());
+            // Peut-être la table s'appelle autrement ? Essayons 'transactions'
+            try {
+                java.sql.Connection testCnx2 = tn.esprit.Boussole.Utilis.MyBDConnexion.getInstance().getCnx();
+                java.sql.Statement stmt2 = testCnx2.createStatement();
+                java.sql.ResultSet rsTest2 = stmt2.executeQuery("SELECT COUNT(*) as cnt FROM transactions");
+                if (rsTest2.next()) {
+                    System.out.println("=== DEBUG: Nombre de lignes dans 'transactions' (PLURIEL) : " + rsTest2.getInt("cnt"));
+                    System.out.println("=== !!! LA TABLE S'APPELLE 'transactions' PAS 'transaction' !!!");
+                }
+                rsTest2.close();
+                stmt2.close();
+            } catch (Exception dbg2) {
+                System.out.println("=== DEBUG: 'transactions' non plus : " + dbg2.getMessage());
+            }
+        }
 
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                // 1. Récupération des données financières globales
+                // 1. Récupération des données financières globales (KPI)
                 double soldeTotal = serviceTransaction.getSoldeTotalReseau();
                 double totalRevenus = serviceTransaction.getTotalRevenus();
                 double totalDepenses = serviceTransaction.getTotalDepenses();
 
-                // 2. Récupération données Graphique (3 derniers mois)
-                // Ex: 10 = Octobre (juste pour exemple, idéalement dynamique)
-                Map<String, Double[]> graphData = serviceBilan.getDonneesGraphique(3);
+                System.out.println("=== DEBUG Dashboard: Solde=" + soldeTotal + " Revenus=" + totalRevenus + " Depenses=" + totalDepenses);
+
+                // 2. Réel vs Budget par mois (3 derniers mois) – TOUT le réseau
+                java.sql.Connection cnx = tn.esprit.Boussole.Utilis.MyBDConnexion.getInstance().getCnx();
+                Map<String, Double[]> reelVsBudget = new java.util.LinkedHashMap<>();
+                String[] nomsMois = {"", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                                     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"};
+
+                for (int i = 2; i >= 0; i--) {
+                    java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
+                    c.add(java.util.Calendar.MONTH, -i);
+                    int month = c.get(java.util.Calendar.MONTH) + 1;
+                    int year = c.get(java.util.Calendar.YEAR);
+                    String key = nomsMois[month] + " " + year;
+
+                    // Réel : somme de toutes les transactions du mois
+                    double totalReel = 0.0;
+                    String sqlReel = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
+                    try (PreparedStatement ps = cnx.prepareStatement(sqlReel)) {
+                        ps.setInt(1, month);
+                        ps.setInt(2, year);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) totalReel = rs.getDouble("total");
+                        }
+                    }
+
+                    // Budget : somme des montants cibles du mois
+                    double totalBudget = 0.0;
+                    String sqlBudget = "SELECT COALESCE(SUM(montant_cible), 0.0) AS total FROM budget_previsionnel WHERE mois = ? AND annee = ?";
+                    try (PreparedStatement ps = cnx.prepareStatement(sqlBudget)) {
+                        ps.setInt(1, month);
+                        ps.setInt(2, year);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) totalBudget = rs.getDouble("total");
+                        }
+                    }
+
+                    reelVsBudget.put(key, new Double[]{totalReel, totalBudget});
+                    System.out.println("=== DEBUG: " + key + " -> Réel=" + totalReel + " Budget=" + totalBudget);
+                }
 
                 // 3. Analyse IA (Clustering)
                 List<FranchiseData> rawData = serviceTransaction.getDonneesFinancieresGlobales();
+                System.out.println("=== DEBUG Dashboard: rawData franchises=" + rawData.size());
                 Map<Integer, List<FranchiseData>> clusters = serviceClustering.analyserDonnees(rawData, 3);
+                System.out.println("=== DEBUG Dashboard: clusters=" + clusters.size());
 
                 // Mise à jour de l'UI sur le thread JavaFX
                 Platform.runLater(() -> {
@@ -137,14 +213,14 @@ public class DashboardSiegeController implements Initializable {
                     lblRevenus.setText(String.format("%.2f TND", totalRevenus));
                     lblDepenses.setText(String.format("%.2f TND", totalDepenses));
 
-                    // BarChart
-                    updateBarChart(graphData);
+                    // BarChart Réel vs Budget
+                    updateBarChart(reelVsBudget);
 
                     // ScatterChart (IA)
                     updateScatterChart(clusters);
 
                     progress.setVisible(false);
-                    btnRefresh.setDisable(false);
+                    if (btnRefresh != null) btnRefresh.setDisable(false);
                 });
                 return null;
             }
@@ -154,7 +230,9 @@ public class DashboardSiegeController implements Initializable {
         task.setOnFailed(e -> {
             Platform.runLater(() -> {
                 progress.setVisible(false);
-                btnRefresh.setDisable(false);
+                if (btnRefresh != null) btnRefresh.setDisable(false);
+                System.out.println("=== DEBUG TASK FAILED: " + task.getException().getMessage());
+                task.getException().printStackTrace();
                 afficherMessageErreur("Erreur lors du chargement des données : " + task.getException().getMessage());
             });
         });
@@ -163,20 +241,24 @@ public class DashboardSiegeController implements Initializable {
     }
 
     private void updateBarChart(Map<String, Double[]> data) {
-        barChart.getData().clear();
+        barChartComparatif.getData().clear();
 
-        XYChart.Series<String, Number> seriesRevenus = new XYChart.Series<>();
-        seriesRevenus.setName("Revenus");
+        XYChart.Series<String, Number> seriesReel = new XYChart.Series<>();
+        seriesReel.setName("Réel (Total Réseau)");
 
-        XYChart.Series<String, Number> seriesDepenses = new XYChart.Series<>();
-        seriesDepenses.setName("Dépenses");
+        XYChart.Series<String, Number> seriesBudget = new XYChart.Series<>();
+        seriesBudget.setName("Budget Prévu (Réseau)");
 
         for (Map.Entry<String, Double[]> entry : data.entrySet()) {
-            seriesRevenus.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[0]));
-            seriesDepenses.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[1]));
+            seriesReel.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[0]));
+            seriesBudget.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[1]));
         }
 
-        barChart.getData().addAll(seriesRevenus, seriesDepenses);
+        barChartComparatif.getData().addAll(seriesReel, seriesBudget);
+
+        // Rotation des labels pour meilleure lisibilité
+        xAxisComp.setTickLabelRotation(-20);
+        xAxisComp.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 12));
     }
 
     private void updateScatterChart(Map<Integer, List<FranchiseData>> clusters) {

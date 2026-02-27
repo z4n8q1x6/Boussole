@@ -103,10 +103,11 @@
                                 <!-- Full-width BarChart Comparatif Réel vs Budget -->
                                 <VBox spacing="10" styleClass="kpi-card" style="-fx-padding:20;" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label text="Réel vs Budget (Derniers 3 mois)" style="-fx-font-weight:bold; -fx-text-fill:white; -fx-font-size:14px;"/>
+                                        <Label text="Réel vs Budget – Réseau Global (3 derniers mois)" style="-fx-font-weight:bold; -fx-text-fill:white; -fx-font-size:14px;"/>
+                                        <Label text="Comparaison entre les montants réels (transactions) et les budgets prévisionnels de toutes les franchises" style="-fx-font-size:11px; -fx-text-fill: #94A3B8; -fx-wrap-text: true;"/>
                                         <BarChart fx:id="barChartComparatif" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" prefWidth="Infinity">
                                             <xAxis>
-                                                <CategoryAxis fx:id="xAxisComp" label="Mois" />
+                                                <CategoryAxis fx:id="xAxisComp" label="Période" />
                                             </xAxis>
                                             <yAxis>
                                                 <NumberAxis fx:id="yAxisComp" label="Montant (TND)" />
