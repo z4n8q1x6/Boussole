@@ -1,0 +1,240 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 165675008 bytes. Error detail: G1 virtual space
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   This process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3703), pid=23004, tid=18540
+#
+# JRE version:  (23.0.1+11) (build )
+# Java VM: OpenJDK 64-Bit Server VM (23.0.1+11-39, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.1\lib\idea_rt.jar=59107 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 org.example.Launcher
+
+Host: AMD Ryzen 5 5600H with Radeon Graphics         , 12 cores, 9G,  Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+Time: Fri Feb 27 13:09:21 2026 Afr. centrale Ouest elapsed time: 0.012634 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000297e6df9730):  JavaThread "Unknown thread" [_thread_in_vm, id=18540, stack(0x000000d517500000,0x000000d517600000) (1024K)]
+
+Stack: [0x000000d517500000,0x000000d517600000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6e08b9]  (no source info available)
+V  [jvm.dll+0x87dc83]  (no source info available)
+V  [jvm.dll+0x88010e]  (no source info available)
+V  [jvm.dll+0x8807e3]  (no source info available)
+V  [jvm.dll+0x27aee6]  (no source info available)
+V  [jvm.dll+0x6dd1c5]  (no source info available)
+V  [jvm.dll+0x6d104a]  (no source info available)
+V  [jvm.dll+0x35b3ea]  (no source info available)
+V  [jvm.dll+0x3637f6]  (no source info available)
+V  [jvm.dll+0x34fd5e]  (no source info available)
+V  [jvm.dll+0x34fff8]  (no source info available)
+V  [jvm.dll+0x3289cc]  (no source info available)
+V  [jvm.dll+0x32966e]  (no source info available)
+V  [jvm.dll+0x844355]  (no source info available)
+V  [jvm.dll+0x3b9848]  (no source info available)
+V  [jvm.dll+0x82d14c]  (no source info available)
+V  [jvm.dll+0x454d4e]  (no source info available)
+V  [jvm.dll+0x456bd1]  (no source info available)
+C  [jli.dll+0x52a3]  (no source info available)
+C  [ucrtbase.dll+0x21bb2]  (no source info available)
+C  [KERNEL32.DLL+0x17374]  (no source info available)
+C  [ntdll.dll+0x4cc91]  (no source info available)
+
+Lock stack of current Java thread (top to bottom):
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007ff846c33618, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+Total: 0
+
+Other Threads:
+  0x00000297e6e45a40 WorkerThread "GC Thread#0"                     [id=13368, stack(0x000000d517600000,0x000000d517700000) (1024K)]
+  0x00000297e6e4e270 ConcurrentGCThread "G1 Main Marker"            [id=21560, stack(0x000000d517700000,0x000000d517800000) (1024K)]
+  0x00000297e6e4ec90 WorkerThread "G1 Conc#0"                       [id=20396, stack(0x000000d517800000,0x000000d517900000) (1024K)]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ff84637bfba]
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007ff846cb3a10] Heap_lock - owner thread: 0x00000297e6df9730
+
+Heap address: 0x0000000762400000, size: 2524 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) mapped at: [0x0000000000000000-0x0000000000000000-0x0000000000000000), size 0, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 1.
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0, Narrow klass range: 0x0
+
+GC Precious Log:
+ CardTable entry size: 512
+ Card Set container configuration: InlinePtr #cards 4 size 8 Array Of Cards #cards 16 size 48 Howl #buckets 8 coarsen threshold 3686 Howl Bitmap #cards 512 size 80 coarsen threshold 460 Card regions per heap region 1 cards per card region 4096
+
+Heap:
+ garbage-first heap   total reserved 2584576K, committed 0K, used 0K [0x0000000762400000, 0x0000000800000000)
+  region size 2048K, 0 young (0K), 0 survivors (0K)
+
+[error occurred during error reporting (printing heap information), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ff84677c3c9]
+GC Heap History (0 events):
+No events
+
+Dll operation events (1 events):
+Event: 0.009 Loaded shared library C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\java.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes loaded (0 events):
+No events
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Memory protections (0 events):
+No events
+
+Nmethod flushes (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff63b9d0000 - 0x00007ff63b9de000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\java.exe
+0x00007ff8ab490000 - 0x00007ff8ab688000 	C:\Windows\SYSTEM32\ntdll.dll
+0x00007ff8ab2b0000 - 0x00007ff8ab372000 	C:\Windows\System32\KERNEL32.DLL
+0x00007ff8a8f60000 - 0x00007ff8a9256000 	C:\Windows\System32\KERNELBASE.dll
+0x00007ff8a8b20000 - 0x00007ff8a8c20000 	C:\Windows\System32\ucrtbase.dll
+0x00007ff896d50000 - 0x00007ff896d67000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\jli.dll
+0x00007ff8837f0000 - 0x00007ff88380b000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\VCRUNTIME140.dll
+0x00007ff8aaa00000 - 0x00007ff8aaba1000 	C:\Windows\System32\USER32.dll
+0x00007ff897ee0000 - 0x00007ff89817b000 	C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256\COMCTL32.dll
+0x00007ff8a8d30000 - 0x00007ff8a8d52000 	C:\Windows\System32\win32u.dll
+0x00007ff8aaf80000 - 0x00007ff8ab01e000 	C:\Windows\System32\msvcrt.dll
+0x00007ff8aaf50000 - 0x00007ff8aaf7b000 	C:\Windows\System32\GDI32.dll
+0x00007ff8a9390000 - 0x00007ff8a94a9000 	C:\Windows\System32\gdi32full.dll
+0x00007ff8a8ec0000 - 0x00007ff8a8f5d000 	C:\Windows\System32\msvcp_win.dll
+0x00007ff8a9b00000 - 0x00007ff8a9b2f000 	C:\Windows\System32\IMM32.DLL
+0x00007ff896d40000 - 0x00007ff896d4c000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\vcruntime140_1.dll
+0x00007ff8718a0000 - 0x00007ff87192e000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\msvcp140.dll
+0x00007ff846040000 - 0x00007ff846d8f000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\server\jvm.dll
+0x00007ff8aad00000 - 0x00007ff8aadb1000 	C:\Windows\System32\ADVAPI32.dll
+0x00007ff8aac60000 - 0x00007ff8aacff000 	C:\Windows\System32\sechost.dll
+0x00007ff8aae30000 - 0x00007ff8aaf50000 	C:\Windows\System32\RPCRT4.dll
+0x00007ff8a9260000 - 0x00007ff8a9287000 	C:\Windows\System32\bcrypt.dll
+0x00007ff8aadc0000 - 0x00007ff8aae2b000 	C:\Windows\System32\WS2_32.dll
+0x00007ff8a8980000 - 0x00007ff8a89cb000 	C:\Windows\SYSTEM32\POWRPROF.dll
+0x00007ff89c8d0000 - 0x00007ff89c8f7000 	C:\Windows\SYSTEM32\WINMM.dll
+0x00007ff89e9c0000 - 0x00007ff89e9ca000 	C:\Windows\SYSTEM32\VERSION.dll
+0x00007ff8a8960000 - 0x00007ff8a8972000 	C:\Windows\SYSTEM32\UMPDC.dll
+0x00007ff8a6990000 - 0x00007ff8a69a2000 	C:\Windows\SYSTEM32\kernel.appcore.dll
+0x00007ff8837e0000 - 0x00007ff8837ea000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\jimage.dll
+0x00007ff89bef0000 - 0x00007ff89c0f1000 	C:\Windows\SYSTEM32\DBGHELP.DLL
+0x00007ff891d40000 - 0x00007ff891d74000 	C:\Windows\SYSTEM32\dbgcore.DLL
+0x00007ff8a8ca0000 - 0x00007ff8a8d22000 	C:\Windows\System32\bcryptPrimitives.dll
+0x00007ff883650000 - 0x00007ff88365f000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\instrument.dll
+0x00007ff8837c0000 - 0x00007ff8837de000 	C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\java.dll
+0x00007ff8ab080000 - 0x00007ff8ab1ab000 	C:\Windows\System32\ole32.dll
+0x00007ff8a9c60000 - 0x00007ff8a9fb4000 	C:\Windows\System32\combase.dll
+0x00007ff8aa1e0000 - 0x00007ff8aa950000 	C:\Windows\System32\SHELL32.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin;C:\Windows\SYSTEM32;C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256;C:\Users\LENOVO\.jdks\openjdk-23.0.1\bin\server
+
+VM Arguments:
+jvm_args: -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.1\lib\idea_rt.jar=59107 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 
+java_command: org.example.Launcher
+java_class_path (initial): C:\Users\LENOVO\Desktop\pret_investissement\pret_inv\target\classes;C:\Users\LENOVO\.m2\repository\com\mysql\mysql-connector-j\9.2.0\mysql-connector-j-9.2.0.jar;C:\Users\LENOVO\.m2\repository\com\google\protobuf\protobuf-java\4.29.0\protobuf-java-4.29.0.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-controls\17.0.12\javafx-controls-17.0.12.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-controls\17.0.12\javafx-controls-17.0.12-win.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-fxml\17.0.12\javafx-fxml-17.0.12.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-fxml\17.0.12\javafx-fxml-17.0.12-win.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-graphics\17.0.12\javafx-graphics-17.0.12.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-graphics\17.0.12\javafx-graphics-17.0.12-win.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-base\17.0.12\javafx-base-17.0.12.jar;C:\Users\LENOVO\.m2\repository\org\openjfx\javafx-base\17.0.12\javafx-base-17.0.12-win.jar;C:\Users\LENOVO\.m2\repository\com\itextpdf\kernel\7.2.5\kernel-7.2.5.jar;C:\Users\LENOVO\.m2\repository\org\bouncycastle\bcpkix-jdk15on\1.70\bcpkix-jdk15on-1.70.jar;C:\Users\LENOVO\.m2\repository\org\bouncycastle\bcutil-jdk15on\1.70\bcutil-jdk15on-1.70.jar;C:\Users\LENOVO\.m2\repository\org\bouncycastle\bcprov-jdk15on\1.70\bcprov-jdk15on-1.70.jar;C:\Users\LENOVO\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\LENOVO\.m2\repository\com\itextpdf\layout\7.2.5\layout-7.2.5.jar;C:\Users\LENOVO\.m2\repository\com\itextpdf\io\7.2.5\io-7.2.5.jar;C:\Users\LENOVO\.m2\repository\com\itextpdf\commons\7.2.5\commons-7.2.5.jar;C:\Users\LENOVO\.m2\repository\com\sun\mail\jakarta.mail\2.0.1\jakarta.mail-2.0.1.jar;C:\Users\LENOVO\.m2\repository\com\sun\activation\jakarta.activation\2.0.1\jakarta.activation-2.0.1.jar;C:\Users\LENOVO\.m2\repository\jakarta\mail\jakarta.mail-api\2.1.2\jakarta.mail-api-2.1.2.jar;C:\Users\LENOVO\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\LENOVO\.m2\repository\org\json\json\20231013\json-20231013.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 3                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 10                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 2097152                                   {product} {ergonomic}
+   size_t InitialHeapSize                          = 165675008                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MarkStackSizeMax                         = 536870912                                 {product} {ergonomic}
+   size_t MaxHeapSize                              = 2646605824                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 2097152                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5832704                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122945536                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122880000                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 2646605824                             {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Java\jdk-17
+PATH=C:\oraclexe\app\oracle\product\11.2.0\server\bin;;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\MinGW\bin;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Microsoft SQL Server\160\Tools\Binn\;C:\ProgramData\ComposerSetup\bin;C:\Users\LENOVO\AppData\Local\Microsoft\WindowsApps\python.exe;C:\Users\LENOVO\AppData\Local\Microsoft\WindowsApps\pip.exe;C:\ProgramData\Microsoft\Windows\Start Menu\Programs\JetBrains\apache-maven-3.9.9\bin;C:\Program Files\apache-maven-3.9.9-bin\apache-maven-3.9.9\bin;C:\ProgramData\chocolatey\bin;C:\Users\LENOVO\Downloads\spring-rest-sample\Git\cmd;C:\Users\LENOVO\Downloads\nvm;C:\nvm4w\nodejs;C:\Users\LENOVO\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Windows PowerShell;C:\Program Files\MySQL\MySQL Server 9.2\bin;C:\Program Files\Java\jdk-17\bin;C:\Users\LENOVO\scoop\shims;C:\Users\LENOVO\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Azure Data Studio\bin;C:\xampp\php;C:\Users\LENOVO\AppData\Roaming\Composer\vendor\bin;C:\Users\LENOVO\AppData\Local\Programs\Microsoft VS Code\bin;?C:\Users\LENOVO\Downloads\python-3.13.0-amd64.exe;C:\Users\TonNomUtilisateur\AppData\Local\Programs\Python\Python39\Scripts;C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.1\bin;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.1\bin;;C:\Users\LENOVO\Downloads\nvm;C:\nvm4w\nodejs;?C:\Users\LENOVO\Downloads\nvm;C:\Users\LENOVO\Downloads\nvm\node_modules\npm\bin;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\LENOVO\composer
+USERNAME=LENOVO
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD
+TMP=C:\Users\LENOVO\AppData\Local\Temp
+TEMP=C:\Users\LENOVO\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+OS uptime: 1 days 7:00 hours
+
+CPU: total 12 (initial active 12) (12 cores per cpu, 2 threads per core) family 25 model 80 stepping 0 microcode 0x0, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4a, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, sha, fma, vzeroupper, clflush, clflushopt, rdtscp, rdpid, fsrm, f16c, pku, cet_ss
+Processor Information for the first 12 processors :
+  Max Mhz: 3301, Current Mhz: 3301, Mhz Limit: 3301
+
+Memory: 4k page, system-wide physical 10092M (429M free)
+TotalPageFile size 18284M (AvailPageFile size 19M)
+current process WorkingSet (physical memory assigned to process): 12M, peak: 12M
+current process commit charge ("private bytes"): 64M, peak: 222M
+
+vm_info: OpenJDK 64-Bit Server VM (23.0.1+11-39) for windows-amd64 JRE (23.0.1+11-39), built on 2024-09-30T07:20:43Z with MS VC++ 17.6 (VS2022)
+
+END.

@@ -7,15 +7,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-        Parent root = FXMLLoader.load(getClass().getResource("/view/ListePrets.fxml"));
-        Scene scene = new Scene(root, 1100, 700);
-
-        primaryStage.setTitle("BOUSSOLE - Gestion des Prêts");
-        primaryStage.setScene(scene);
+        // Vérifiez que ce chemin correspond à l'emplacement de votre fichier FXML
+        Parent root = FXMLLoader.load(getClass().getResource("/view/DemandePret.fxml"));
+        primaryStage.setTitle("Boussole - Gestion de Prêts");
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
 

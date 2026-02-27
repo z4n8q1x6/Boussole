@@ -24,6 +24,8 @@
 
         <Button maxWidth="Infinity" styleClass="sidebar-button-active" text="➕ Nouvelle Demande" />
         <Button maxWidth="Infinity" onAction="#ouvrirListe" styleClass="sidebar-button" text="📋 Liste des Prêts" />
+        
+        <Button maxWidth="Infinity" onAction="#ouvrirChatbot" styleClass="sidebar-button" text="🤖 Assistant IA" style="-fx-text-fill: #00E5CC;" />
     </VBox>
 
     <VBox alignment="CENTER" spacing="30" styleClass="main-container" HBox.hgrow="ALWAYS">
@@ -38,29 +40,25 @@
 
             <VBox spacing="15">
                 <VBox spacing="5">
-                    <Label text="Montant du prêt (DT) :" styleClass="field-label" textFill="WHITE" />
+                    <Label text="Montant du prêt (DT) :" styleClass="field-label" />
                     <TextField fx:id="txtMontant" promptText="Ex: 5000" styleClass="custom-field" />
                 </VBox>
-
                 <VBox spacing="5">
-                    <Label text="Durée (mois) :" styleClass="field-label" textFill="WHITE" />
+                    <Label text="Durée (mois) :" styleClass="field-label" />
                     <TextField fx:id="txtDuree" promptText="Ex: 12" styleClass="custom-field" />
                 </VBox>
-
                 <VBox spacing="5">
-                    <Label text="Taux (%) :" styleClass="field-label" textFill="WHITE" />
+                    <Label text="Taux (%) :" styleClass="field-label" />
                     <TextField fx:id="txtTaux" promptText="Ex: 5.5" styleClass="custom-field" />
                 </VBox>
-
                 <VBox spacing="5">
-                    <Label text="Motif du prêt :" styleClass="field-label" textFill="WHITE" />
+                    <Label text="Motif du prêt :" styleClass="field-label" />
                     <TextField fx:id="txtMotif" promptText="Décrivez l'objet du prêt" styleClass="custom-field" />
                 </VBox>
             </VBox>
 
             <Button maxWidth="Infinity" onAction="#ajouterPret" prefHeight="45.0" styleClass="login-button" text="Valider la demande" />
-
-            <Label fx:id="lblMessage" alignment="CENTER" maxWidth="Infinity" styleClass="message-label" textFill="#F87171" />
+            <Label fx:id="lblMessage" alignment="CENTER" maxWidth="Infinity" styleClass="message-label" />
         </VBox>
     </VBox>
 </HBox>

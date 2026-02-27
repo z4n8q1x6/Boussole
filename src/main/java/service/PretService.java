@@ -4,6 +4,11 @@ import dao.MensualiteDAO;
 import dao.PretDAO;
 import entity.Mensualite;
 import entity.Pret;
+import entity.StatutPret;
+import util.DBConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -22,6 +27,33 @@ public class PretService {
     private PretDAO pretDAO = new PretDAO();
     private MensualiteDAO mensualiteDAO = new MensualiteDAO();
     private MailService mailService = new MailService();
+
+    // =========================================================
+    // NOUVELLES MÉTHODES DE CALCUL POUR LE CHATBOT
+    // =========================================================
+
+    /**
+     * Calcule la somme totale des montants pour un statut précis
+     */
+    public double getMontantTotalParStatut(StatutPret statut) {
+        return getAllPrets().stream()
+                .filter(p -> p.getStatut() == statut)
+                .mapToDouble(Pret::getMontantDemande)
+                .sum();
+    }
+
+    /**
+     * Compte le nombre de prêts pour un statut précis
+     */
+    public long countPretsParStatut(StatutPret statut) {
+        return getAllPrets().stream()
+                .filter(p -> p.getStatut() == statut)
+                .count();
+    }
+
+    // =========================================================
+    // MÉTHODES EXISTANTES
+    // =========================================================
 
     public void ajouterPret(Pret pret) throws Exception {
         pretDAO.insert(pret);
@@ -81,12 +113,31 @@ public class PretService {
     }
 
     public List<Pret> getAllPrets() {
-        try {
-            return pretDAO.getAll();
+        List<Pret> liste = new ArrayList<>();
+        String sql = "SELECT * FROM pret";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                Pret p = new Pret();
+                p.setId(rs.getInt("id"));
+                p.setMotif(rs.getString("motif"));
+                p.setMontantDemande(rs.getDouble("montant_demande"));
+                p.setDureeMois(rs.getInt("duree_mois"));
+                p.setTaux(rs.getFloat("taux"));
+
+                String statutStr = rs.getString("statut");
+                if (statutStr != null) {
+                    p.setStatut(StatutPret.valueOf(statutStr));
+                }
+                liste.add(p);
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+            System.err.println("Erreur SQL : " + e.getMessage());
         }
+        return liste;
     }
 
     public List<Mensualite> getAllMensualitesGlobales() throws Exception {
@@ -97,7 +148,6 @@ public class PretService {
         try {
             return mensualiteDAO.getByPret(pretId);
         } catch (Exception e) {
-            e.printStackTrace();
             return new ArrayList<>();
         }
     }
@@ -107,19 +157,15 @@ public class PretService {
         mensualiteDAO.update(m);
     }
 
-    /**
-     * CORRECTION ICI : Utilisation de la méthode envoyerEmailPaiement (HTML)
-     */
     public void envoyerAccuseReceptionPaiement(Mensualite m, String motifPret) {
         try {
-            // On utilise la nouvelle méthode HTML que vous avez ajoutée
             mailService.envoyerEmailPaiement(m, motifPret);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public List<Pret> searchPret(Double min, Double max, entity.StatutPret statut, String motif) throws Exception {
+    public List<Pret> searchPret(Double min, Double max, StatutPret statut, String motif) throws Exception {
         return pretDAO.search(min, max, statut, motif);
     }
 }

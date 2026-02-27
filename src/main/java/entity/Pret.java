@@ -1,7 +1,6 @@
 package entity;
 
 public class Pret {
-
     private int id;
     private double montantDemande;
     private int dureeMois;
@@ -9,10 +8,7 @@ public class Pret {
     private StatutPret statut;
     private String motif;
 
-
-    public Pret() {
-    }
-
+    public Pret() {}
 
     public Pret(int id, double montantDemande, int dureeMois, float taux, StatutPret statut, String motif) {
         this.id = id;
@@ -23,65 +19,24 @@ public class Pret {
         this.motif = motif;
     }
 
+    // --- GETTERS (Déjà présents) ---
+    public int getId() { return id; }
+    public double getMontantDemande() { return montantDemande; }
+    public int getDureeMois() { return dureeMois; }
+    public float getTaux() { return taux; }
+    public StatutPret getStatut() { return statut; }
+    public String getMotif() { return motif; }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public double getMontantDemande() {
-        return montantDemande;
-    }
-
-    public void setMontantDemande(double montantDemande) {
-        this.montantDemande = montantDemande;
-    }
-
-    public int getDureeMois() {
-        return dureeMois;
-    }
-
-    public void setDureeMois(int dureeMois) {
-        this.dureeMois = dureeMois;
-    }
-
-    public float getTaux() {
-        return taux;
-    }
-
-    public void setTaux(float taux) {
-        this.taux = taux;
-    }
-
-    public StatutPret getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutPret statut) {
-        this.statut = statut;
-    }
-
-    public String getMotif() {
-        return motif;
-    }
-
-    public void setMotif(String motif) {
-        this.motif = motif;
-    }
-
+    // --- SETTERS À AJOUTER (Résout l'erreur "Cannot find symbol") ---
+    public void setId(int id) { this.id = id; }
+    public void setMontantDemande(double montantDemande) { this.montantDemande = montantDemande; }
+    public void setDureeMois(int dureeMois) { this.dureeMois = dureeMois; }
+    public void setTaux(float taux) { this.taux = taux; }
+    public void setStatut(StatutPret statut) { this.statut = statut; }
+    public void setMotif(String motif) { this.motif = motif; }
 
     @Override
     public String toString() {
-        return "Pret{" +
-                "id=" + id +
-                ", montantDemande=" + montantDemande +
-                ", dureeMois=" + dureeMois +
-                ", taux=" + taux +
-                ", statut=" + statut +
-                ", motif='" + motif + '\'' +
-                '}';
+        return "Pret{id=" + id + ", motif='" + motif + "', montant=" + montantDemande + "}";
     }
 }
