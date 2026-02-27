@@ -116,7 +116,7 @@
                         <Button fx:id="btnReinitialiser" text="Réinitialiser" onAction="#reinitialiserFiltres" styleClass="nav-button"
                                 style="-fx-background-color: #112240; -fx-text-fill: #e6f1ff; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;" />
                         <!-- Bouton Exporter avec texte noir -->
-                        <Button fx:id="btnExporter" text="Exporter ..." onAction="#exporterCSV" styleClass="button-primary"
+                        <Button fx:id="btnExporter" text="Exporter ..." onAction="#exporter" styleClass="button-primary"
                                 style="-fx-background-color: #0a84ff; -fx-text-fill: #000000; -fx-font-weight:bold; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;" />
                     </children>
                 </HBox>

@@ -19,15 +19,21 @@ import tn.esprit.Boussole.Models.FranchiseData;
 import tn.esprit.Boussole.Services.ServiceClustering;
 import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Services.ServiceBilan;
+import tn.esprit.Boussole.Utilis.NotificationManager;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import org.controlsfx.control.PopOver;
 
 public class DashboardSiegeController implements Initializable {
 
@@ -63,6 +69,14 @@ public class DashboardSiegeController implements Initializable {
 
     @FXML
     private ProgressIndicator progress;
+
+    // --- Nouveaux éléments pour Notifications ---
+    @FXML private StackPane paneNotificationBtn;
+    @FXML private Pane badgeNotification;
+    @FXML private Label lblNotifCount;
+
+    private List<String> notificationsList = new ArrayList<>();
+    private int unreadNotifications = 0;
 
     // Services
     private ServiceTransaction serviceTransaction;
@@ -104,11 +118,66 @@ public class DashboardSiegeController implements Initializable {
 
             // Chargement initial
             chargerDonnees();
+
+            // Simulation d'une notification Siège au démarrage
+            ajouterNotification("Bienvenue sur le Pilotage Financier du Siège.");
+            
         } catch (Exception e) {
             System.err.println("Erreur lors de l'initialisation du DashboardSiegeController : " + e.getMessage());
             e.printStackTrace();
         }
     }
+
+    // --- Logique Notifications ---
+    public void ajouterNotification(String message) {
+        notificationsList.add(0, message); // Ajout au début
+        unreadNotifications++;
+        mettreAJourBadge();
+        NotificationManager.showInfo("Nouvelle Alerte Siège", message);
+    }
+
+    private void mettreAJourBadge() {
+        if (unreadNotifications > 0) {
+            badgeNotification.setVisible(true);
+            lblNotifCount.setText(String.valueOf(unreadNotifications));
+        } else {
+            badgeNotification.setVisible(false);
+        }
+    }
+
+    @FXML
+    private void afficherNotifications() {
+        VBox contenu = new VBox(10);
+        contenu.setStyle("-fx-padding: 15; -fx-background-color: #1E293B;");
+        contenu.setPrefWidth(300);
+        contenu.setPrefHeight(250);
+
+        Label titre = new Label("Centre de Notifications (Siège)");
+        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+        contenu.getChildren().add(titre);
+
+        if (notificationsList.isEmpty()) {
+            Label emptyLbl = new Label("Aucune notification.");
+            emptyLbl.setStyle("-fx-text-fill: #94A3B8;");
+            contenu.getChildren().add(emptyLbl);
+        } else {
+            for (String notif : notificationsList) {
+                Label lbl = new Label("- " + notif);
+                lbl.setStyle("-fx-text-fill: #E2E8F0; -fx-wrap-text: true;");
+                lbl.setMaxWidth(280);
+                contenu.getChildren().add(lbl);
+            }
+        }
+
+        PopOver popOver = new PopOver(contenu);
+        popOver.setArrowLocation(PopOver.ArrowLocation.TOP_RIGHT);
+        popOver.show(paneNotificationBtn);
+
+        // Réinitialiser le compteur une fois ouvert
+        unreadNotifications = 0;
+        mettreAJourBadge();
+    }
+    // ----------------------------
 
     private void chargerDonnees() {
         progress.setVisible(true);
@@ -200,8 +269,8 @@ public class DashboardSiegeController implements Initializable {
                     System.out.println("=== DEBUG: " + key + " -> Réel=" + totalReel + " Budget=" + totalBudget);
                 }
 
-                // 3. Analyse IA (Clustering)
-                List<FranchiseData> rawData = serviceTransaction.getDonneesFinancieresGlobales();
+                // 3. Analyse IA (Clustering) avec les Vraies Données
+                List<FranchiseData> rawData = serviceClustering.chargerDonneesReelles();
                 System.out.println("=== DEBUG Dashboard: rawData franchises=" + rawData.size());
                 Map<Integer, List<FranchiseData>> clusters = serviceClustering.analyserDonnees(rawData, 3);
                 System.out.println("=== DEBUG Dashboard: clusters=" + clusters.size());
@@ -293,11 +362,6 @@ public class DashboardSiegeController implements Initializable {
 
         // Simple mapping direct pour l'instant, on pourra affiner l'intelligence
         String[] nomsClusters = {"Groupe A", "Groupe B", "Groupe C"};
-        String[] styles = {
-            "-fx-body-color: #00E5CC;", // Vert/Cyan (Performant ?)
-            "-fx-body-color: #FFA726;", // Orange (Neutre)
-            "-fx-body-color: #EF5350;"  // Rouge (Risque)
-        };
 
         int index = 0;
         for (Map.Entry<Integer, List<FranchiseData>> entry : clusters.entrySet()) {
@@ -311,12 +375,17 @@ public class DashboardSiegeController implements Initializable {
                 // Installation du Tooltip APRES l'ajout au graph (node généré)
                 point.nodeProperty().addListener((obs, oldNode, newNode) -> {
                     if (newNode != null) {
-                        Tooltip tooltip = new Tooltip(franchise.getLabel() + "\nRec: " + franchise.getRecettes() + "\nDép: " + franchise.getDepenses());
+                        // Utilise un formateur monétaire pour affichage plus propre dans le Tooltip
+                        java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
+                        format.setMinimumFractionDigits(2);
+                        format.setMaximumFractionDigits(2);
+
+                        String tipText = franchise.getLabel() + 
+                                       "\nRecettes: " + format.format(franchise.getRecettes()) + " TND" +
+                                       "\nDépenses: " + format.format(franchise.getDepenses()) + " TND";
+                        
+                        Tooltip tooltip = new Tooltip(tipText);
                         Tooltip.install(newNode, tooltip);
-                        // Appliquer style couleur spécifique si besoin
-                        // newNode.setStyle(styles[finalIndex % 3]);
-                        // Note: ScatterChart gère les couleurs par série par défaut,
-                        // pour forcer des couleurs par cluster "sémantique", il faudrait trier les clusters avant.
                     }
                 });
             }

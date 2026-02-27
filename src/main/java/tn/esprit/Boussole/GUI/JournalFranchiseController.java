@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceTransaction;
+import tn.esprit.Boussole.Services.ServiceExportExcel;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.File;
@@ -492,21 +493,33 @@ public class JournalFranchiseController implements Initializable {
     }
 
     @FXML
-    private void exporterCSV() {
+    private void exporter() {
+        // Selection Logic
+        List<transaction> transactionsToExport = tableTransactions.getSelectionModel().getSelectedItems();
+        if (transactionsToExport == null || transactionsToExport.isEmpty()) {
+            // No selection -> export all filtered rows
+            transactionsToExport = tableTransactions.getItems();
+        }
+
+        if (transactionsToExport.isEmpty()) {
+            afficherErreur("Export vide", "Aucune donnée à exporter.");
+            return;
+        }
+
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Exporter en CSV");
-        fileChooser.setInitialFileName("journal_export.csv");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        fileChooser.setTitle("Exporter en Excel (Professionnel)");
+        fileChooser.setInitialFileName("journal_export.xlsx");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers Excel", "*.xlsx"));
         File file = fileChooser.showSaveDialog(btnExporter.getScene().getWindow());
+
         if (file != null) {
-            try (FileWriter writer = new FileWriter(file)) {
-                writer.write("Date,Type,Montant,Description\n");
-                for (transaction t : tableTransactions.getItems()) {
-                    writer.write(String.format("%s,%s,%.2f,%s\n", t.getDate(), t.getType(), t.getMontant(), t.getDescription()));
-                }
-                afficherSucces("Export réussie", "Fichier sauvegardé : " + file.getName());
+            try {
+                ServiceExportExcel exporter = new ServiceExportExcel();
+                exporter.exporterTransactions(transactionsToExport, file.getAbsolutePath());
+                afficherSucces("Export Excel réussi", "Fichier sauvegardé avec succès :\n" + file.getName());
             } catch (IOException e) {
-                afficherErreur("Erreur", "Erreur écriture fichier.");
+                afficherErreur("Erreur d'export", "Impossible de créer le fichier Excel : " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

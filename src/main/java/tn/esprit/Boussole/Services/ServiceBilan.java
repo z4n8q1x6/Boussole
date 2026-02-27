@@ -97,8 +97,13 @@ public class ServiceBilan implements CRUD<bilan> {
     }
 
     public void genererBilan(int mois, int annee, int franchiseId) {
-        String sqlRecettes = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE franchise_id = ? AND MONTH(date) = ? AND YEAR(date) = ? AND type = 'RECETTE'";
-        String sqlDepenses = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE franchise_id = ? AND MONTH(date) = ? AND YEAR(date) = ? AND type = 'DEPENSE'";
+        String sqlRecettes = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ? AND type = 'RECETTE'";
+        String sqlDepenses = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ? AND type = 'DEPENSE'";
+
+        if (franchiseId != 0) {
+            sqlRecettes += " AND franchise_id = ?";
+            sqlDepenses += " AND franchise_id = ?";
+        }
 
         double totalRecettes = 0.0;
         double totalDepenses = 0.0;
@@ -106,9 +111,10 @@ public class ServiceBilan implements CRUD<bilan> {
         try (PreparedStatement psRec = cnx.prepareStatement(sqlRecettes);
              PreparedStatement psDep = cnx.prepareStatement(sqlDepenses)) {
 
-            psRec.setInt(1, franchiseId);
-            psRec.setInt(2, mois);
-            psRec.setInt(3, annee);
+            psRec.setInt(1, mois);
+            psRec.setInt(2, annee);
+            if (franchiseId != 0) psRec.setInt(3, franchiseId);
+            
             try (ResultSet rs = psRec.executeQuery()) {
                 if (rs.next()) {
                     double val = rs.getDouble("total");
@@ -118,9 +124,10 @@ public class ServiceBilan implements CRUD<bilan> {
                 }
             }
 
-            psDep.setInt(1, franchiseId);
-            psDep.setInt(2, mois);
-            psDep.setInt(3, annee);
+            psDep.setInt(1, mois);
+            psDep.setInt(2, annee);
+            if (franchiseId != 0) psDep.setInt(3, franchiseId);
+            
             try (ResultSet rs = psDep.executeQuery()) {
                 if (rs.next()) {
                     double val = rs.getDouble("total");
@@ -150,9 +157,13 @@ public class ServiceBilan implements CRUD<bilan> {
 
     public List<bilan> getHistorique(int franchiseId) {
         List<bilan> list = new ArrayList<>();
-        String sql = "SELECT * FROM bilan WHERE franchise_id = ? ORDER BY annee DESC, mois DESC";
+        String sql = "SELECT * FROM bilan ORDER BY annee DESC, mois DESC";
+        if (franchiseId != 0) {
+            sql = "SELECT * FROM bilan WHERE franchise_id = ? ORDER BY annee DESC, mois DESC";
+        }
+
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-            ps.setInt(1, franchiseId);
+            if (franchiseId != 0) ps.setInt(1, franchiseId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapRowToBilan(rs));

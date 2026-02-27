@@ -26,6 +26,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter; // Added
 import tn.esprit.Boussole.Models.bilan;
+import tn.esprit.Boussole.Models.franchise;
 import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceBilan;
 import tn.esprit.Boussole.Utilis.MyBDConnexion;
@@ -49,6 +50,7 @@ public class GestionBilansController implements Initializable {
     @FXML private Button btnGenererBilan;
     @FXML private Button btnExporterPDF;
     @FXML private TableView<bilan> tableBilans;
+    @FXML private TableColumn<bilan, Integer> colFranchise;
     @FXML private TableColumn<bilan, Integer> colMois;
     @FXML private TableColumn<bilan, Integer> colAnnee;
     @FXML private TableColumn<bilan, Double> colRecettes;
@@ -57,7 +59,7 @@ public class GestionBilansController implements Initializable {
     @FXML private TableColumn<bilan, Double> colStatut;
     @FXML private ComboBox<String> comboMois;
     @FXML private ComboBox<Integer> comboAnnee;
-    //@FXML private TableColumn<bilan, Void> colActions; // Supprimé
+    @FXML private ComboBox<franchise> cbFranchiseCible;
 
     private ServiceBilan serviceBilan;
 
@@ -80,12 +82,100 @@ public class GestionBilansController implements Initializable {
 
         serviceBilan = new ServiceBilan();
 
+        // Initialisation de cbFranchiseCible
+        try {
+            Connection cnx = MyBDConnexion.getInstance().getCnx();
+            String sql = "SELECT id, nom FROM franchises";
+            cbFranchiseCible.getItems().add(new franchise(0, "TOUT LE RÉSEAU", "", "", "", null, true, 0.0));
+            try (PreparedStatement ps = cnx.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    franchise f = new franchise();
+                    f.setId(rs.getInt("id"));
+                    f.setNom(rs.getString("nom"));
+                    cbFranchiseCible.getItems().add(f);
+                }
+            }
+            // Cell Factory to display nom
+            javafx.util.StringConverter<franchise> cbConverter = new javafx.util.StringConverter<franchise>() {
+                @Override public String toString(franchise f) { return f == null ? "" : f.getNom(); }
+                @Override public franchise fromString(String string) { return null; }
+            };
+            cbFranchiseCible.setConverter(cbConverter);
+
+            if ("SIEGE".equals(role) || "ROLE_SIEGE".equals(role)) {
+                cbFranchiseCible.getSelectionModel().selectFirst();
+            } else {
+                int fId = session.getIdFranchise();
+                cbFranchiseCible.getItems().stream().filter(f -> f.getId() != null && f.getId() == fId).findFirst().ifPresent(cbFranchiseCible.getSelectionModel()::select);
+                cbFranchiseCible.setDisable(true);
+            }
+            cbFranchiseCible.setOnAction(e -> rafraichirTable());
+        } catch (SQLException e) { System.err.println("Erreur chargement franchises : " + e.getMessage()); }
+
+        // Formatting monétaire
+        javafx.util.StringConverter<Double> currencyConverter = new javafx.util.StringConverter<Double>() {
+            java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
+            {
+                format.setMinimumFractionDigits(2);
+                format.setMaximumFractionDigits(2);
+            }
+            @Override
+            public String toString(Double object) {
+                if (object == null) return "0,00 TND";
+                return format.format(object) + " TND";
+            }
+            @Override
+            public Double fromString(String string) {
+                try {
+                    if (string == null || string.trim().isEmpty()) return 0.0;
+                    return format.parse(string.replace(" TND", "").replace(" ", "").trim()).doubleValue();
+                } catch (Exception e) {
+                    return 0.0;
+                }
+            }
+        };
+
         // 2. Configuration des Colonnes (CORRECTION)
+        colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
+        colFranchise.setCellFactory(column -> new TableCell<bilan, Integer>() {
+            @Override
+            protected void updateItem(Integer id, boolean empty) {
+                super.updateItem(id, empty);
+                if (empty || id == null) {
+                    setText(null);
+                } else if (id == 0) {
+                    setText("TOUT LE RÉSEAU");
+                } else {
+                    String nom = "Inconnu";
+                    for (franchise f : cbFranchiseCible.getItems()) {
+                        if (f.getId() != null && f.getId().equals(id)) {
+                            nom = f.getNom(); break;
+                        }
+                    }
+                    setText(nom);
+                }
+            }
+        });
+
         colMois.setCellValueFactory(new PropertyValueFactory<>("mois"));
         colAnnee.setCellValueFactory(new PropertyValueFactory<>("annee"));
         colRecettes.setCellValueFactory(new PropertyValueFactory<>("totalRecettes"));
         colCharges.setCellValueFactory(new PropertyValueFactory<>("totalCharges"));
         colResultat.setCellValueFactory(new PropertyValueFactory<>("resultatNet"));
+
+        // Format Resultat (non éditable)
+        colResultat.setCellFactory(column -> new TableCell<bilan, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(currencyConverter.toString(item));
+                }
+            }
+        });
 
         // Colonne Statut / Rentabilité
         colStatut.setCellValueFactory(new PropertyValueFactory<>("resultatNet"));
@@ -129,7 +219,7 @@ public class GestionBilansController implements Initializable {
         tableBilans.setEditable(true);
 
         // Édition Recettes
-        colRecettes.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colRecettes.setCellFactory(TextFieldTableCell.forTableColumn(currencyConverter));
         colRecettes.setOnEditCommit(event -> {
             bilan b = event.getRowValue();
             Double newVal = event.getNewValue();
@@ -149,7 +239,7 @@ public class GestionBilansController implements Initializable {
         });
 
         // Édition Charges
-        colCharges.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colCharges.setCellFactory(TextFieldTableCell.forTableColumn(currencyConverter));
         colCharges.setOnEditCommit(event -> {
             bilan b = event.getRowValue();
             Double newVal = event.getNewValue();
@@ -221,9 +311,8 @@ public class GestionBilansController implements Initializable {
     private void rafraichirTable() {
         try {
             tableBilans.getItems().clear();
-            // Récupère l'ID franchise (ou 1 si Siège pour visualisation)
-            int franchiseId = SessionManager.getInstance().getIdFranchise();
-            if (franchiseId == 0) franchiseId = 1; 
+            franchise f = cbFranchiseCible.getSelectionModel().getSelectedItem();
+            int franchiseId = (f != null && f.getId() != null) ? f.getId() : 0;
 
             List<bilan> bilans = serviceBilan.getHistorique(franchiseId);
             tableBilans.getItems().addAll(bilans);
@@ -260,7 +349,13 @@ public class GestionBilansController implements Initializable {
             }
             int mois = comboMois.getSelectionModel().getSelectedIndex() + 1;
             int annee = comboAnnee.getSelectionModel().getSelectedItem();
-            int franchiseId = SessionManager.getInstance().getIdFranchise();
+            
+            franchise f = cbFranchiseCible.getSelectionModel().getSelectedItem();
+            if (f == null) {
+                afficherMessageErreur("Veuillez sélectionner une cible.");
+                return;
+            }
+            int targetFranchiseId = (f.getId() != null) ? f.getId() : 0;
 
             // Valider les valeurs
             if (mois < 1 || mois > 12) {
@@ -274,7 +369,7 @@ public class GestionBilansController implements Initializable {
             }
 
             // Générer le bilan
-            serviceBilan.genererBilan(mois, annee, franchiseId);
+            serviceBilan.genererBilan(mois, annee, targetFranchiseId);
             rafraichirTable();
             afficherMessageSucces("Bilan généré avec succès pour " + mois + "/" + annee);
 
@@ -318,11 +413,17 @@ public class GestionBilansController implements Initializable {
         // Récupérer les données
         try {
             Connection cnx = MyBDConnexion.getInstance().getCnx();
-            String sql = "SELECT * FROM transaction WHERE franchise_id = ? AND MONTH(date) = ? AND YEAR(date) = ?";
+            String sql = "SELECT * FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
+            if (b.getFranchiseId() != 0) {
+                sql += " AND franchise_id = ?";
+            }
             PreparedStatement ps = cnx.prepareStatement(sql);
-            ps.setInt(1, b.getFranchiseId());
-            ps.setInt(2, b.getMois());
-            ps.setInt(3, b.getAnnee());
+            ps.setInt(1, b.getMois());
+            ps.setInt(2, b.getAnnee());
+            if (b.getFranchiseId() != 0) {
+                ps.setInt(3, b.getFranchiseId());
+            }
+            
             ResultSet rs = ps.executeQuery();
 
             javafx.collections.ObservableList<transaction> list = javafx.collections.FXCollections.observableArrayList();

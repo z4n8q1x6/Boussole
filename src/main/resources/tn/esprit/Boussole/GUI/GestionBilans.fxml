@@ -66,6 +66,8 @@
                     <children>
                         <!-- Barre d'Outils de Génération -->
                         <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Cible :" style="-fx-text-fill: white; -fx-font-weight: bold;" />
+                            <ComboBox fx:id="cbFranchiseCible" promptText="Franchise" prefWidth="180" />
                             <Label text="Période :" style="-fx-text-fill: white; -fx-font-weight: bold;" />
                             <ComboBox fx:id="comboMois" promptText="Mois" prefWidth="120" />
                             <ComboBox fx:id="comboAnnee" promptText="Année" prefWidth="100" />
@@ -80,6 +82,7 @@
                         <!-- TableView Historique Bilans -->
                         <TableView fx:id="tableBilans" VBox.vgrow="ALWAYS">
                             <columns>
+                                <TableColumn fx:id="colFranchise" text="FRANCHISE" prefWidth="120" />
                                 <TableColumn fx:id="colMois" text="MOIS" prefWidth="60" />
                                 <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="60" />
                                 <TableColumn fx:id="colRecettes" text="TOTAL RECETTES (TND)" prefWidth="150" />

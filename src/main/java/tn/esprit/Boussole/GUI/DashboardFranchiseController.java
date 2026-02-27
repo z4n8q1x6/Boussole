@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -37,6 +38,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors; // Added
 import javafx.util.Callback;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.controlsfx.control.PopOver;
 
 public class DashboardFranchiseController implements Initializable {
 
@@ -91,6 +97,16 @@ public class DashboardFranchiseController implements Initializable {
     private Label lblObjectifRevenu;
     @FXML
     private Label lblDepensesMois;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnHistorique;
+
+    // --- Nouveaux éléments pour Notifications ---
+    @FXML private StackPane paneNotificationBtn;
+    @FXML private Pane badgeNotification;
+    @FXML private Label lblNotifCount;
+
+    private List<String> notificationsList = new ArrayList<>();
+    private int unreadNotifications = 0;
 
     // Services
     private ServiceTransaction serviceTransaction;
@@ -160,9 +176,10 @@ public class DashboardFranchiseController implements Initializable {
                     cbDevise.setOnAction(e -> chargerSolde());
                 }
 
-                chargerSolde();
-                chargerDerniersMouvements(); // Renamed/Modified method
-                chargerBudgets();
+                // Simulation d'une première notification au démarrage
+                ajouterNotification("Bienvenue sur votre Dashboard de Franchise.");
+                
+                chargerDonneesDashboard();
             }
 
             // Wire button action
@@ -179,6 +196,63 @@ public class DashboardFranchiseController implements Initializable {
             Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
             afficherMessageErreur("Erreur inattendue au chargement: " + e.getMessage());
         }
+    }
+
+    // --- Logique Notifications ---
+    public void ajouterNotification(String message) {
+        notificationsList.add(0, message); // Ajout au début
+        unreadNotifications++;
+        mettreAJourBadge();
+        NotificationManager.showInfo("Nouvelle Alerte", message);
+    }
+
+    private void mettreAJourBadge() {
+        if (unreadNotifications > 0) {
+            badgeNotification.setVisible(true);
+            lblNotifCount.setText(String.valueOf(unreadNotifications));
+        } else {
+            badgeNotification.setVisible(false);
+        }
+    }
+
+    @FXML
+    private void afficherNotifications() {
+        VBox contenu = new VBox(10);
+        contenu.setStyle("-fx-padding: 15; -fx-background-color: #1E293B;");
+        contenu.setPrefWidth(300);
+        contenu.setPrefHeight(250);
+
+        Label titre = new Label("Centre de Notifications");
+        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+        contenu.getChildren().add(titre);
+
+        if (notificationsList.isEmpty()) {
+            Label emptyLbl = new Label("Aucune notification.");
+            emptyLbl.setStyle("-fx-text-fill: #94A3B8;");
+            contenu.getChildren().add(emptyLbl);
+        } else {
+            for (String notif : notificationsList) {
+                Label lbl = new Label("- " + notif);
+                lbl.setStyle("-fx-text-fill: #E2E8F0; -fx-wrap-text: true;");
+                lbl.setMaxWidth(280);
+                contenu.getChildren().add(lbl);
+            }
+        }
+
+        PopOver popOver = new PopOver(contenu);
+        popOver.setArrowLocation(PopOver.ArrowLocation.TOP_RIGHT);
+        popOver.show(paneNotificationBtn);
+
+        // Réinitialiser le compteur une fois ouvert
+        unreadNotifications = 0;
+        mettreAJourBadge();
+    }
+    // ----------------------------
+
+    private void chargerDonneesDashboard() {
+        chargerSolde();
+        chargerDerniersMouvements();
+        chargerBudgets();
     }
 
     private void appliquerCellFactoryMontant() {

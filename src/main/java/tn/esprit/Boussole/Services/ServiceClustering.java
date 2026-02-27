@@ -4,12 +4,52 @@ import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 import tn.esprit.Boussole.Models.FranchiseData;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import tn.esprit.Boussole.Utilis.MyBDConnexion;
 
 public class ServiceClustering {
+
+    /**
+     * Récupère les vraies données depuis la base de données pour le clustering.
+     */
+    public List<FranchiseData> chargerDonneesReelles() {
+        List<FranchiseData> list = new ArrayList<>();
+        Connection cnx = MyBDConnexion.getInstance().getCnx();
+        
+        String sql = "SELECT t.franchise_id, f.nom, " +
+                     "SUM(CASE WHEN t.type='RECETTE' THEN t.montant ELSE 0 END) as Recettes, " +
+                     "SUM(CASE WHEN t.type='DEPENSE' THEN t.montant ELSE 0 END) as Depenses " +
+                     "FROM transaction t " +
+                     "LEFT JOIN franchises f ON t.franchise_id = f.id " +
+                     "GROUP BY t.franchise_id, f.nom";
+                     
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                int id = rs.getInt("franchise_id");
+                String nom = rs.getString("nom");
+                if (nom == null || nom.trim().isEmpty()) {
+                    nom = "Franchise " + id;
+                }
+                
+                double recettes = rs.getDouble("Recettes");
+                double depenses = rs.getDouble("Depenses");
+                
+                list.add(new FranchiseData(id, nom, recettes, depenses));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur chargerDonneesReelles : " + e.getMessage());
+        }
+        return list;
+    }
 
     /**
      * Analyse les données des franchises et les regroupe en clusters.

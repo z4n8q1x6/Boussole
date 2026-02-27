@@ -64,10 +64,20 @@
         <VBox spacing="30" styleClass="content-area">
             <children>
                 <!-- Header -->
-                <VBox styleClass="page-header">
-                    <Label text="Tableau de Bord" styleClass="page-title" />
-                    <Label text="Aperçu global de votre situation financière" styleClass="page-subtitle" />
-                </VBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" styleClass="page-header">
+                    <VBox>
+                        <Label text="Tableau de Bord" styleClass="page-title" />
+                        <Label text="Aperçu global de votre situation financière" styleClass="page-subtitle" />
+                    </VBox>
+                    <Pane HBox.hgrow="ALWAYS" />
+                    <!-- Centre de Notifications -->
+                    <StackPane fx:id="paneNotificationBtn" style="-fx-cursor: hand; -fx-padding: 5;" onMouseClicked="#afficherNotifications">
+                        <Label text="🔔" style="-fx-font-size: 24px; -fx-text-fill: white;" />
+                        <StackPane fx:id="badgeNotification" visible="false" style="-fx-background-color: #EF4444; -fx-background-radius: 50%; -fx-min-width: 16; -fx-min-height: 16; -fx-max-width: 16; -fx-max-height: 16;" StackPane.alignment="TOP_RIGHT">
+                            <Label fx:id="lblNotifCount" text="0" style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold; -fx-alignment: center;" alignment="CENTER" prefWidth="16" prefHeight="16"/>
+                        </StackPane>
+                    </StackPane>
+                </HBox>
 
                 <!-- KPI Cards -->
                 <HBox spacing="25">
