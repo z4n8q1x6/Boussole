@@ -1,5 +1,6 @@
 package tn.esprit.boussole.gui;
 
+import java.sql.SQLException;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -9,6 +10,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.service.AlerteIAService;
+import tn.esprit.boussole.service.franchiseService;
 import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.Gemini;
 import tn.esprit.boussole.utils.PDFGenerator;
@@ -34,7 +36,17 @@ public class AdminAlerteIAController {
     colDate.setCellValueFactory(new PropertyValueFactory<>("date_detection"));
     colFranchise.setCellValueFactory(
         cellData -> {
-          return new SimpleStringProperty("nom/ville#" + cellData.getValue().getFranchiseId());
+          int id = cellData.getValue().getFranchiseId();
+          String nomFranchise;
+          try {
+            // Initialize service and fetch the name
+            franchiseService fs = new franchiseService();
+            nomFranchise = fs.getNomById(id);
+          } catch (SQLException e) {
+            e.printStackTrace();
+            nomFranchise = "Error ID: " + id;
+          }
+          return new SimpleStringProperty(nomFranchise);
         });
 
     // When a user clicks a row, update the "Details" TextArea on the right

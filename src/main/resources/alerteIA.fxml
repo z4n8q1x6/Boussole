@@ -19,15 +19,15 @@
   stylesheets="/dark-table.css">
 
   <padding>
-    <Insets top="25" right="25" bottom="25" left="25" />
+    <Insets top="25" right="25" bottom="5" left="25" />
   </padding>
 
   <!-- Header -->
-  <HBox alignment="CENTER_LEFT">
+  <HBox alignment="CENTER_RIGHT">
     <Button onAction="#generate"
       text="+ Alerte"
       prefHeight="40"
-      prefWidth="160"
+      prefWidth="140"
       style="-fx-background-color: #00E5CC;
          -fx-text-fill: #06080F;
          -fx-font-weight: bold;
@@ -59,12 +59,12 @@
                  -fx-selection-bar: #00E5CC33;
                  -fx-selection-bar-non-focused: #00E5CC22;">
           <columns>
-            <TableColumn fx:id="colType" text="Nature" prefWidth="250.0" />
-            <TableColumn fx:id="colScore" text="Gravité" prefWidth="60.0" />
-            <TableColumn fx:id="colDate" text="Date" prefWidth="80" />
+            <TableColumn fx:id="colType" text="Nature" />
+            <TableColumn fx:id="colScore" text="Gravité" />
+            <TableColumn fx:id="colDate" text="Date" />
           </columns>
           <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
           </columnResizePolicy>
         </TableView>
       </VBox>

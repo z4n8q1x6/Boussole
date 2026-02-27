@@ -32,7 +32,7 @@
       <Button text="Analyser"
         onAction="#analyzeSeverity"
         prefHeight="40"
-        prefWidth="130"
+        prefWidth="140"
         style="-fx-background-color: rgba(59,130,246,0.15);
          -fx-text-fill: #60A5FA;
          -fx-font-weight: bold;
@@ -46,7 +46,7 @@
       <Button onAction="#delete"
         text="Supprimer"
         prefHeight="40"
-        prefWidth="130"
+        prefWidth="140"
         style="-fx-background-color: #3D1A1A;
                 -fx-text-fill: #F43F5E;
                 -fx-font-weight: bold;
@@ -60,7 +60,7 @@
       <Button onAction="#handleUpdate"
         text="Modifier"
         prefHeight="40"
-        prefWidth="130"
+        prefWidth="140"
         style="-fx-background-color: transparent;
                 -fx-text-fill: #00E5CC;
                 -fx-font-weight: bold;
@@ -95,11 +95,11 @@
         <TableColumn fx:id="colFranchise" text="Franchise" />
         <TableColumn fx:id="colSujet" text="Sujet" />
         <TableColumn fx:id="colDescription" text="Description" />
-        <TableColumn fx:id="colStatut" text="Statut" prefWidth="50" />
-        <TableColumn fx:id="colDate" text="Date" prefWidth="70.0" />
+        <TableColumn fx:id="colStatut" text="Statut" />
+        <TableColumn fx:id="colDate" text="Date" />
       </columns>
       <columnResizePolicy>
-        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
       </columnResizePolicy>
     </TableView>
 
