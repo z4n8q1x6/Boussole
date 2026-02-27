@@ -15,6 +15,7 @@ import tn.esprit.Boussole.Models.Charge;
 import tn.esprit.Boussole.Models.budget_previsionnel;
 import tn.esprit.Boussole.Models.franchise;
 import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
+import tn.esprit.Boussole.Utilis.NotificationManager;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.IOException;
@@ -503,41 +504,22 @@ public class GestionBudgetsController implements Initializable {
 
 
 
-    /**
-     * Affiche un message de succès (Alert INFORMATION)
-     */
     private void afficherMessageSucces(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Succès");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        NotificationManager.showSuccess("Succès", message);
     }
 
-    /**
-     * Affiche un message d'erreur (Alert ERROR)
-     */
     private void afficherMessageErreur(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        NotificationManager.showError("Erreur", message);
     }
 
-    /**
-     * Demande une confirmation à l'utilisateur (Alert CONFIRMATION)
-     * Retourne true si OK cliqué, false sinon
-     */
     private boolean confirmerAction(String message) {
+        // Pour l'instant on garde une simple confirmation blocante via Alert,
+        // tu pourras plus tard la transformer en dialog personnalisé si besoin.
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText(null);
         alert.setContentText(message);
-
-        return alert.showAndWait()
-            .map(result -> result == javafx.scene.control.ButtonType.OK)
-            .orElse(false);
+        return alert.showAndWait().map(result -> result == ButtonType.OK).orElse(false);
     }
 
 

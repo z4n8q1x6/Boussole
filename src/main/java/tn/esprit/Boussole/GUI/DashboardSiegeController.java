@@ -164,15 +164,15 @@ public class DashboardSiegeController implements Initializable {
                 // 2. Réel vs Budget par mois (3 derniers mois) – TOUT le réseau
                 java.sql.Connection cnx = tn.esprit.Boussole.Utilis.MyBDConnexion.getInstance().getCnx();
                 Map<String, Double[]> reelVsBudget = new java.util.LinkedHashMap<>();
-                String[] nomsMois = {"", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-                                     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"};
+                String[] nomsMois = {"", "Jan", "Fév", "Mar", "Avr", "Mai", "Juin",
+                                     "Juil", "Août", "Sep", "Oct", "Nov", "Déc"};
 
                 for (int i = 2; i >= 0; i--) {
                     java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
                     c.add(java.util.Calendar.MONTH, -i);
                     int month = c.get(java.util.Calendar.MONTH) + 1;
                     int year = c.get(java.util.Calendar.YEAR);
-                    String key = nomsMois[month] + " " + year;
+                    String key = nomsMois[month] + " " + (year % 100);
 
                     // Réel : somme de toutes les transactions du mois
                     double totalReel = 0.0;
@@ -242,23 +242,44 @@ public class DashboardSiegeController implements Initializable {
 
     private void updateBarChart(Map<String, Double[]> data) {
         barChartComparatif.getData().clear();
+        barChartComparatif.setBarGap(4);
+        barChartComparatif.setCategoryGap(40);
+        barChartComparatif.setAnimated(false); // désactiver animation pour éviter conflits
 
         XYChart.Series<String, Number> seriesReel = new XYChart.Series<>();
-        seriesReel.setName("Réel (Total Réseau)");
+        seriesReel.setName("● Réel (Transactions)");
 
         XYChart.Series<String, Number> seriesBudget = new XYChart.Series<>();
-        seriesBudget.setName("Budget Prévu (Réseau)");
+        seriesBudget.setName("● Budget Prévu");
 
         for (Map.Entry<String, Double[]> entry : data.entrySet()) {
             seriesReel.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[0]));
             seriesBudget.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()[1]));
         }
 
+        // IMPORTANT : ajouter séries dans cet ordre → série 0 = Réel (cyan CSS), série 1 = Budget (orange CSS)
         barChartComparatif.getData().addAll(seriesReel, seriesBudget);
 
-        // Rotation des labels pour meilleure lisibilité
-        xAxisComp.setTickLabelRotation(-20);
-        xAxisComp.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 12));
+        // Tooltips sur chaque barre
+        for (XYChart.Data<String, Number> d : seriesReel.getData()) {
+            d.nodeProperty().addListener((obs, o, n) -> {
+                if (n != null) {
+                    Tooltip.install(n, new Tooltip("Réel : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
+                }
+            });
+        }
+        for (XYChart.Data<String, Number> d : seriesBudget.getData()) {
+            d.nodeProperty().addListener((obs, o, n) -> {
+                if (n != null) {
+                    Tooltip.install(n, new Tooltip("Budget : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
+                }
+            });
+        }
+
+        // Labels axe X lisibles
+        xAxisComp.setTickLabelRotation(0);
+        xAxisComp.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 13));
+        xAxisComp.setTickLabelGap(10);
     }
 
     private void updateScatterChart(Map<Integer, List<FranchiseData>> clusters) {

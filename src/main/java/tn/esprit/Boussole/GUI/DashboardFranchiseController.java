@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -24,6 +23,7 @@ import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
 import tn.esprit.Boussole.Services.ServiceDevise;
 import tn.esprit.Boussole.Services.ServiceTransaction;
 import tn.esprit.Boussole.Utilis.SessionManager;
+import tn.esprit.Boussole.Utilis.NotificationManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -400,19 +400,15 @@ public class DashboardFranchiseController implements Initializable {
 
     // Ajout des méthodes manquantes pour gérer les messages d'erreur et de succès
     private void afficherMessageErreur(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        NotificationManager.showError("Erreur", message);
     }
 
     private void afficherMessageSucces(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Succès");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        NotificationManager.showSuccess("Succès", message);
+    }
+
+    private void afficherMessageInfo(String message) {
+        NotificationManager.showInfo("Information", message);
     }
 
     /**

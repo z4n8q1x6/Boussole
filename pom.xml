@@ -73,6 +73,12 @@
             <version>3.6.1</version>
         </dependency>
 
+        <!-- ControlsFX pour Notifications modernes / toasts -->
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>11.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>

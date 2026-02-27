@@ -416,43 +416,101 @@
 }
 
 /* --- CHART STYLING --- */
+
+/* BarChart : Série 0 = Réel (Cyan) */
+.default-color0.chart-bar {
+    -fx-bar-fill: #00E5CC;
+}
+
+.default-color0.chart-series-symbol {
+    -fx-background-color: #00E5CC;
+}
+
+/* BarChart : Série 1 = Budget (Orange) */
+.default-color1.chart-bar {
+    -fx-bar-fill: #FFA726;
+}
+
+.default-color1.chart-series-symbol {
+    -fx-background-color: #FFA726;
+}
+
+/* BarChart : Série 2 (si besoin) */
+.default-color2.chart-bar {
+    -fx-bar-fill: #EF5350;
+}
+
+.default-color2.chart-series-symbol {
+    -fx-background-color: #EF5350;
+}
+
 .chart-title {
     -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
 }
 
-.axis {
-    -fx-tick-label-fill: #94A3B8;
-    -fx-label-fill: #94A3B8;
-}
-
-.axis:top {
-    -fx-border-color: transparent transparent #94A3B8 transparent;
-}
-
-.axis:right {
-    -fx-border-color: transparent transparent transparent #94A3B8;
-}
-
-.axis:bottom {
-    -fx-border-color: #94A3B8 transparent transparent transparent;
-}
-
-.axis:left {
-    -fx-border-color: transparent #94A3B8 transparent transparent;
-}
-
-.chart-legend {
+.chart-plot-background {
     -fx-background-color: transparent;
 }
 
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: rgba(255, 255, 255, 0.06);
+}
+
+.chart-alternative-row-fill {
+    -fx-fill: transparent;
+}
+
+.axis {
+    -fx-tick-label-fill: #CBD5E1;
+    -fx-label-fill: #94A3B8;
+}
+
+.axis .axis-label {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.axis:bottom {
+    -fx-border-color: rgba(255, 255, 255, 0.15) transparent transparent transparent;
+}
+
+.axis:left {
+    -fx-border-color: transparent rgba(255, 255, 255, 0.15) transparent transparent;
+}
+
+.chart-legend {
+    -fx-background-color: rgba(15, 23, 42, 0.8);
+    -fx-background-radius: 8px;
+    -fx-padding: 8 16;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 8px;
+}
+
 .chart-legend-item {
-    -fx-text-fill: #94A3B8;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
 }
 
 .chart-symbol {
-    /* Style par d�faut des points du scatter */
     -fx-background-radius: 50%;
     -fx-padding: 7px;
+}
+
+/* Tooltip amélioré */
+.tooltip {
+    -fx-background-color: #0B1120;
+    -fx-text-fill: white;
+    -fx-border-color: #00E5CC;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8 12;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.3), 8, 0, 0, 2);
 }
 
 /* TABLE VIEW - Ameliorations visuelles pour Journal Franchise */
