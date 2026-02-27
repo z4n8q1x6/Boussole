@@ -142,14 +142,16 @@ public class AdminReclamationController {
     String prompt =
         String.format(
             """
-            Analysez cette réclamation et évaluez son niveau de gravité / impact :
+            Tu es un expert en gestion de la relation client. Analyse la réclamation suivante et réponds uniquement en suivant strictement ce format, sans texte d'introduction ni de conclusion.
+
+            DONNÉES :
             Sujet : %s
             Description : %s
 
-            Fournissez :
-            1. Gravité : Critique / Élevée / Moyenne / Faible
-            2. Justification : explication en 1 à 2 phrases
-            3. Action recommandée : (Classifier: en attente, en cours ou résolue)
+            FORMAT DE RÉPONSE :
+            Gravité : [Critique | Élevée | Moyenne | Faible]
+            Justification : [1-2 phrases maximum]
+            Action : [en attente | en cours | résolue]
             """,
             selected.getSujet(), selected.getDescription());
 

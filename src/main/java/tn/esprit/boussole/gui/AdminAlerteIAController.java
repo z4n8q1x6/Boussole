@@ -113,13 +113,17 @@ public class AdminAlerteIAController {
     alertSummary.append("Voici toutes les alertes actuelles pour toutes les franchises :\n\n");
 
     for (AlerteIA alert : all) {
+      String franchise_nom = "Unknown";
+      try {
+        franchiseService fs = new franchiseService();
+        franchise_nom = fs.getNomById(alert.getFranchiseId());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
       alertSummary.append(
           String.format(
-              "- Franchise #%d | Type: %s | Severity: %.1f/10\n  Message: %s\n\n",
-              alert.getFranchiseId(),
-              alert.getType_alerte(),
-              alert.getScore_gravite(),
-              alert.getMessage()));
+              "- Franchise %s | Type: %s | Severity: %.1f/10\n  Message: %s\n\n",
+              franchise_nom, alert.getType_alerte(), alert.getScore_gravite(), alert.getMessage()));
     }
 
     String prompt =
@@ -141,15 +145,15 @@ public class AdminAlerteIAController {
             ━━━━━━━━━━━━━━━━━━━━━━━━
 
             🔴 #1 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action immédiate et précise]
 
             🟡 #2 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action cette semaine]
 
             🟢 #3 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action ce mois]
 
             ━━━━━━━━━━━━━━━━━━━━━━━━
