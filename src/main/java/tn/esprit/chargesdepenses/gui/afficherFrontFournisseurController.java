@@ -61,9 +61,10 @@ public class afficherFrontFournisseurController {
 
     @FXML
     public void initialize() {
-        // --- AJOUTE CES DEUX LIGNES ICI ---
+        // --- STYLE IA ---
         txtReponseIA.setStyle("-fx-control-inner-background: #0C0F1A; -fx-text-fill: #00E5CC; -fx-font-family: 'Segoe UI';");
         txtReponseIA.setPromptText("L'analyse de l'IA apparaîtra ici...");
+
         comboTri.setItems(FXCollections.observableArrayList("Matricule Croissant", "Matricule Décroissant"));
         comboTri.setOnAction(e -> applyFilters());
         txtRecherche.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
@@ -80,33 +81,37 @@ public class afficherFrontFournisseurController {
     }
 
     private void startExternalAPIs() {
-        // 1. Tâche Météo
+        // 1. Tâche Météo via Open-Meteo (Stable et sans clé)
         Task<String> weatherTask = new Task<>() {
             @Override
             protected String call() throws Exception {
                 try {
+                    // Coordonnées de Tunis
+                    String urlStr = "https://api.open-meteo.com/v1/forecast?latitude=36.8188&longitude=10.1659&current_weather=true";
                     HttpClient client = HttpClient.newHttpClient();
-                    // Test en HTTP (plus simple pour Java) au lieu de HTTPS
-                    HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create("http://wttr.in/Tunis?format=%c+%t"))
-                            .header("User-Agent", "Mozilla/5.0")
-                            .build();
-
+                    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(urlStr)).build();
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                     if (response.statusCode() == 200) {
-                        return response.body().trim();
-                    } else {
-                        return "Indisponible (Code " + response.statusCode() + ")";
+                        JSONObject json = new JSONObject(response.body());
+                        JSONObject current = json.getJSONObject("current_weather");
+                        double temp = current.getDouble("temperature");
+                        int code = current.getInt("weathercode");
+                        String desc = traduireCodeMeteo(code);
+                        return "🌍 Tunis : " + temp + "°C, " + desc;
                     }
                 } catch (Exception e) {
-                    // Affiche l'erreur réelle dans la console d'IntelliJ pour comprendre le problème
                     e.printStackTrace();
-                    return "Erreur réseau";
                 }
+                return "Météo indisponible";
             }
         };
-        //flash business
+
+        // Liaison du résultat au Label FXML
+        weatherTask.setOnSucceeded(e -> lblMeteo.setText(weatherTask.getValue()));
+        weatherTask.setOnFailed(e -> lblMeteo.setText("Météo indisponible"));
+
+        // 2. Tâche Flash Business (News)
         Task<String> newsTask = new Task<>() {
             @Override
             protected String call() throws Exception {
@@ -115,6 +120,7 @@ public class afficherFrontFournisseurController {
         };
         newsTask.setOnSucceeded(e -> lblNews.setText(newsTask.getValue()));
 
+        // Lancement des threads
         new Thread(weatherTask).start();
         new Thread(newsTask).start();
     }
@@ -137,14 +143,12 @@ public class afficherFrontFournisseurController {
             @Override
             protected String call() throws Exception {
                 JSONObject payload = new JSONObject();
-                //modele utilisé
                 payload.put("model", "minimax/minimax-m2.5");
                 JSONArray messages = new JSONArray();
                 JSONObject msg = new JSONObject();
                 msg.put("role", "user");
                 msg.put("content", "En tant qu'expert logistique, donne 2 conseils courts et stratégiques pour gérer ces fournisseurs : " + noms);
                 messages.put(msg);
-
                 payload.put("messages", messages);
 
                 HttpClient client = HttpClient.newHttpClient();
@@ -166,7 +170,6 @@ public class afficherFrontFournisseurController {
                             .getJSONObject("message")
                             .getString("content").trim();
                 } else {
-                    System.err.println("ERREUR OPENROUTER : " + response.body());
                     return "Erreur technique (Code " + response.statusCode() + ")";
                 }
             }
@@ -312,17 +315,21 @@ public class afficherFrontFournisseurController {
         alert.setTitle(titre);
         alert.setHeaderText(null);
         alert.setContentText(message);
-
-        // --- APPLICATION DU DESIGN SOMBRE ---
         DialogPane dialogPane = alert.getDialogPane();
-
-        // Chargement du fichier CSS
         String cssPath = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
         dialogPane.getStylesheets().add(cssPath);
-
-        // Application de la classe parente
         dialogPane.getStyleClass().add("dialog-pane");
-
         alert.showAndWait();
+    }
+
+    private String traduireCodeMeteo(int code) {
+        if (code == 0) return "Ciel dégagé";
+        if (code >= 1 && code <= 3) return "Partiellement nuageux";
+        if (code >= 45 && code <= 48) return "Brouillard";
+        if (code >= 51 && code <= 67) return "Pluie légère";
+        if (code >= 71 && code <= 77) return "Neige";
+        if (code >= 80 && code <= 82) return "Averses de pluie";
+        if (code >= 95) return "Orageux";
+        return "Variable";
     }
 }
