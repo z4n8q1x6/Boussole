@@ -18,21 +18,6 @@
 
   <!-- Header with title and button -->
   <HBox spacing="10" alignment="CENTER_LEFT">
-
-    <VBox spacing="4" HBox.hgrow="ALWAYS">
-
-      <Label text="Réclamations"
-        textFill="#E8EDF5">
-        <font>
-          <Font name="System Bold" size="22" />
-        </font>
-      </Label>
-
-      <Label text="Gérez et suivez les réclamations"
-        textFill="#8e9aaf" />
-
-    </VBox>
-
     <Button onAction="#delete"
       maxWidth="1.7976931348623157E308"
       prefHeight="40"

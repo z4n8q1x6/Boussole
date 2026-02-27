@@ -104,9 +104,7 @@ public class AdminReclamationController {
       return;
     }
     try {
-      FXMLLoader loader =
-          new FXMLLoader(
-              getClass().getResource("/updateReclamation.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/updateReclamation.fxml"));
       Parent root = loader.load();
       UpdateReclamationController controller = loader.getController();
       controller.setReclamation(selected);
@@ -139,7 +137,7 @@ public class AdminReclamationController {
             Fournissez :
             1. Gravité : Critique / Élevée / Moyenne / Faible
             2. Justification : explication en 1 à 2 phrases
-            3. Action recommandée : que faut-il faire ? (Classifier: en attente, en cours ou résolue)
+            3. Action recommandée : (Classifier: en attente, en cours ou résolue)
             """,
             selected.getSujet(), selected.getDescription());
 

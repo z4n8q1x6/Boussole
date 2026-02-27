@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.service.ReclamationService;
 import tn.esprit.boussole.utils.AlertUtil;
-import tn.esprit.boussole.utils.UserManager; // --- IMPORTÉ POUR RÉCUPÉRER L'ID ---
+import tn.esprit.boussole.utils.UserManager;
 
 public class ReclamationController {
   private final ReclamationService service = new ReclamationService();
@@ -39,44 +39,43 @@ public class ReclamationController {
 
     // Makes description column scrollable
     colDescription.setCellFactory(
-            column -> {
-              return new TableCell<Reclamation, String>() {
-                private final TextArea textArea = new TextArea();
+        column -> {
+          return new TableCell<Reclamation, String>() {
+            private final TextArea textArea = new TextArea();
 
-                {
-                  textArea.setEditable(false);
-                  textArea.setWrapText(true);
+            {
+              textArea.setEditable(false);
+              textArea.setWrapText(true);
 
-                  // Style it to blend in: no border, transparent background
-                  textArea.setStyle(
-                          "-fx-background-color: transparent; "
-                                  + "-fx-background-insets: 0; "
-                                  + "-fx-padding: 5;");
+              // Style it to blend in: no border, transparent background
+              textArea.setStyle(
+                  "-fx-background-color: transparent; "
+                      + "-fx-background-insets: 0; "
+                      + "-fx-padding: 5;");
 
-                  // pref height
-                  textArea.setPrefHeight(40);
-                }
+              // pref height
+              textArea.setPrefHeight(40);
+            }
 
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                  super.updateItem(item, empty);
-                  if (empty || item == null) {
-                    setGraphic(null);
-                  } else {
-                    textArea.setText(item);
-                    setGraphic(textArea);
-                  }
-                }
-              };
-            });
+            @Override
+            protected void updateItem(String item, boolean empty) {
+              super.updateItem(item, empty);
+              if (empty || item == null) {
+                setGraphic(null);
+              } else {
+                textArea.setText(item);
+                setGraphic(textArea);
+              }
+            }
+          };
+        });
 
     display();
   }
 
   @FXML
   private void handleAddReclamation() {
-    FXMLLoader loader =
-            new FXMLLoader(getClass().getResource("/addReclamation.fxml"));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource("/addReclamation.fxml"));
     try {
       Parent root = loader.load();
       AddReclamationController controller = loader.getController();
@@ -96,7 +95,6 @@ public class ReclamationController {
   }
 
   public void display() {
-    // Affiche les réclamations pour la franchise spécifique
     table.setItems(service.getByFranchise(franchise_id));
   }
 
@@ -106,7 +104,7 @@ public class ReclamationController {
 
     if (selected != null) {
       ButtonType result =
-              AlertUtil.showConfirmation("Confirmation", "Supprimer cette réclamation ?");
+          AlertUtil.showConfirmation("Confirmation", "Supprimer cette réclamation ?");
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
@@ -116,7 +114,7 @@ public class ReclamationController {
       }
     } else {
       AlertUtil.showWarning(
-              "Aucune sélection", "Veuillez sélectionner une réclamation à supprimer.");
+          "Aucune sélection", "Veuillez sélectionner une réclamation à supprimer.");
     }
   }
 }

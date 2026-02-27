@@ -24,15 +24,6 @@
 
   <!-- Header -->
   <HBox alignment="CENTER_LEFT">
-    <VBox spacing="4" HBox.hgrow="ALWAYS">
-      <Label text="Alertes IA" textFill="#E8EDF5">
-        <font>
-          <Font name="System Bold" size="22" />
-        </font>
-      </Label>
-      <Label text="Système de surveillance et d'analyse automatique"
-        textFill="#8e9aaf" />
-    </VBox>
     <Button onAction="#generate"
       text="+ Alerte"
       prefHeight="40"
