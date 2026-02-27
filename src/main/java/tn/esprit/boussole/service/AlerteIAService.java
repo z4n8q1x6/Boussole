@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import tn.esprit.boussole.models.AlerteIA;
-import tn.esprit.boussole.utils.Database;
 import tn.esprit.boussole.utils.MyBdConnexion;
 
 public class AlerteIAService {

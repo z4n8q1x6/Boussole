@@ -9,21 +9,21 @@ import tn.esprit.boussole.service.userService;
 
 public class MainApp extends Application {
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // Initialiser l'admin si nécessaire
-        userService userService = new userService();
-        userService.initializeAdmin();
+  @Override
+  public void start(Stage primaryStage) throws Exception {
+    // Initialiser l'admin si nécessaire
+    userService userService = new userService();
+    userService.initializeAdmin();
 
-        Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
-        primaryStage.setTitle("Boussole - Login");
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
-        primaryStage.setMaximized(true); // Plein écran maximisé
-        primaryStage.show();
-    }
+    Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+    primaryStage.setTitle("Boussole - Login");
+    Scene scene = new Scene(root);
+    primaryStage.setScene(scene);
+    primaryStage.setMaximized(true); // Plein écran maximisé
+    primaryStage.show();
+  }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+  public static void main(String[] args) {
+    launch(args);
+  }
 }
