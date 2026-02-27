@@ -33,7 +33,9 @@ import java.util.ResourceBundle;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.ToggleButton;
 import org.controlsfx.control.PopOver;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 
 public class DashboardSiegeController implements Initializable {
 
@@ -448,6 +450,17 @@ public class DashboardSiegeController implements Initializable {
             for (StackTraceElement el : e.getStackTrace()) {
                 System.err.println(el.toString());
             }
+        }
+    }
+
+    // --- Theme Toggle ---
+    @FXML private ToggleButton btnTheme;
+
+    @FXML
+    private void toggleTheme() {
+        ThemeManager.getInstance().toggleTheme();
+        if (btnTheme != null) {
+            btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }
     }
 }

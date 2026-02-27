@@ -27,24 +27,24 @@
     <!-- 2. BARRE DE FILTRES -->
     <HBox spacing="15" alignment="CENTER_LEFT" styleClass="kpi-card" style="-fx-padding: 20;">
         <VBox spacing="8">
-            <Label text="Date Début" style="-fx-text-fill: #94A3B8; -fx-font-size:11px; -fx-font-weight:bold;"/>
+            <Label text="Date Début" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
             <DatePicker fx:id="dpDateDebut" promptText="Sélectionner..." />
         </VBox>
 
         <VBox spacing="8">
-            <Label text="Date Fin" style="-fx-text-fill: #94A3B8; -fx-font-size:11px; -fx-font-weight:bold;"/>
+            <Label text="Date Fin" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
             <DatePicker fx:id="dpDateFin" promptText="Sélectionner..." />
         </VBox>
 
         <VBox spacing="8">
-            <Label text="Type" style="-fx-text-fill: #94A3B8; -fx-font-size:11px; -fx-font-weight:bold;"/>
+            <Label text="Type" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
             <ComboBox fx:id="cbTypeFiltre" promptText="TOUT" prefWidth="150" />
         </VBox>
 
         <Pane HBox.hgrow="ALWAYS" />
 
         <Button fx:id="btnRechercher" text="Rechercher" onAction="#appliquerFiltres" styleClass="button-primary" />
-        <Button fx:id="btnReinitialiser" text="Réinitialiser" onAction="#reinitialiserFiltres" styleClass="nav-button" style="-fx-background-color: rgba(255,255,255,0.05);" />
+        <Button fx:id="btnReinitialiser" text="Réinitialiser" onAction="#reinitialiserFiltres" styleClass="nav-button" />
     </HBox>
 
     <!-- 3. TABLEAU -->

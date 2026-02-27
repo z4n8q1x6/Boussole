@@ -38,11 +38,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors; // Added
 import javafx.util.Callback;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.controlsfx.control.PopOver;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 
 public class DashboardFranchiseController implements Initializable {
 
@@ -504,6 +506,17 @@ public class DashboardFranchiseController implements Initializable {
         } catch (IOException e) {
             Logger.getLogger(DashboardFranchiseController.class.getName()).log(Level.SEVERE, null, e);
             afficherMessageErreur("Impossible de charger la vue : " + fxmlPath + "\n" + e.getMessage());
+        }
+    }
+
+    // --- Theme Toggle ---
+    @FXML private ToggleButton btnTheme;
+
+    @FXML
+    private void toggleTheme() {
+        ThemeManager.getInstance().toggleTheme();
+        if (btnTheme != null) {
+            btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }
     }
 }

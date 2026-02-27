@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tn.esprit.Boussole.Utilis.SessionManager;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,6 +16,9 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            // Appliquer le thème par défaut (DARK) au démarrage
+            ThemeManager.getInstance().setTheme("DARK");
+
             // Chargement de l'écran de Login
             URL fxmlUrl = getClass().getResource("/tn/esprit/Boussole/GUI/Login.fxml");
 

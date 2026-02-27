@@ -29,6 +29,8 @@ import tn.esprit.Boussole.Models.bilan;
 import tn.esprit.Boussole.Models.franchise;
 import tn.esprit.Boussole.Models.transaction;
 import tn.esprit.Boussole.Services.ServiceBilan;
+import tn.esprit.Boussole.Services.ServiceEmail;
+import tn.esprit.Boussole.Services.ServiceQuickChart;
 import tn.esprit.Boussole.Utilis.MyBDConnexion;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
@@ -49,6 +51,7 @@ public class GestionBilansController implements Initializable {
     @FXML private Button btnBilans;
     @FXML private Button btnGenererBilan;
     @FXML private Button btnExporterPDF;
+    @FXML private Button btnEnvoyerEmail;
     @FXML private TableView<bilan> tableBilans;
     @FXML private TableColumn<bilan, Integer> colFranchise;
     @FXML private TableColumn<bilan, Integer> colMois;
@@ -303,6 +306,7 @@ public class GestionBilansController implements Initializable {
         
         btnGenererBilan.setOnAction(event -> genererBilan());
         btnExporterPDF.setOnAction(event -> exporterPDF());
+        if (btnEnvoyerEmail != null) btnEnvoyerEmail.setOnAction(event -> envoyerBilanEmail());
     }
 
     /**
@@ -574,5 +578,113 @@ public class GestionBilansController implements Initializable {
             }
         }
         // Si l'utilisateur annule, ne rien faire
+    }
+
+    /**
+     * Envoie le bilan sélectionné par email au gérant de la franchise avec graphique QuickChart intégré.
+     */
+    @FXML
+    private void envoyerBilanEmail() {
+        // Vérifier qu'une ligne est sélectionnée dans la TableView
+        int selectedIndex = tableBilans.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            afficherMessageErreur("Veuillez sélectionner un bilan à envoyer par email.");
+            return;
+        }
+
+        bilan bilanSel = tableBilans.getSelectionModel().getSelectedItem();
+        
+        // Récupérer la franchise pour obtenir l'email
+        String emailDestinataire = "";
+        String nomFranchise = "Tout le Réseau";
+        
+        if (bilanSel.getFranchiseId() == 0) {
+            // C'est un bilan consolidé ("TOUT LE RÉSEAU")
+            // On demandera l'email ci-dessous car il n'y a pas de gérant spécifique dans la table franchises
+        } else {
+            try {
+                Connection cnx = MyBDConnexion.getInstance().getCnx();
+                String sql = "SELECT nom, email FROM franchises WHERE id = ?";
+                PreparedStatement ps = cnx.prepareStatement(sql);
+                ps.setInt(1, bilanSel.getFranchiseId());
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    nomFranchise = rs.getString("nom");
+                    emailDestinataire = rs.getString("email");
+                }
+            } catch (SQLException e) {
+                afficherMessageErreur("Erreur de base de données : impossible de récupérer l'email du gérant.");
+                return;
+            }
+        }
+
+        // Si pas d'email en base (ou bilan global), on demande à l'utilisateur de le saisir
+        if (emailDestinataire == null || emailDestinataire.trim().isEmpty()) {
+            javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
+            dialog.setTitle("Email manquant");
+            dialog.setHeaderText("Aucune adresse email trouvée pour : " + nomFranchise);
+            dialog.setContentText("Veuillez saisir l'adresse email de destination :");
+
+            java.util.Optional<String> result = dialog.showAndWait();
+            if (result.isPresent() && !result.get().trim().isEmpty()) {
+                emailDestinataire = result.get().trim();
+            } else {
+                afficherMessageErreur("Envoi annulé : L'adresse email est obligatoire.");
+                return;
+            }
+        }
+
+        // Configuration pour ServiceQuickChart et ServiceEmail
+        ServiceQuickChart serviceChart = new ServiceQuickChart();
+        ServiceEmail serviceEmail = new ServiceEmail();
+
+        String urlGraphique = serviceChart.genererUrlGraphique(bilanSel.getTotalRecettes(), bilanSel.getTotalCharges());
+        
+        // Construire le contenu HTML du message
+        String sujet = "Rapport Financier Mensuel - " + nomFranchise + " (" + bilanSel.getMois() + "/" + bilanSel.getAnnee() + ")";
+        
+        String htmlContent = "<div style='font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a;'>"
+            + "<div style='max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);'>"
+            + "  <div style='background-color: #1e293b; color: white; padding: 20px; text-align: center;'>"
+            + "    <h2 style='margin:0;'>Boussole - Bilan Périodique</h2>"
+            + "    <p style='margin:5px 0 0 0; opacity: 0.8;'>Période : " + bilanSel.getMois() + " / " + bilanSel.getAnnee() + "</p>"
+            + "  </div>"
+            + "  <div style='padding: 30px;'>"
+            + "    <p>Bonjour le gérant de <b>" + nomFranchise + "</b>,</p>"
+            + "    <p>Le siège a généré (ou mis à jour) votre bilan mensuel. Voici un résumé des opérations :</p>"
+            + "    <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>"
+            + "      <tr>"
+            + "        <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: bold;'>Total Recettes :</td>"
+            + "        <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #10B981; font-weight: bold;'>" + String.format("%.2f", bilanSel.getTotalRecettes()) + " TND</td>"
+            + "      </tr>"
+            + "      <tr>"
+            + "        <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: bold;'>Total Charges :</td>"
+            + "        <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #EF4444; font-weight: bold;'>" + String.format("%.2f", bilanSel.getTotalCharges()) + " TND</td>"
+            + "      </tr>"
+            + "      <tr>"
+            + "        <td style='padding: 10px; border-bottom: 2px solid #1e293b; font-weight: bold; font-size: 16px;'>Résultat Net :</td>"
+            + "        <td style='padding: 10px; border-bottom: 2px solid #1e293b; text-align: right; font-weight: bold; font-size: 16px;" 
+            + (bilanSel.getResultatNet() >= 0 ? " color: #10B981;" : " color: #EF4444;") + "'>" 
+            + String.format("%.2f", bilanSel.getResultatNet()) + " TND</td>"
+            + "      </tr>"
+            + "    </table>"
+            + "    <div style='text-align: center; margin-top: 30px;'>"
+            + "      <p style='font-size: 14px; color: #64748b; margin-bottom: 10px;'>Aperçu Graphique</p>"
+            + "      <img src='" + urlGraphique + "' alt='Graphique Répartition' style='max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;' />"
+            + "    </div>"
+            + "  </div>"
+            + "  <div style='background-color: #f1f5f9; padding: 15px; text-align: center; font-size: 12px; color: #64748b;'>"
+            + "    <p style='margin: 0;'>Ce message est généré automatiquement par l'ERP Boussole. Merci de ne pas y répondre.</p>"
+            + "  </div>"
+            + "</div>"
+            + "</div>";
+
+        try {
+            serviceEmail.envoyerEmailHTML(emailDestinataire, sujet, htmlContent);
+            afficherMessageSucces("E-mail envoyé avec succès au gérant de " + nomFranchise + " à l'adresse " + emailDestinataire);
+        } catch (Exception e) {
+            afficherMessageErreur("Erreur lors de l'envoi de l'email : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

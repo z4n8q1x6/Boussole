@@ -73,9 +73,9 @@
                     <children>
                         <!-- Filtre Période hybride (rapide + plage personnalisée) -->
                         <VBox spacing="8">
-                            <Label text="Période" style="-fx-text-fill: #94A3B8; -fx-font-size:11px; -fx-font-weight:bold;"/>
+                            <Label text="Période" style="-fx-font-size:11px; -fx-font-weight:bold;" styleClass="kpi-title"/>
                             <MenuButton fx:id="btnPeriode" text="📅 Période : Ce Mois" prefWidth="220"
-                                        style="-fx-background-color: #112240; -fx-text-fill: #FFFFFF; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;">
+                                        style="-fx-background-radius: 30; -fx-border-radius: 30; -fx-padding: 8 15;">
                                 <items>
                                     <MenuItem fx:id="miCeMois" text="Ce Mois" />
                                     <MenuItem fx:id="miMoisDernier" text="Mois Dernier" />
@@ -85,13 +85,13 @@
                                     <CustomMenuItem hideOnClick="false">
                                         <content>
                                             <!-- Carte sombre alignée avec le template -->
-                                            <VBox spacing="8" style="-fx-padding: 12; -fx-background-color: #020617;">
-                                                <Label text="Plage personnalisée" style="-fx-text-fill: #E5E7EB; -fx-font-size:11px; -fx-font-weight:bold;" />
+                                            <VBox spacing="8" style="-fx-padding: 12;">
+                                                <Label text="Plage personnalisée" style="-fx-font-size:11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                                 <HBox spacing="8" alignment="CENTER_LEFT">
                                                     <DatePicker fx:id="dpPeriodeDu" promptText="Du..." prefWidth="120"
-                                                                style="-fx-background-color: #020617; -fx-control-inner-background: #020617; -fx-text-fill: #E5E7EB; -fx-background-radius: 22; -fx-border-radius: 22; -fx-border-color: #1F2937; -fx-border-width: 1;" />
+                                                                style="-fx-background-radius: 22; -fx-border-radius: 22;" />
                                                     <DatePicker fx:id="dpPeriodeAu" promptText="Au..." prefWidth="120"
-                                                                style="-fx-background-color: #020617; -fx-control-inner-background: #020617; -fx-text-fill: #E5E7EB; -fx-background-radius: 22; -fx-border-radius: 22; -fx-border-color: #1F2937; -fx-border-width: 1;" />
+                                                                style="-fx-background-radius: 22; -fx-border-radius: 22;" />
                                                     <Button fx:id="btnPeriodeOk" text="OK"
                                                             style="-fx-background-color: #0ea5e9; -fx-text-fill: #000000; -fx-font-weight: 800; -fx-background-radius: 22; -fx-padding: 6 18;" />
                                                 </HBox>
@@ -103,18 +103,17 @@
                         </VBox>
 
                         <VBox spacing="8">
-                            <Label text="Type" style="-fx-text-fill: #94A3B8; -fx-font-size:11px; -fx-font-weight:bold;"/>
+                            <Label text="Type" style="-fx-font-size:11px; -fx-font-weight:bold;" styleClass="kpi-title"/>
                             <ComboBox fx:id="cbTypeFiltre" promptText="TOUT" prefWidth="150"
-                                      style="-fx-background-color: #112240; -fx-text-fill: #FFFFFF; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;
-                                             -fx-control-inner-background: #112240; -fx-accent: #0a84ff; -fx-cell-hover-color: #233554;" />
+                                      style="-fx-background-radius: 30; -fx-border-radius: 30; -fx-padding: 8 15;" />
                         </VBox>
 
                         <Pane HBox.hgrow="ALWAYS" />
 
                         <TextField fx:id="txtRechercheGlobal" promptText="🔍 Rechercher dans la description..." prefWidth="250"
-                                   style="-fx-background-color: #112240; -fx-text-fill: #e6f1ff; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;" />
+                                   style="-fx-background-radius: 30; -fx-border-radius: 30; -fx-padding: 8 15;" />
                         <Button fx:id="btnReinitialiser" text="Réinitialiser" onAction="#reinitialiserFiltres" styleClass="nav-button"
-                                style="-fx-background-color: #112240; -fx-text-fill: #e6f1ff; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;" />
+                                style="-fx-background-radius: 30; -fx-border-radius: 30; -fx-padding: 8 15;" />
                         <!-- Bouton Exporter avec texte noir -->
                         <Button fx:id="btnExporter" text="Exporter ..." onAction="#exporter" styleClass="button-primary"
                                 style="-fx-background-color: #0a84ff; -fx-text-fill: #000000; -fx-font-weight:bold; -fx-background-radius: 30; -fx-border-radius: 30; -fx-border-color: #233554; -fx-border-width: 1; -fx-padding: 8 15;" />
@@ -137,7 +136,7 @@
                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                             </columnResizePolicy>
                             <placeholder>
-                                <Label text="Aucune transaction trouvée" style="-fx-text-fill: #64748B; -fx-font-size: 14px;"/>
+                                <Label text="Aucune transaction trouvée" styleClass="page-subtitle" style="-fx-font-size: 14px;"/>
                             </placeholder>
                         </TableView>
                     </children>
@@ -147,19 +146,19 @@
                 <HBox spacing="20">
                     <children>
                         <VBox styleClass="user-card" HBox.hgrow="ALWAYS" alignment="CENTER">
-                            <Label text="Nombre Transactions" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;"/>
+                            <Label text="Nombre Transactions" styleClass="kpi-title" style="-fx-font-size: 12px;"/>
                             <Label fx:id="lblNombreTransactions" text="--" styleClass="kpi-value" style="-fx-font-size: 20px; -fx-text-fill: #0b3d91;"/>
                         </VBox>
                         <VBox styleClass="user-card" HBox.hgrow="ALWAYS" alignment="CENTER">
-                            <Label text="Total Recettes" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;"/>
+                            <Label text="Total Recettes" styleClass="kpi-title" style="-fx-font-size: 12px;"/>
                             <Label fx:id="lblTotalRecettes" text="-- TND" styleClass="kpi-value" style="-fx-font-size: 20px; -fx-text-fill: #2e7d32;"/>
                         </VBox>
                         <VBox styleClass="user-card" HBox.hgrow="ALWAYS" alignment="CENTER">
-                            <Label text="Total Charges" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;"/>
+                            <Label text="Total Charges" styleClass="kpi-title" style="-fx-font-size: 12px;"/>
                             <Label fx:id="lblTotalCharges" text="-- TND" styleClass="kpi-value" style="-fx-font-size: 20px; -fx-text-fill: #c62828;"/>
                         </VBox>
                         <VBox styleClass="user-card" HBox.hgrow="ALWAYS" alignment="CENTER">
-                            <Label text="Solde Filtré" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;"/>
+                            <Label text="Solde Filtré" styleClass="kpi-title" style="-fx-font-size: 12px;"/>
                             <Label fx:id="lblSoldeFiltre" text="-- TND" styleClass="kpi-value" style="-fx-font-size: 20px; -fx-text-fill: #0b3d91;"/>
                         </VBox>
                     </children>

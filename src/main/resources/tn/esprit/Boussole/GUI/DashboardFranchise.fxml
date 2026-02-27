@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.geometry.Insets?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.Boussole.GUI.DashboardFranchiseController" fx:id="contentPane" prefWidth="1280" prefHeight="800" stylesheets="@styles.css">
@@ -39,6 +40,9 @@
 
                 <!-- Bouton sidebar renommé en 'Journal Complet' -->
                 <Button fx:id="btnHistorique" text="Journal Complet" onAction="#versHistorique" styleClass="nav-button" maxWidth="Infinity" />
+
+                <!-- Bouton Thème -->
+                <ToggleButton fx:id="btnTheme" text="🌞 Mode Clair" styleClass="nav-button" maxWidth="Infinity" onAction="#toggleTheme" />
 
                 <!-- Spacer -->
                 <Pane VBox.vgrow="ALWAYS" />
@@ -72,7 +76,7 @@
                     <Pane HBox.hgrow="ALWAYS" />
                     <!-- Centre de Notifications -->
                     <StackPane fx:id="paneNotificationBtn" style="-fx-cursor: hand; -fx-padding: 5;" onMouseClicked="#afficherNotifications">
-                        <Label text="🔔" style="-fx-font-size: 24px; -fx-text-fill: white;" />
+                        <Label text="🔔" style="-fx-font-size: 24px;" styleClass="page-subtitle" />
                         <StackPane fx:id="badgeNotification" visible="false" style="-fx-background-color: #EF4444; -fx-background-radius: 50%; -fx-min-width: 16; -fx-min-height: 16; -fx-max-width: 16; -fx-max-height: 16;" StackPane.alignment="TOP_RIGHT">
                             <Label fx:id="lblNotifCount" text="0" style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold; -fx-alignment: center;" alignment="CENTER" prefWidth="16" prefHeight="16"/>
                         </StackPane>
@@ -93,7 +97,7 @@
                                 </HBox>
                                 <Pane prefHeight="15"/>
                                 <Label fx:id="lblSolde" text="0.00 TND" styleClass="kpi-value" style="-fx-text-fill: #00E5CC;"/>
-                                <Label fx:id="lblContreValeur" text="(soit 0.00 €)" style="-fx-text-fill: #64748B; -fx-font-size: 14px; -fx-font-style: italic;"/>
+                                <Label fx:id="lblContreValeur" text="(soit 0.00 €)" styleClass="page-subtitle" style="-fx-font-size: 14px; -fx-font-style: italic;"/>
                             </children>
                         </VBox>
 
@@ -124,20 +128,20 @@
                         <!-- Formulaire Saisie Rapide -->
                         <VBox spacing="20" styleClass="kpi-card" prefWidth="320">
                             <children>
-                                <Label text="Nouvelle Transaction" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" />
+                                <Label text="Nouvelle Transaction" style="-fx-font-size: 16px; -fx-font-weight: bold;" styleClass="page-subtitle" />
 
                                 <VBox spacing="8">
-                                    <Label text="Date" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Date" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <DatePicker fx:id="dpDate" maxWidth="Infinity" />
                                 </VBox>
 
                                 <VBox spacing="8">
-                                    <Label text="Montant (TND)" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Montant (TND)" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <TextField fx:id="tfMontant" promptText="0.00" />
                                 </VBox>
 
                                 <VBox spacing="8">
-                                    <Label text="Description" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Description" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <TextField fx:id="tfDescription" promptText="Ex: Vente du jour" />
                                 </VBox>
 
@@ -154,7 +158,7 @@
                             </padding>
                             <children>
                                 <HBox alignment="CENTER_LEFT">
-                                    <Label text="Derniers Mouvements" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                                    <Label text="Derniers Mouvements" style="-fx-font-size: 16px; -fx-font-weight: bold;" styleClass="page-subtitle" />
                                     <Pane HBox.hgrow="ALWAYS" />
                                 </HBox>
 

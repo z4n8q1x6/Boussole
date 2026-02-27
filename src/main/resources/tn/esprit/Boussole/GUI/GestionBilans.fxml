@@ -64,20 +64,26 @@
                         <Insets top="20" right="25" bottom="25" left="25"/>
                     </padding>
                     <children>
-                        <!-- Barre d'Outils de Génération -->
-                        <HBox spacing="15" alignment="CENTER_LEFT">
-                            <Label text="Cible :" style="-fx-text-fill: white; -fx-font-weight: bold;" />
-                            <ComboBox fx:id="cbFranchiseCible" promptText="Franchise" prefWidth="180" />
-                            <Label text="Période :" style="-fx-text-fill: white; -fx-font-weight: bold;" />
-                            <ComboBox fx:id="comboMois" promptText="Mois" prefWidth="120" />
-                            <ComboBox fx:id="comboAnnee" promptText="Année" prefWidth="100" />
-                            <Button fx:id="btnGenererBilan" text="🔄 GÉNÉRER / RECALCULER" styleClass="button-primary" />
-                            <Pane HBox.hgrow="ALWAYS" />
-                            <Button fx:id="btnExporterPDF" text="📥 EXPORTER PDF" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #3B82F6, #2563EB);" />
-                            <Label text="Sélectionnez pour exporter" style="-fx-text-fill: #64748B; -fx-font-style: italic; -fx-font-size: 12px;" />
-                        </HBox>
+                        <!-- Barre d'Outils de Génération (2 lignes) -->
+                        <VBox spacing="12">
+                            <!-- Ligne 1 : Filtres -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Label text="Cible :" style="-fx-font-weight: bold;" styleClass="kpi-title" />
+                                <ComboBox fx:id="cbFranchiseCible" promptText="Franchise" prefWidth="200" />
+                                <Label text="Période :" style="-fx-font-weight: bold;" styleClass="kpi-title" />
+                                <ComboBox fx:id="comboMois" promptText="Mois" prefWidth="150" />
+                                <ComboBox fx:id="comboAnnee" promptText="Année" prefWidth="100" />
+                                <Button fx:id="btnGenererBilan" text="🔄 Générer / Recalculer" styleClass="button-primary" />
+                            </HBox>
+                            <!-- Ligne 2 : Actions -->
+                            <HBox spacing="12" alignment="CENTER_RIGHT">
+                                <Button fx:id="btnExporterPDF" text="📥 Exporter PDF" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #3B82F6, #2563EB);" />
+                                <Button fx:id="btnEnvoyerEmail" text="📧 Envoyer Bilan par Email" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #10B981, #059669);" />
+                                <Label text="⬆ Sélectionnez une ligne puis cliquez" styleClass="page-subtitle" style="-fx-font-style: italic; -fx-font-size: 11px;" />
+                            </HBox>
+                        </VBox>
 
-                        <Label text="Historique des Bilans" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                        <Label text="Historique des Bilans" style="-fx-font-size: 16px; -fx-font-weight: bold;" styleClass="page-subtitle" />
 
                         <!-- TableView Historique Bilans -->
                         <TableView fx:id="tableBilans" VBox.vgrow="ALWAYS">

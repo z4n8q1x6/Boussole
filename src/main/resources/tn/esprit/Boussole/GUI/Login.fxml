@@ -10,15 +10,15 @@
 
     <VBox spacing="40" alignment="CENTER" maxWidth="450" maxHeight="350" styleClass="kpi-card" style="-fx-padding: 50;">
 
-        <Label text="BOUSSOLE" style="-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,229,204,0.4), 10, 0, 0, 0);" />
+        <Label text="BOUSSOLE" styleClass="page-title" style="-fx-font-size: 36px; -fx-font-weight: 900;" />
 
-        <Label text="Bienvenue" style="-fx-font-size: 18px; -fx-text-fill: #94A3B8;" />
+        <Label text="Bienvenue" styleClass="page-subtitle" style="-fx-font-size: 18px;" />
 
         <VBox spacing="20" alignment="CENTER" maxWidth="350" VBox.vgrow="ALWAYS">
             <Button fx:id="btnSiege" text="ACCÈS SIÈGE" maxWidth="Infinity" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 15;" />
-            <Button fx:id="btnFranchise" text="ACCÈS FRANCHISE" maxWidth="Infinity" styleClass="nav-button" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-font-size: 14px; -fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12;" />
+            <Button fx:id="btnFranchise" text="ACCÈS FRANCHISE" maxWidth="Infinity" styleClass="nav-button" style="-fx-font-size: 14px; -fx-background-radius: 12; -fx-border-radius: 12;" />
         </VBox>
 
-        <Label text="Sélectionnez votre espace pour continuer" style="-fx-text-fill: #64748B; -fx-font-size: 12px;" />
+        <Label text="Sélectionnez votre espace pour continuer" styleClass="page-subtitle" style="-fx-font-size: 12px;" />
     </VBox>
 </StackPane>

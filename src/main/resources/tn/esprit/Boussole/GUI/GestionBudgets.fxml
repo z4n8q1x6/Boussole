@@ -69,44 +69,44 @@
                                 <Insets top="25" right="25" bottom="25" left="25"/>
                             </padding>
                             <children>
-                                <Label text="Gestion du Budget" style="-fx-font-size:16px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                                <Label text="Gestion du Budget" style="-fx-font-size:16px; -fx-font-weight: bold;" styleClass="page-subtitle" />
 
                                 <HBox spacing="10">
                                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                                        <Label text="Mois" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                        <Label text="Mois" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                         <ComboBox fx:id="cbMois" maxWidth="Infinity" />
                                     </VBox>
                                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                                        <Label text="Année" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                        <Label text="Année" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                         <ComboBox fx:id="cbAnnee" maxWidth="Infinity" />
                                     </VBox>
                                 </HBox>
 
                                 <VBox spacing="8">
-                                    <Label text="Type de Budget" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Type de Budget" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <ComboBox fx:id="cbTypeBudget" maxWidth="Infinity" />
                                 </VBox>
 
                                 <VBox spacing="8">
-                                    <Label text="Catégorie" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Catégorie" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <ComboBox fx:id="cbCategorie" maxWidth="Infinity" />
                                 </VBox>
 
                                 <VBox spacing="8">
-                                    <Label text="Montant Cible (TND)" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Montant Cible (TND)" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <TextField fx:id="txtMontant" promptText="0.00" />
                                 </VBox>
 
                                 <!-- Cible(s) via ListView pour sélection multiple -->
                                 <VBox spacing="5" VBox.vgrow="NEVER">
-                                    <Label text="Cible(s) :" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight:bold;" />
+                                    <Label text="Cible(s) :" style="-fx-font-size: 11px; -fx-font-weight:bold;" styleClass="kpi-title" />
                                     <ListView fx:id="listFranchises" prefHeight="100" styleClass="franchise-list" />
                                 </VBox>
 
                                 <Pane VBox.vgrow="ALWAYS" />
 
                                 <HBox spacing="15">
-                                    <Button fx:id="btnVider" text="Effacer" styleClass="nav-button" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: #94A3B8;" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                                    <Button fx:id="btnVider" text="Effacer" styleClass="nav-button" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
                                     <Button fx:id="btnSauvegarder" text="SAUVEGARDER" styleClass="button-primary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
                                 </HBox>
                             </children>
@@ -118,7 +118,7 @@
                                 <Insets top="20" right="20" bottom="20" left="20"/>
                             </padding>
                             <children>
-                                <Label text="Budgets Configurés" style="-fx-font-size:16px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                                <Label text="Budgets Configurés" style="-fx-font-size:16px; -fx-font-weight: bold;" styleClass="page-subtitle" />
                                 <TableView fx:id="tableBudgets" VBox.vgrow="ALWAYS" styleClass="journal-table-view"
                                            style="-fx-background-color: transparent; -fx-padding: 4;">
                                     <columns>

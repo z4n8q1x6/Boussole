@@ -1,6 +1,8 @@
 /* GLOBAL */
 .root {
     -fx-font-family: 'Segoe UI', sans-serif;
+    -boussole-accent: #00E5CC;
+    -boussole-accent2: #00B4D8;
 }
 
 /* SIDEBAR */
@@ -50,7 +52,7 @@
 
 /* SECTION TITLES */
 .section-label {
-    -fx-text-fill: #475569;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 10px;
     -fx-font-weight: 800;
     -fx-padding: 25 0 8 18;
@@ -67,9 +69,9 @@
 }
 
 .user-card {
-    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 16;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 16;
     -fx-padding: 12;
     -fx-spacing: 12;
@@ -87,7 +89,7 @@
 
 /* MAIN CONTENT AREA */
 .content-area {
-    -fx-background-color: #06080F;
+    -fx-background-color: -color-bg-default;
     -fx-padding: 40;
 }
 
@@ -96,36 +98,35 @@
 }
 
 .page-title {
-    -fx-text-fill: #F8FAFC;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 32px;
     -fx-font-weight: 900;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 3);
 }
 
 .page-subtitle {
-    -fx-text-fill: #64748B;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 14px;
     -fx-font-weight: 500;
 }
 
 /* KPI CARDS */
 .kpi-card {
-    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 20;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 20;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0, 0, 4);
     -fx-padding: 20;
 }
 
 .kpi-title {
-    -fx-text-fill: #94A3B8;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
 
 .kpi-value {
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 24px;
     -fx-font-weight: 900;
 }
@@ -133,11 +134,11 @@
 /* INPUT FIELDS */
 .text-field,
 .date-picker .text-field {
-    -fx-background-color: #0F1523;
+    -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 12;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 12;
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-padding: 10 15;
 }
 
@@ -173,17 +174,16 @@
 /* ComboBox en mode sombre : texte et prompt en blanc ou gris clair */
 .combo-box,
 .combo-box-base {
-    -fx-background-color: #112240;
+    -fx-background-color: -color-bg-subtle;
 }
 
 .combo-box-base,
 .combo-box-base .text {
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
 }
 
 .combo-box .text {
-    -fx-fill: white;
-    /* certains thèmes utilisent -fx-fill pour le texte interne */
+    -fx-fill: -color-fg-default;
 }
 
 .combo-box .text-field {
@@ -193,14 +193,14 @@
 
 /* Correction du menu déroulant (ListView interne) pour enlever le fond blanc alterné */
 .combo-box-popup .list-view {
-    -fx-background-color: #112240;
-    -fx-border-color: #233554;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
     -fx-border-width: 1px;
 }
 
 .combo-box-popup .list-view .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-padding: 8 12;
 }
 
@@ -208,53 +208,53 @@
 .combo-box-popup .list-view .list-cell:hover,
 .combo-box-popup .list-view .list-cell:filled:selected,
 .combo-box-popup .list-view .list-cell:filled:hover {
-    -fx-background-color: #233554;
-    -fx-text-fill: white;
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-fg-default;
 }
 
 /* Context menu Dark Mode Pro global (non limite a table-view) */
 .context-menu {
-    -fx-background-color: #112240;
-    -fx-text-fill: white;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-border-color: #233554;
+    -fx-border-color: -color-border-default;
     -fx-border-width: 1;
 }
 
 .menu-item,
 .menu-item .label {
     -fx-background-color: transparent;
-    -fx-text-fill: #E5E7EB;
+    -fx-text-fill: -color-fg-default;
     -fx-padding: 6 12;
 }
 
 .menu-item:focused,
 .menu-item:armed,
 .menu-item:hover {
-    -fx-background-color: #0a84ff;
+    -fx-background-color: -color-accent-subtle;
 }
 
 .menu-item:focused .label,
 .menu-item:armed .label,
 .menu-item:hover .label {
-    -fx-text-fill: #000000;
+    -fx-text-fill: -color-fg-default;
 }
 
 /* CustomMenuItem (bloc DatePicker dans le menu periode) en dark */
 .custom-menu-item>* {
-    -fx-background-color: #020617;
-    -fx-text-fill: #E5E7EB;
+    -fx-background-color: -color-bg-default;
+    -fx-text-fill: -color-fg-default;
 }
 
 .date-picker,
 .date-picker .text-field {
-    -fx-background-color: #020617;
-    -fx-control-inner-background: #020617;
-    -fx-text-fill: #E5E7EB;
+    -fx-background-color: -color-bg-default;
+    -fx-control-inner-background: -color-bg-default;
+    -fx-text-fill: -color-fg-default;
     -fx-background-radius: 22;
     -fx-border-radius: 22;
-    -fx-border-color: #1F2937;
+    -fx-border-color: -color-border-default;
     -fx-border-width: 1;
 }
 
@@ -269,7 +269,7 @@
 }
 
 .table-view .column-header-background {
-    -fx-background-color: rgba(6, 8, 15, 0.95);
+    -fx-background-color: -color-bg-subtle;
 }
 
 .table-view .column-header,
@@ -318,7 +318,7 @@
 
 /* --- Cellules normales --- */
 .table-cell {
-    -fx-text-fill: #CBD5E1;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 13px;
     -fx-padding: 12 16 12 16;
     -fx-border-width: 0;
@@ -356,26 +356,25 @@
 
 /* --- Context menu --- */
 .table-view .context-menu {
-    -fx-background-color: #0B1120;
-    -fx-border-color: rgba(0, 229, 204, 0.3);
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
     -fx-padding: 6px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.2), 15, 0, 0, 4);
 }
 
 .table-view .menu-item:hover {
-    -fx-background-color: rgba(0, 229, 204, 0.15);
+    -fx-background-color: -color-accent-subtle;
     -fx-background-radius: 6px;
 }
 
 .table-view .menu-item .label {
-    -fx-text-fill: #E2E8F0;
+    -fx-text-fill: -color-fg-default;
 }
 
 /* Placeholder (table vide) */
 .table-view .placeholder .label {
-    -fx-text-fill: #475569;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 13px;
     -fx-font-style: italic;
 }
@@ -391,7 +390,7 @@
 
 .my-tab-pane .tab {
     -fx-background-color: transparent;
-    -fx-text-fill: #94A3B8;
+    -fx-text-fill: -color-fg-muted;
     -fx-padding: 10 20;
     -fx-border-color: transparent;
     -fx-border-width: 0 0 2 0;
@@ -406,7 +405,7 @@
 }
 
 .my-tab-pane .tab .tab-label {
-    -fx-text-fill: #94A3B8;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
@@ -445,7 +444,7 @@
 }
 
 .chart-title {
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
@@ -464,12 +463,12 @@
 }
 
 .axis {
-    -fx-tick-label-fill: #CBD5E1;
-    -fx-label-fill: #94A3B8;
+    -fx-tick-label-fill: -color-fg-default;
+    -fx-label-fill: -color-fg-muted;
 }
 
 .axis .axis-label {
-    -fx-text-fill: #CBD5E1;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
@@ -483,15 +482,15 @@
 }
 
 .chart-legend {
-    -fx-background-color: rgba(15, 23, 42, 0.8);
+    -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 8px;
     -fx-padding: 8 16;
-    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 8px;
 }
 
 .chart-legend-item {
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
@@ -503,14 +502,13 @@
 
 /* Tooltip amélioré */
 .tooltip {
-    -fx-background-color: #0B1120;
-    -fx-text-fill: white;
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
     -fx-border-color: #00E5CC;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
     -fx-padding: 8 12;
     -fx-font-size: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.3), 8, 0, 0, 2);
 }
 
 /* TABLE VIEW - Ameliorations visuelles pour Journal Franchise */
@@ -520,11 +518,11 @@
 }
 
 .table-view.journal-table-view .column-header-background {
-    -fx-background-color: rgba(15, 23, 42, 0.95);
+    -fx-background-color: -color-bg-subtle;
 }
 
 .table-view.journal-table-view .column-header .label {
-    -fx-text-fill: #9CA3AF;
+    -fx-text-fill: -color-fg-muted;
     -fx-font-size: 11px;
     -fx-font-weight: 700;
     -fx-letter-spacing: 0.08em;
@@ -532,7 +530,7 @@
 
 /* Lignes zebra */
 .table-view.journal-table-view .table-row-cell:odd {
-    -fx-background-color: rgba(15, 23, 42, 0.75);
+    -fx-background-color: -color-bg-subtle;
 }
 
 .table-view.journal-table-view .table-row-cell:even {
@@ -564,8 +562,8 @@
 
 /* ListView Franchise - Gestion Budgets */
 .franchise-list {
-    -fx-background-color: #0B1120;
-    -fx-border-color: rgba(0, 229, 204, 0.3);
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
     -fx-border-width: 1px;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
@@ -574,7 +572,7 @@
 
 .franchise-list .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: #E2E8F0;
+    -fx-text-fill: -color-fg-default;
     -fx-padding: 10px 14px;
     -fx-font-size: 13px;
     -fx-cursor: hand;
@@ -599,13 +597,12 @@
 /* Form Elements (ComboBox & TextField) */
 .combo-box,
 .text-field {
-    -fx-background-color: #0B1120;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
     -fx-padding: 4px 8px;
-    -fx-transition: border-color 0.3s, effect 0.3s;
 }
 
 .combo-box:hover,
@@ -622,5 +619,5 @@
 
 
 .combo-box .list-cell {
-    -fx-text-fill: white;
+    -fx-text-fill: -color-fg-default;
 }

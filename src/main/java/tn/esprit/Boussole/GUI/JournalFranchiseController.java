@@ -495,10 +495,10 @@ public class JournalFranchiseController implements Initializable {
     @FXML
     private void exporter() {
         // Selection Logic
-        List<transaction> transactionsToExport = tableTransactions.getSelectionModel().getSelectedItems();
-        if (transactionsToExport == null || transactionsToExport.isEmpty()) {
+        List<transaction> transactionsToExport = new java.util.ArrayList<>(tableTransactions.getSelectionModel().getSelectedItems());
+        if (transactionsToExport.isEmpty()) {
             // No selection -> export all filtered rows
-            transactionsToExport = tableTransactions.getItems();
+            transactionsToExport = new java.util.ArrayList<>(tableTransactions.getItems());
         }
 
         if (transactionsToExport.isEmpty()) {
