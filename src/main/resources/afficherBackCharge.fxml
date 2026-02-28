@@ -11,7 +11,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0" style="-fx-background-color: #06080F;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.chargesdepenses.gui.afficherBackChargeController">
+<VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
+      style="-fx-background-color: #06080F;"
+      stylesheets="@styles/ChargesdepensesDash.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.boussole.gui.afficherBackChargeController">
 
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
@@ -27,7 +32,6 @@
             </Label>
         </VBox>
         <HBox spacing="10">
-            <Button fx:id="btnFront" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" text="Vue Front" />
             <Button fx:id="btnAjouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" text="+ Ajouter" />
         </HBox>
     </HBox>
@@ -37,7 +41,7 @@
         <ComboBox fx:id="comboTri" prefHeight="42.0" promptText="Trier par" style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
     </HBox>
 
-    <TableView fx:id="tableCharges" styleClass="dark-table" VBox.vgrow="ALWAYS">
+    <TableView fx:id="tableCharges" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colTitre" prefWidth="130.0" text="TITRE" />
             <TableColumn fx:id="colMontant" prefWidth="92.0" text="MONTANT (TND)" />

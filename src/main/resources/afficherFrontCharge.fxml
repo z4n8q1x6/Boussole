@@ -18,7 +18,7 @@
       stylesheets="@styles/ChargesdepensesDash.css"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="tn.esprit.chargesdepenses.gui.afficherFrontChargeController">
+      fx:controller="tn.esprit.boussole.gui.afficherFrontChargeController">
 
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />

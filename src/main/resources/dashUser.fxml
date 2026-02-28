@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import java.net.URL?>
+
+<HBox prefHeight="720.0" prefWidth="1280.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.dashUserController">
+
+    <!-- SIDEBAR -->
+    <VBox prefWidth="280.0" minWidth="280.0" styleClass="sidebar">
+
+        <!-- HEADER SIDEBAR -->
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="sidebar-header">
+            <Label text="🧭" styleClass="logo-container">
+                <font><Font size="22"/></font>
+            </Label>
+            <VBox spacing="2">
+                <Label text="Boussole" textFill="#F8FAFC"><font><Font name="System Bold" size="20"/></font></Label>
+                <Label text="ENTREPRISE" textFill="#00E5CC"><font><Font name="System Bold" size="10"/></font></Label>
+            </VBox>
+        </HBox>
+
+        <!-- MENU SCROLLABLE -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="8" style="-fx-background-color: transparent;">
+                    <padding><Insets top="10" right="15" left="15" bottom="20"/></padding>
+
+                    <!-- SECTION PRINCIPAL -->
+                    <Label text="PRINCIPAL" styleClass="section-label"/>
+                    <Button fx:id="btnDashboard" text="📊   Tableau de bord" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnProduit" text="📦   Produit" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnCommande" text="🛒   Commande" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnLigneCommande" text="📝   Ligne commande" maxWidth="Infinity" styleClass="nav-button"/>
+
+                    <!-- SECTION GESTION -->
+                    <Label text="GESTION" styleClass="section-label"/>
+                    <Button fx:id="btnFournisseur" text="🚚   Fournisseur" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnFranchises" text="🏢   Franchises" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnAlertes" text="⚠️   Alertes" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" styleClass="nav-button"/>
+
+                    <!-- SECTION FINANCES -->
+                    <Label text="FINANCES" styleClass="section-label"/>
+                    <Button fx:id="btnBilan" text="📈   Bilan" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnBudget" text="💰   Budget" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnCharge" text="💸   Charge" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnMensualite" text="📅   Mensualité" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnPret" text="🏦   Prêt" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnTransaction" text="💳   Transaction" maxWidth="Infinity" styleClass="nav-button"/>
+                </VBox>
+            </content>
+        </ScrollPane>
+
+        <!-- FOOTER USER -->
+        <VBox styleClass="user-footer" spacing="15">
+            <!-- Carte Utilisateur -->
+            <HBox alignment="CENTER_LEFT" styleClass="user-card">
+                <Label fx:id="lblAvatar" text="U" textFill="WHITE" styleClass="avatar-circle">
+                    <font><Font name="System Bold" size="18"/></font>
+                </Label>
+                <VBox spacing="3">
+                    <Label fx:id="lblUsername" text="Utilisateur" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="6">
+                        <Label text="●" textFill="#10B981" style="-fx-font-size: 10px; -fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.6), 5, 0, 0, 0);"/>
+                        <Label text="En ligne" textFill="#94A3B8" style="-fx-font-size: 11px;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+
+            <!-- Bouton Déconnexion -->
+            <Button fx:id="btnLogout" text="Déconnexion" maxWidth="Infinity" styleClass="logout-button"/>
+        </VBox>
+    </VBox>
+
+    <!-- MAIN CONTENT AREA -->
+    <VBox HBox.hgrow="ALWAYS" styleClass="content-area">
+        <!-- HEADER PAGE -->
+        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="page-header">
+            <VBox>
+                <Label fx:id="lblPageTitle" text="Tableau de bord" styleClass="page-title"/>
+                <Label text="Bienvenue sur votre espace de gestion" styleClass="page-subtitle"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- SEARCH BAR & NOTIFICATIONS -->
+            <HBox alignment="CENTER" spacing="15">
+                <HBox alignment="CENTER_LEFT" styleClass="search-container">
+                    <Label text="🔍" textFill="#64748B" style="-fx-padding: 0 5 0 0;"/>
+                    <TextField promptText="Rechercher..." styleClass="search-field"/>
+                </HBox>
+
+                <!-- Bouton Thème -->
+                <Button fx:id="btnTheme" text="🌙" styleClass="icon-button" onAction="#handleThemeToggle"/>
+
+                <Button text="🔔" styleClass="icon-button"/>
+                <Button text="⚙️" styleClass="icon-button"/>
+            </HBox>
+        </HBox>
+
+        <!-- DYNAMIC CONTENT -->
+        <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <stylesheets>
+        <URL value="@/styles/dash.css" />
+    </stylesheets>
+
+</HBox>

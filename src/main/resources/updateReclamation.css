@@ -1,0 +1,48 @@
+/* ComboBox main button */
+.combo-box {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+}
+
+/* Selected text */
+.combo-box .list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: #e8edf5;
+}
+
+/* Arrow button */
+.combo-box .arrow-button {
+  -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+  -fx-background-color: #8892a4;
+}
+
+/* Dropdown popup background */
+.combo-box-popup .list-view {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+}
+
+/* Dropdown items */
+.combo-box-popup .list-view .list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: #e8edf5;
+  -fx-padding: 8 12;
+}
+
+/* Dropdown item hover */
+.combo-box-popup .list-view .list-cell:hover {
+  -fx-background-color: rgba(0, 229, 204, 0.1);
+}
+
+/* Dropdown item selected */
+.combo-box-popup .list-view .list-cell:selected {
+  -fx-background-color: rgba(0, 229, 204, 0.2);
+  -fx-text-fill: #00e5cc;
+}

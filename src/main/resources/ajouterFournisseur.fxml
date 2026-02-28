@@ -15,14 +15,14 @@
       stylesheets="@styles/ChargesdepensesDash.css"
       xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="tn.esprit.chargesdepenses.gui.ajouterFournisseurController">
+      fx:controller="tn.esprit.boussole.gui.ajouterFournisseurController">
 
     <padding>
         <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
     </padding>
 
     <HBox alignment="CENTER_LEFT" spacing="15.0">
-        <Button fx:id="btnListe" onAction="#handleAfficherListe" text="← Retour"
+        <Button fx:id="btnListe" text="← Retour"
                 style="-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-font-size: 14px; -fx-cursor: hand;" />
         <VBox HBox.hgrow="ALWAYS" />
         <Button fx:id="btnVersCharge" onAction="#handleVersCharge" text="Ajouter Charge →"

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
+      style="-fx-background-color: #06080F;"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.boussole.gui.entrepriseController">
+
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <VBox HBox.hgrow="ALWAYS">
+            <Label text="Gestion des Entreprises" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="26.0" /></font>
+            </Label>
+            <Label text="Visualisation et gestion des partenaires enregistrés" textFill="#8892A4">
+                <font><Font size="13.0" /></font>
+            </Label>
+        </VBox>
+    </HBox>
+
+    <HBox spacing="15.0">
+        <ComboBox fx:id="statusFilter" onAction="#handleSearch" prefHeight="42.0" prefWidth="180.0"
+                  promptText="Tous les statuts"
+                  style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-mark-color: white;" />
+
+        <TextField fx:id="searchField" onKeyReleased="#handleSearch" prefHeight="42.0" prefWidth="380.0"
+                   promptText="🔍 Rechercher une entreprise (nom, email...)"
+                   style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15 0 15;" />
+    </HBox>
+
+    <TableView fx:id="tableEntreprises" VBox.vgrow="ALWAYS"
+               style="-fx-background-color: transparent; -fx-base: #06080F; -fx-control-inner-background: #06080F; -fx-table-cell-border-color: transparent;">
+        <columns>
+            <TableColumn fx:id="colNom" prefWidth="130.0" text="NOM" />
+            <TableColumn fx:id="colEmail" prefWidth="180.0" text="EMAIL" />
+            <TableColumn fx:id="colTelephone" prefWidth="120.0" text="TÉLÉPHONE" />
+            <TableColumn fx:id="colAdresse" prefWidth="180.0" text="ADRESSE" />
+            <TableColumn fx:id="colActif" prefWidth="80.0" text="STATUT" />
+            <TableColumn fx:id="colSolde" prefWidth="100.0" text="SOLDE" />
+            <TableColumn fx:id="colActions" prefWidth="130.0" text="ACTIONS" />
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+    </TableView>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label fx:id="lblPagination" textFill="#3A4258">
+            <font><Font name="System Bold" size="11.0" /></font>
+        </Label>
+    </HBox>
+</VBox>

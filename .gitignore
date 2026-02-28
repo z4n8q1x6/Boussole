@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -9,10 +13,20 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+<<<<<<< HEAD
 .idea/
 *.iws
 *.iml
 *.ipr
+=======
+.idea
+*.iws
+*.iml
+*.ipr
+.env
+/tokens/
+src/main/resources/credentials.json
+>>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
 
 ### Eclipse ###
 .apt_generated
@@ -37,4 +51,46 @@ build/
 .vscode/
 
 ### Mac OS ###
+<<<<<<< HEAD
 .DS_Store
+=======
+.DS_Store
+=======
+# --- Build Artifacts ---
+target/
+*.class
+*.log
+
+# --- IDEs ---
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.settings/
+.classpath
+.project
+.factorypath
+
+# VS Code
+.vscode/
+bin/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+*.tmp
+
+# --- Secrets & Notes ---
+.env
+temp_key.txt
+*.properties
+*.md
+
+# --- Project Specific ---
+# Ignore the generated-sources folder if you use one
+src/main/generated/
+
+>>>>>>> e94015978ac89d427a5800471b51c55ad3927b46
+>>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
