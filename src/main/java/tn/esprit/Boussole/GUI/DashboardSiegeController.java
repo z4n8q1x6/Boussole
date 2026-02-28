@@ -438,6 +438,7 @@ public class DashboardSiegeController implements Initializable {
             // Obtenir la stage actuelle depuis le bouton source et changer la scène
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
+            ThemeManager.getInstance().applyCurrentTheme(stage.getScene());
             stage.setTitle("Boussole - " + fxmlPath);
             stage.show();
 
@@ -460,7 +461,7 @@ public class DashboardSiegeController implements Initializable {
 
     @FXML
     private void toggleTheme() {
-        ThemeManager.getInstance().toggleTheme();
+        ThemeManager.getInstance().toggleTheme(btnTheme.getScene());
         if (btnTheme != null) {
             btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }

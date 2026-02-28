@@ -35,6 +35,7 @@ import tn.esprit.Boussole.Utilis.MyBDConnexion;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.File;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
@@ -188,17 +189,29 @@ public class GestionBilansController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
+                    setGraphic(null);
                     setStyle("");
                 } else {
                     if (item > 0) {
-                        setText("✅ Bénéficiaire");
-                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                        setText(" Bénéficiaire");
+                        // Icone check
+                        Label icon = new Label("✓");
+                        icon.setStyle("-fx-text-fill: #10B981; -fx-font-size: 14px; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
                     } else if (item < 0) {
-                        setText("⚠️ Déficitaire");
-                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                        setText(" Déficitaire");
+                        // Icone warning
+                        Label icon = new Label("⚠");
+                        icon.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 14px; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
                     } else {
-                        setText("➖ Équilibré");
-                        setStyle("-fx-font-weight: bold;");
+                        setText(" Équilibré");
+                        Label icon = new Label("—");
+                        icon.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 14px; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
                     }
                 }
             }
@@ -516,6 +529,7 @@ public class GestionBilansController implements Initializable {
             // Obtenir la stage actuelle depuis le bouton source et changer la scène
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
+            ThemeManager.getInstance().applyCurrentTheme(scene);
             stage.setTitle("Boussole - " + fxmlPath);
             stage.show();
 

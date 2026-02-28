@@ -2,6 +2,7 @@ package tn.esprit.Boussole.Utilis;
 
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
+import javafx.scene.Scene;
 import javafx.application.Application;
 
 /**
@@ -23,26 +24,55 @@ public class ThemeManager {
     }
 
     /**
-     * Applique le thème spécifié à l'application.
+     * Applique le thème spécifié à l'application et à la scène fournie.
      * @param theme "DARK" ou "LIGHT"
+     * @param scene La scène actuelle (optionnelle)
      */
-    public void setTheme(String theme) {
+    public void setTheme(String theme, Scene scene) {
         this.currentTheme = theme;
         if ("LIGHT".equalsIgnoreCase(theme)) {
             Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
         } else {
             Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         }
+        
+        if (scene != null) {
+            applyCurrentTheme(scene);
+        }
     }
 
     /**
-     * Bascule entre le mode sombre et le mode clair.
+     * Méthode de compatibilité pour setTheme sans scène.
      */
-    public void toggleTheme() {
+    public void setTheme(String theme) {
+        setTheme(theme, null);
+    }
+
+    /**
+     * Bascule entre le mode sombre et le mode clair pour une scène donnée.
+     */
+    public void toggleTheme(Scene scene) {
         if ("DARK".equalsIgnoreCase(currentTheme)) {
-            setTheme("LIGHT");
+            setTheme("LIGHT", scene);
         } else {
-            setTheme("DARK");
+            setTheme("DARK", scene);
+        }
+    }
+
+    /**
+     * Applique les classes CSS de thème (.theme-dark/.theme-light) à la racine de la scène.
+     * Doit être appelé lors du chargement de chaque nouvelle scène.
+     */
+    public void applyCurrentTheme(Scene scene) {
+        if (scene == null || scene.getRoot() == null) return;
+        
+        scene.getRoot().getStyleClass().remove("theme-dark");
+        scene.getRoot().getStyleClass().remove("theme-light");
+        
+        if ("DARK".equalsIgnoreCase(currentTheme)) {
+            scene.getRoot().getStyleClass().add("theme-dark");
+        } else {
+            scene.getRoot().getStyleClass().add("theme-light");
         }
     }
 

@@ -26,6 +26,7 @@ import tn.esprit.Boussole.Utilis.SessionManager;
 
 import java.io.File;
 import java.io.FileWriter;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
@@ -60,7 +61,6 @@ public class JournalFranchiseController implements Initializable {
     @FXML private TableColumn<transaction, String> colType;
     @FXML private TableColumn<transaction, String> colDescription;
     @FXML private TableColumn<transaction, Double> colMontant;
-    @FXML private TableColumn<transaction, Void> colActions;
 
     // KPI Labels
     @FXML private Label lblNombreTransactions;
@@ -115,30 +115,99 @@ public class JournalFranchiseController implements Initializable {
     // OBJECTIF 1 : SETUP TABLE (Sélection & Suppression Pro)
     // =========================================================================
     private void setupTable() {
+        // Mode sélection multiple activé
         tableTransactions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem itemRefresh = new MenuItem("🔄 Rafraîchir");
-        MenuItem itemDelete = new MenuItem("🗑️ Supprimer la sélection");
-
-        itemRefresh.setOnAction(e -> chargerTransactions());
-        itemDelete.setOnAction(e -> supprimerSelection());
-
-        contextMenu.getItems().addAll(itemRefresh, new SeparatorMenuItem(), itemDelete);
-
-        tableTransactions.setRowFactory(tv -> {
-            TableRow<transaction> row = new TableRow<>();
-            row.contextMenuProperty().bind(
-                javafx.beans.binding.Bindings.when(row.emptyProperty())
-                    .then((ContextMenu) null)
-                    .otherwise(contextMenu)
-            );
-            return row;
+        // Configuration basic
+        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        colDate.setCellFactory(column -> new TableCell<transaction, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(new java.text.SimpleDateFormat("dd/MM/yyyy").format(item));
+                    setStyle("-fx-text-fill: white; -fx-alignment: CENTER;");
+                }
+            }
         });
 
-        tableTransactions.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.DELETE) {
-                supprimerSelection();
+        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colDescription.setCellFactory(TextFieldTableCell.forTableColumn()); // Editable text field styling handled in CSS now
+
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colType.setCellFactory(column -> new TableCell<transaction, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle("");
+                } else {
+                    if ("RECETTE".equals(item)) {
+                        setText(" RECETTE");
+                        Label icon = new Label("✓");
+                        icon.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                    } else {
+                        setText(" DÉPENSE");
+                        Label icon = new Label("⚠");
+                        icon.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
+
+        colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+        colMontant.setCellFactory(column -> new TableCell<transaction, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(String.format("%.2f TND", item));
+                    // Récupérer le type pour la couleur
+                    transaction tx = getTableView().getItems().get(getIndex());
+                    if (tx != null && tx.getType() != null && "RECETTE".equals(tx.getType().name())) {
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
+                    } else {
+                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
+                    }
+                }
+            }
+        });
+
+        // Édition : Sauvegarde auto lors de la modification
+        tableTransactions.setEditable(true);
+        colDescription.setOnEditCommit(event -> {
+            transaction t = event.getRowValue();
+            if (t.getType() == transaction.Type.RECETTE) {
+                t.setDescription(event.getNewValue());
+                serviceTransaction.updateOne(t);
+            } else {
+                afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
+                tableTransactions.refresh();
+            }
+        });
+
+        colMontant.setOnEditCommit(event -> {
+            transaction t = event.getRowValue();
+            if (t.getType() == transaction.Type.RECETTE) {
+                if (event.getNewValue() != null && event.getNewValue() > 0) {
+                    t.setMontant(event.getNewValue());
+                    serviceTransaction.updateOne(t);
+                    updatePredicate();
+                }
+            } else {
+                afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
+                tableTransactions.refresh();
             }
         });
     }
@@ -379,7 +448,6 @@ public class JournalFranchiseController implements Initializable {
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
 
-        if (colActions != null) colActions.setVisible(false);
 
         tableTransactions.setEditable(true);
 
@@ -484,6 +552,7 @@ public class JournalFranchiseController implements Initializable {
             } catch (Exception ignored) {
             }
             stage.setScene(scene);
+            ThemeManager.getInstance().applyCurrentTheme(scene);
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {

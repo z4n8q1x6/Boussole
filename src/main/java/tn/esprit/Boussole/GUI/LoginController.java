@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import tn.esprit.Boussole.Utilis.SessionManager;
+import tn.esprit.Boussole.Utilis.ThemeManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -98,6 +99,7 @@ public class LoginController implements Initializable {
             }
 
             stage.setScene(scene);
+            ThemeManager.getInstance().applyCurrentTheme(scene);
             
             // Définition d'un titre plus propre
             String title = fxmlPath.contains("Siege") ? "Espace SIÈGE" : "Espace FRANCHISE";

@@ -1,5 +1,6 @@
 package tn.esprit.Boussole.GUI;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -161,9 +162,44 @@ public class DashboardFranchiseController implements Initializable {
 
             // Configure table columns (LECTURE SEULE)
             if (colDate != null) colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-            if (colType != null) colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+            // if (colType != null) colType.setCellValueFactory(new PropertyValueFactory<>("type")); // CAUSED EXCEPTION
+            if (colType != null) {
+                // Fix ClassCastException: Convert Enum Type to String explicitly
+                colType.setCellValueFactory(cellData -> new SimpleStringProperty(
+                    cellData.getValue().getType() != null ? cellData.getValue().getType().toString() : ""
+                ));
+            }
             if (colDescription != null) colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
             if (colMontant != null) colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+
+            // CellFactory pour colType (Badge coloré) pour matcher le style
+            if (colType != null) {
+                colType.setCellFactory(column -> new TableCell<transaction, String>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                            setGraphic(null);
+                            setStyle("");
+                        } else {
+                            if ("RECETTE".equals(item) || "REVENU".equals(item)) {
+                                setText(" RECETTE");
+                                Label icon = new Label("↗");
+                                icon.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                                setGraphic(icon);
+                                setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                            } else {
+                                setText(" DEPENSE");
+                                Label icon = new Label("↘");
+                                icon.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                                setGraphic(icon);
+                                setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                            }
+                        }
+                    }
+                });
+            }
 
             // IMPORTANT: Désactivation de l'édition et du menu contextuel pour le Dashboard
             tableMovements.setEditable(false);
@@ -272,19 +308,21 @@ public class DashboardFranchiseController implements Initializable {
                             setStyle("");
                             return;
                         }
-                        setText(String.format("%.2f", montant));
+                        setText(String.format("%.2f TND", montant));
+
+                        // Check type from row object
                         transaction tx = getTableView().getItems().get(getIndex());
                         if (tx != null && tx.getType() != null) {
                             String type = tx.getType().name();
                             if ("RECETTE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-background-color: rgba(46,125,50,0.15);");
+                                setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
                             } else if ("DEPENSE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-background-color: rgba(198,40,40,0.15);");
+                                setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
                             } else {
-                                setStyle("");
+                                setStyle("-fx-text-fill: white; -fx-alignment: CENTER-RIGHT;");
                             }
                         } else {
-                            setStyle("");
+                            setStyle("-fx-text-fill: white; -fx-alignment: CENTER-RIGHT;");
                         }
                     }
                 };
@@ -503,6 +541,7 @@ public class DashboardFranchiseController implements Initializable {
             Parent root = loader.load();
             javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             stage.setScene(new javafx.scene.Scene(root));
+            ThemeManager.getInstance().applyCurrentTheme(stage.getScene());
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
@@ -516,7 +555,7 @@ public class DashboardFranchiseController implements Initializable {
 
     @FXML
     private void toggleTheme() {
-        ThemeManager.getInstance().toggleTheme();
+        ThemeManager.getInstance().toggleTheme(btnTheme.getScene());
         if (btnTheme != null) {
             btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }

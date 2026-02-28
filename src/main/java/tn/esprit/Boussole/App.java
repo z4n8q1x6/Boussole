@@ -28,8 +28,11 @@ public class App extends Application {
                 return;
             }
 
-            Parent root = FXMLLoader.load(fxmlUrl);
+             Parent root = FXMLLoader.load(fxmlUrl);
             Scene scene = new Scene(root);
+
+            // Appliquer la classe de thème au démarrage
+            ThemeManager.getInstance().applyCurrentTheme(scene);
 
             // Charger la feuille CSS si elle existe
             URL cssUrl = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css");

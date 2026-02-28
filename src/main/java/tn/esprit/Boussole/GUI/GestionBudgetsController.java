@@ -18,6 +18,7 @@ import tn.esprit.Boussole.Services.ServiceBudgetPrevisionnel;
 import tn.esprit.Boussole.Utilis.NotificationManager;
 import tn.esprit.Boussole.Utilis.SessionManager;
 
+import tn.esprit.Boussole.Utilis.ThemeManager;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -103,6 +104,34 @@ public class GestionBudgetsController implements Initializable {
 
         tableBudgets.setEditable(true);
 
+        // Style pour colType
+        colType.setCellFactory(column -> new TableCell<budget_previsionnel, Object>() {
+            @Override
+            protected void updateItem(Object item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle("");
+                } else {
+                    String typeStr = item.toString();
+                    if ("OBJECTIF_REVENU".equals(typeStr)) {
+                        setText(" Objectif Revenu");
+                        Label icon = new Label("🎯");
+                        icon.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                    } else {
+                        setText(" Limite Dépense");
+                        Label icon = new Label("🛑");
+                        icon.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                        setGraphic(icon);
+                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
+
         Integer[] moisArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         colMois.setCellFactory(ComboBoxTableCell.forTableColumn(moisArray));
         colMois.setOnEditCommit(event -> {
@@ -137,41 +166,6 @@ public class GestionBudgetsController implements Initializable {
             }
         });
 
-        // Type Budget éditable via ComboBox (Typed ComboBoxTableCell)
-        colType.setCellFactory(column -> new ComboBoxTableCell<budget_previsionnel, Object>(
-                new StringConverter<Object>() {
-                    @Override
-                    public String toString(Object object) {
-                        return object == null ? "" : object.toString();
-                    }
-
-                    @Override
-                    public Object fromString(String string) {
-                        return string == null ? null : budget_previsionnel.TypeBudget.valueOf(string);
-                    }
-                },
-                (Object[]) budget_previsionnel.TypeBudget.values()
-        ));
-
-        colType.setOnEditCommit(event -> {
-            budget_previsionnel budget = event.getRowValue();
-            Object newVal = event.getNewValue();
-            if (!(newVal instanceof budget_previsionnel.TypeBudget)) return;
-            budget_previsionnel.TypeBudget nouveauType = (budget_previsionnel.TypeBudget) newVal;
-            budget.setType_budget(nouveauType);
-
-            if (nouveauType == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
-                budget.setCategorie("GLOBAL");
-            }
-
-            try {
-                serviceBudget.updateOne(budget);
-            } catch (Exception e) {
-                afficherMessageErreur("Erreur lors de la mise à jour du type : " + e.getMessage());
-                tableBudgets.refresh();
-            }
-        });
-
         // Configuration correcte de la colonne CATEGORIE en ComboBox éditable
         java.util.List<String> categoriesList = new java.util.ArrayList<>();
         categoriesList.add("GLOBAL");
@@ -197,21 +191,40 @@ public class GestionBudgetsController implements Initializable {
 
 
         // Montant éditable
-        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-        colMontant.setOnEditCommit(event -> {
-            budget_previsionnel budget = event.getRowValue();
-            Double nouveauMontant = event.getNewValue();
-            if (nouveauMontant == null || nouveauMontant <= 0) {
-                afficherMessageErreur("Le montant doit être valide et supérieur à 0.");
-                tableBudgets.refresh();
-                return;
-            }
-            budget.setMontantCible(nouveauMontant);
-            try {
-                serviceBudget.updateOne(budget);
-            } catch (Exception e) {
-                afficherMessageErreur("Erreur lors de la mise à jour : " + e.getMessage());
-                tableBudgets.refresh();
+        colMontant.setCellFactory(column -> new TableCell<budget_previsionnel, Double>() {
+             @Override
+             protected void updateItem(Double item, boolean empty) {
+                 super.updateItem(item, empty);
+                 if (empty || item == null) {
+                     setText(null);
+                     setStyle("");
+                 } else {
+                     setText(String.format("%.2f TND", item));
+                     // Couleur dynamique selon le type de la ligne
+                     budget_previsionnel b = getTableView().getItems().get(getIndex());
+                     if (b != null && b.getType_budget() == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
+                         setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
+                     } else {
+                         setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
+                     }
+                 }
+             }
+        });
+        /*
+        // Suppression de l'ancienne factory editable pour privilégier le look.
+        // Si on veut éditer le montant, on peut remettre TextFieldTableCell mais il faut le styliser lourdement.
+        // Ici on privilégie l'harmonie visuelle demandée.
+        // colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        */
+
+        // On remet la logique double click pour modifier via le formulaire (déjà existante)
+        tableBudgets.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && tableBudgets != null) {
+                 // Logic handled by existing selection listener or can be added here
+                 budget_previsionnel selected = tableBudgets.getSelectionModel().getSelectedItem();
+                 if (selected != null) {
+                     modifierBudget(selected);
+                 }
             }
         });
 
@@ -546,6 +559,7 @@ public class GestionBudgetsController implements Initializable {
 
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
+            ThemeManager.getInstance().applyCurrentTheme(scene);
             stage.show();
 
         } catch (IOException e) {
