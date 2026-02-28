@@ -239,23 +239,11 @@ public class GestionBudgetsController implements Initializable {
         });
         contextMenu.getItems().add(itemSupprimer);
 
+        // Simplification du RowFactory pour éliminer les anciennes classes CSS "row-revenu/depense"
+        // et s'aligner sur le style "Historique Bilans" (noir profond par défaut via styles.css)
         tableBudgets.setRowFactory(tv -> {
-            TableRow<budget_previsionnel> row = new TableRow<budget_previsionnel>() {
-                @Override
-                protected void updateItem(budget_previsionnel item, boolean empty) {
-                    super.updateItem(item, empty);
-                    getStyleClass().removeAll("row-revenu", "row-depense");
-                    if (item != null && !empty) {
-                        if (item.getType_budget() == budget_previsionnel.TypeBudget.OBJECTIF_REVENU) {
-                            getStyleClass().add("row-revenu");
-                        } else {
-                            getStyleClass().add("row-depense");
-                        }
-                    }
-                }
-            };
-            // Dark-mode & effet au survol pour respecter la template
-            row.getStyleClass().add("table-row-dark");
+            TableRow<budget_previsionnel> row = new TableRow<>();
+            // On garde uniquement le context menu
             row.contextMenuProperty().bind(
                 javafx.beans.binding.Bindings.when(row.emptyProperty())
                     .then((ContextMenu) null)
