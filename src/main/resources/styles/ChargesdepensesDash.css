@@ -1,0 +1,112 @@
+/* --- TableView Dark Mode (Version Améliorée) --- */
+.table-view {
+    -fx-background-color: #06080F;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent; /* Supprime les bordures par défaut des cellules */
+}
+
+/* En-tête de la table */
+.table-view .column-header-background {
+    -fx-background-color: #0C0F1A;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45;
+    -fx-border-color: transparent; /* Supprime les séparateurs verticaux dans l'en-tête */
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #8892A4;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Cellules */
+.table-view .table-cell {
+    -fx-text-fill: white;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 10 0 10;
+    -fx-border-color: transparent; /* Assure qu'il n'y a pas de bordure verticale */
+}
+
+/* Lignes (Rows) */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.02); /* Bordure horizontale très subtile */
+    -fx-border-width: 0 0 1 0; /* Uniquement en bas */
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.01); /* Légère alternance */
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(14, 165, 233, 0.1); /* Effet survol bleu subtil */
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(14, 165, 233, 0.2); /* Sélection bleue */
+    -fx-background-insets: 0;
+    -fx-border-color: transparent; /* Pas de bordure spéciale pour la sélection */
+}
+
+/* --- STYLE POUR LES BOUTONS DANS LA TABLE --- */
+.table-cell .button {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+/* Scrollbar sombre */
+.table-view .virtual-flow .scroll-bar:vertical,
+.table-view .virtual-flow .scroll-bar:vertical .track,
+.table-view .virtual-flow .scroll-bar:vertical .track-background,
+.table-view .virtual-flow .scroll-bar:horizontal,
+.table-view .virtual-flow .scroll-bar:horizontal .track,
+.table-view .virtual-flow .scroll-bar:horizontal .track-background {
+    -fx-background-color: #06080F;
+}
+
+.table-view .virtual-flow .scroll-bar:vertical .thumb,
+.table-view .virtual-flow .scroll-bar:horizontal .thumb {
+    -fx-background-color: #1E293B;
+    -fx-background-radius: 5;
+}
+
+/* --- STYLE POUR LES BOÎTES DE DIALOGUE (ALERTS) --- */
+.dialog-pane {
+    -fx-background-color: #0C0F1A;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #1E293B;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #E8EDF5;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: #CBD5F5;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: #0EA5E9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #38BDF8;
+}

@@ -40,6 +40,10 @@
                 <VBox.margin><Insets top="15" left="12" bottom="5"/></VBox.margin>
             </Label>
 
+            <!-- Boutons Ajoutés -->
+            <Button fx:id="btnCharges" text="💸   Charges" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnFournisseurs" text="🚚   Fournisseurs" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
             <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnAlertesIA" text="🤖   Alertes IA" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnReports" text="📊   Rapports" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>

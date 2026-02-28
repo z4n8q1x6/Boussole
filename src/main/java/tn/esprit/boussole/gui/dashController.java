@@ -15,129 +15,132 @@ import javafx.stage.Stage;
 
 public class dashController {
 
-  @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
-  @FXML private Button btnReclamations, btnAlertesIA; // Nouveaux boutons
-  @FXML private Label lblUsername;
-  @FXML private StackPane contentArea;
+    @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
+    @FXML private Button btnReclamations, btnAlertesIA;
+    @FXML private Button btnCharges, btnFournisseurs;
+    @FXML private Label lblUsername;
+    @FXML private StackPane contentArea;
 
-  private final String ACTIVE_STYLE =
-      "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
-          + " transparent transparent transparent #00E5CC; -fx-border-width: 0 0 0 3;";
-  private final String INACTIVE_STYLE =
-      "-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-border-width: 0;";
+    private final String ACTIVE_STYLE =
+            "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
+                    + " transparent transparent transparent #00E5CC; -fx-border-width: 0 0 0 3;";
+    private final String INACTIVE_STYLE =
+            "-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-border-width: 0;";
 
-  @FXML
-  public void initialize() {
-    // 1. Session
-    Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
-    lblUsername.setText(prefs.get("email", "Administrateur"));
+    @FXML
+    public void initialize() {
+        // 1. Session
+        Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
+        lblUsername.setText(prefs.get("email", "Administrateur"));
 
-    // 2. Actions des boutons
-    btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
-    btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
-    btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
-    btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
-    btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
+        // 2. Actions des boutons
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
+        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
+        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
 
-    // Nouveaux boutons
-    btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
-    btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
+        // Modules spécifiques
+        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
+        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
 
-    btnLogout.setOnAction(e -> handleLogout());
+        // Tes nouveaux modules (Charges et Fournisseurs)
+        if (btnCharges != null) {
+            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
+        }
+        if (btnFournisseurs != null) {
+            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
+        }
 
-    // 3. Hover effects
-    setupHoverEffects();
+        btnLogout.setOnAction(e -> handleLogout());
 
-    // 4. Page par défaut
-    handleMenuClick(btnUsers, "/users.fxml");
-  }
+        // 3. Effets visuels
+        setupHoverEffects();
 
-  private void handleMenuClick(Button button, String fxmlPath) {
-    updateButtonStyle(button);
-    if (fxmlPath != null) {
-      loadView(fxmlPath);
-    } else {
-      showPlaceholder(button.getText());
+        // 4. Page par défaut
+        handleMenuClick(btnUsers, "/users.fxml");
     }
-  }
 
-  private void loadView(String fxmlPath) {
-    try {
-      // Sécurité : Vérifier si la ressource existe
-      var resource = getClass().getResource(fxmlPath);
-      if (resource == null) {
-        System.err.println("Erreur: Fichier " + fxmlPath + " introuvable dans resources.");
-        showPlaceholder("Fichier introuvable: " + fxmlPath); // Fallback visuel
-        return;
-      }
-      Parent view = FXMLLoader.load(resource);
-      contentArea.getChildren().setAll(view);
-    } catch (IOException e) {
-      e.printStackTrace();
-      showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath);
+    private void handleMenuClick(Button button, String fxmlPath) {
+        updateButtonStyle(button);
+        if (fxmlPath != null) {
+            loadView(fxmlPath);
+        } else {
+            showPlaceholder(button.getText());
+        }
     }
-  }
 
-  private void updateButtonStyle(Button activeButton) {
-    Button[] allButtons = {
-      btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA
-    };
-    for (Button b : allButtons) {
-      if (b != null) { // Vérification null au cas où un bouton n'est pas injecté
-        b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
-      }
+    private void loadView(String fxmlPath) {
+        try {
+            var resource = getClass().getResource(fxmlPath);
+            if (resource == null) {
+                System.err.println("Erreur: Fichier " + fxmlPath + " introuvable.");
+                showPlaceholder("Fichier introuvable: " + fxmlPath);
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent view = loader.load();
+            contentArea.getChildren().setAll(view);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath);
+        }
     }
-  }
 
-  private void handleLogout() {
-    Alert alert =
-        new Alert(
-            Alert.AlertType.CONFIRMATION,
-            "Voulez-vous vous déconnecter ?",
-            ButtonType.YES,
-            ButtonType.NO);
-    alert
-        .showAndWait()
-        .ifPresent(
-            response -> {
-              if (response == ButtonType.YES) {
+    private void updateButtonStyle(Button activeButton) {
+        Button[] allButtons = {
+                btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+        };
+        for (Button b : allButtons) {
+            if (b != null) {
+                b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
+            }
+        }
+    }
+
+    private void handleLogout() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous vous déconnecter ?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
                 try {
-                  Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
-                  Stage stage = (Stage) btnLogout.getScene().getWindow();
-                  stage.setScene(new Scene(root));
+                    Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+                    Stage stage = (Stage) btnLogout.getScene().getWindow();
+                    stage.setScene(new Scene(root));
                 } catch (IOException e) {
-                  showAlert("Erreur", "Retour au login impossible.");
+                    showAlert("Erreur", "Retour au login impossible.");
                 }
-              }
-            });
-  }
-
-  private void showPlaceholder(String text) {
-    Label placeholder = new Label("Page : " + text + " (Bientôt disponible)");
-    placeholder.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 24px;");
-    contentArea.getChildren().setAll(placeholder);
-  }
-
-  private void showAlert(String title, String content) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle(title);
-    alert.setContentText(content);
-    alert.show();
-  }
-
-  private void setupHoverEffects() {
-    Button[] allButtons = {
-      btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA
-    };
-    for (Button b : allButtons) {
-      if (b != null) {
-        b.setOnMouseEntered(
-            e -> {
-              if (!b.getStyle().contains("0.12")) b.setOpacity(0.7);
-            });
-        b.setOnMouseExited(e -> b.setOpacity(1.0));
-      }
+            }
+        });
     }
-  }
-}
 
+    private void showPlaceholder(String text) {
+        Label placeholder = new Label("Page : " + text + " (Bientôt disponible)");
+        placeholder.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 24px;");
+        contentArea.getChildren().setAll(placeholder);
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.show();
+    }
+
+    private void setupHoverEffects() {
+        Button[] allButtons = {
+                btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+        };
+        for (Button b : allButtons) {
+            if (b != null) {
+                b.setOnMouseEntered(e -> {
+                    if(!b.getStyle().contains("0.12")) b.setOpacity(0.7);
+                });
+                b.setOnMouseExited(e -> b.setOpacity(1.0));
+            }
+        }
+    }
+}

@@ -39,7 +39,7 @@ public class EmailService {
 
             // Template HTML Moderne
             String htmlContent = buildHtmlTemplate(title, bodyContent, codeOrPassword);
-            
+
             message.setContent(htmlContent, "text/html; charset=utf-8");
 
             Transport.send(message);

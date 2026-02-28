@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="950.0" spacing="20.0"
+      style="-fx-background-color: #06080F;"
+      stylesheets="@styles/ChargesdepensesDash.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.boussole.gui.afficherFrontFournisseurController">
+
+    <padding>
+        <Insets bottom="20.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <VBox HBox.hgrow="ALWAYS">
+            <Label text="Nos Fournisseurs Partenaires" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="26.0" /></font>
+            </Label>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Liste des partenaires" textFill="#8892A4">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label text="|" textFill="#374151" />
+
+                <Label fx:id="lblMeteo" text="Chargement météo..." textFill="#0EA5E9">
+                    <font><Font name="System Bold" size="13.0" /></font>
+                </Label>
+
+                <Label text="|" textFill="#374151" />
+
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="Flash Business:" textFill="#00E5CC" style="-fx-font-weight: bold;">
+                        <font><Font size="13.0" /></font>
+                    </Label>
+                    <Label fx:id="lblNews" text="Chargement des news..." textFill="#8892A4"
+                           maxWidth="450.0" wrapText="false" ellipsisString="..."
+                           style="-fx-cursor: hand; -fx-hover-text-fill: #0EA5E9;">
+                        <font><Font name="System Italic" size="13.0" /></font>
+                    </Label>
+                </HBox>
+            </HBox>
+        </VBox>
+        <Button fx:id="btnAjouter" text="+ Ajouter"
+                style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
+    </HBox>
+
+    <HBox spacing="15.0">
+        <TextField fx:id="txtRecherche" prefHeight="42.0" prefWidth="380.0"
+                   promptText="🔍 Rechercher par nom..."
+                   style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15;" />
+        <ComboBox fx:id="comboTri" prefHeight="42.0" promptText="Trier par"
+                  style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
+    </HBox>
+
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+        <content>
+            <VBox alignment="CENTER" style="-fx-background-color: transparent;">
+                <children>
+                    <GridPane fx:id="gridFournisseurs" alignment="CENTER" hgap="30.0" vgap="30.0">
+                        <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        </rowConstraints>
+                    </GridPane>
+                </children>
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <VBox spacing="10" style="-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(14, 165, 233, 0.3); -fx-border-radius: 15; -fx-padding: 15;">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="✨ Assistant Stratégique Boussole" textFill="#0EA5E9" style="-fx-font-weight: bold;">
+                <font><Font size="14.0" /></font>
+            </Label>
+            <HBox HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnIA" onAction="#handleAnalyseIA" text="Analyser mes partenaires"
+                    style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
+        </HBox>
+        <TextArea fx:id="txtReponseIA" editable="false" prefHeight="80.0" wrapText="true"
+                  promptText="Cliquez pour obtenir une analyse rapide..."
+                  style="-fx-control-inner-background: #06080F; -fx-text-fill: #E8EDF5; -fx-background-color: transparent; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 5;" />
+    </VBox>
+
+    <HBox alignment="CENTER" spacing="20.0" style="-fx-background-color: #0C0F1A; -fx-background-radius: 30; -fx-padding: 10;">
+        <Button fx:id="btnPrecedent" text="&lt; Précédent"
+                style="-fx-background-color: transparent; -fx-text-fill: #E8EDF5; -fx-font-weight: bold; -fx-cursor: hand;" />
+        <Label fx:id="lblPageInfo" text="Page 1 / 1" textFill="#8892A4">
+            <font><Font name="System Bold" size="14.0" /></font>
+        </Label>
+        <Button fx:id="btnSuivant" text="Suivant &gt;"
+                style="-fx-background-color: transparent; -fx-text-fill: #E8EDF5; -fx-font-weight: bold; -fx-cursor: hand;" />
+    </HBox>
+</VBox>
