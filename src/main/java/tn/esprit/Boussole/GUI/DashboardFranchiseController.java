@@ -220,22 +220,24 @@ public class DashboardFranchiseController implements Initializable {
     @FXML
     private void afficherNotifications() {
         VBox contenu = new VBox(10);
-        contenu.setStyle("-fx-padding: 15; -fx-background-color: #1E293B;");
+        contenu.setStyle("-fx-padding: 15;");
+        contenu.getStyleClass().add("kpi-card");
         contenu.setPrefWidth(300);
         contenu.setPrefHeight(250);
 
         Label titre = new Label("Centre de Notifications");
-        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        titre.getStyleClass().add("page-title");
         contenu.getChildren().add(titre);
 
         if (notificationsList.isEmpty()) {
             Label emptyLbl = new Label("Aucune notification.");
-            emptyLbl.setStyle("-fx-text-fill: #94A3B8;");
+            emptyLbl.getStyleClass().add("page-subtitle");
             contenu.getChildren().add(emptyLbl);
         } else {
             for (String notif : notificationsList) {
                 Label lbl = new Label("- " + notif);
-                lbl.setStyle("-fx-text-fill: #E2E8F0; -fx-wrap-text: true;");
+                lbl.setStyle("-fx-wrap-text: true;");
                 lbl.setMaxWidth(280);
                 contenu.getChildren().add(lbl);
             }
@@ -275,9 +277,9 @@ public class DashboardFranchiseController implements Initializable {
                         if (tx != null && tx.getType() != null) {
                             String type = tx.getType().name();
                             if ("RECETTE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-background-color: rgba(46,125,50,0.2); -fx-text-fill: #E5E7EB;");
+                                setStyle("-fx-background-color: rgba(46,125,50,0.15);");
                             } else if ("DEPENSE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-background-color: rgba(198,40,40,0.2); -fx-text-fill: #E5E7EB;");
+                                setStyle("-fx-background-color: rgba(198,40,40,0.15);");
                             } else {
                                 setStyle("");
                             }

@@ -198,7 +198,7 @@ public class GestionBilansController implements Initializable {
                         setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
                     } else {
                         setText("➖ Équilibré");
-                        setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+                        setStyle("-fx-font-weight: bold;");
                     }
                 }
             }
