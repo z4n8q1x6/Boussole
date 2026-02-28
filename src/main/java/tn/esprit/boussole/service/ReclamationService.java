@@ -8,7 +8,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.models.StatutReclamation;
-import tn.esprit.boussole.utils.Database;
 import tn.esprit.boussole.utils.MyBdConnexion;
 
 public class ReclamationService {

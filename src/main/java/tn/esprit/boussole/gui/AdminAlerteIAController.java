@@ -1,5 +1,6 @@
 package tn.esprit.boussole.gui;
 
+import java.sql.SQLException;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -9,6 +10,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.service.AlerteIAService;
+import tn.esprit.boussole.service.franchiseService;
 import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.Gemini;
 import tn.esprit.boussole.utils.PDFGenerator;
@@ -34,7 +36,17 @@ public class AdminAlerteIAController {
     colDate.setCellValueFactory(new PropertyValueFactory<>("date_detection"));
     colFranchise.setCellValueFactory(
         cellData -> {
-          return new SimpleStringProperty("nom/ville#" + cellData.getValue().getFranchiseId());
+          int id = cellData.getValue().getFranchiseId();
+          String nomFranchise;
+          try {
+            // Initialize service and fetch the name
+            franchiseService fs = new franchiseService();
+            nomFranchise = fs.getNomById(id);
+          } catch (SQLException e) {
+            e.printStackTrace();
+            nomFranchise = "Error ID: " + id;
+          }
+          return new SimpleStringProperty(nomFranchise);
         });
 
     // When a user clicks a row, update the "Details" TextArea on the right
@@ -101,13 +113,17 @@ public class AdminAlerteIAController {
     alertSummary.append("Voici toutes les alertes actuelles pour toutes les franchises :\n\n");
 
     for (AlerteIA alert : all) {
+      String franchise_nom = "Unknown";
+      try {
+        franchiseService fs = new franchiseService();
+        franchise_nom = fs.getNomById(alert.getFranchiseId());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
       alertSummary.append(
           String.format(
-              "- Franchise #%d | Type: %s | Severity: %.1f/10\n  Message: %s\n\n",
-              alert.getFranchiseId(),
-              alert.getType_alerte(),
-              alert.getScore_gravite(),
-              alert.getMessage()));
+              "- Franchise %s | Type: %s | Severity: %.1f/10\n  Message: %s\n\n",
+              franchise_nom, alert.getType_alerte(), alert.getScore_gravite(), alert.getMessage()));
     }
 
     String prompt =
@@ -129,15 +145,15 @@ public class AdminAlerteIAController {
             ━━━━━━━━━━━━━━━━━━━━━━━━
 
             🔴 #1 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action immédiate et précise]
 
             🟡 #2 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action cette semaine]
 
             🟢 #3 — [TYPE ALERTE] (Gravité [X]/10)
-            ├─ Franchise : #[id]
+            ├─ Franchise : [nom]
             └─ Action : [action ce mois]
 
             ━━━━━━━━━━━━━━━━━━━━━━━━

@@ -51,7 +51,7 @@
       onAction="#pdf"
       text="PDF"
       prefHeight="40"
-      prefWidth="130"
+      prefWidth="140"
       style="-fx-background-color: rgba(59,130,246,0.15);
          -fx-text-fill: #60A5FA;
          -fx-font-weight: bold;
@@ -86,13 +86,13 @@
                  -fx-selection-bar: #00E5CC33;
                  -fx-selection-bar-non-focused: #00E5CC22;">
           <columns>
-            <TableColumn fx:id="colFranchise" text="Franchise" prefWidth="130.0" />
-            <TableColumn fx:id="colType" text="Nature" prefWidth="230" />
-            <TableColumn fx:id="colScore" text="Gravité" prefWidth="50.0" />
-            <TableColumn fx:id="colDate" text="Date" prefWidth="80.0" />
+            <TableColumn fx:id="colFranchise" text="Franchise" />
+            <TableColumn fx:id="colType" text="Nature" />
+            <TableColumn fx:id="colScore" text="Gravité" />
+            <TableColumn fx:id="colDate" text="Date" />
           </columns>
           <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
           </columnResizePolicy>
         </TableView>
       </VBox>

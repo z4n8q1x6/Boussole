@@ -1,5 +1,7 @@
 package tn.esprit.boussole.gui;
 
+import java.io.IOException;
+import java.util.prefs.Preferences;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,20 +12,20 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.prefs.Preferences;
 
 public class dashController {
 
     @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
     @FXML private Button btnReclamations, btnAlertesIA;
-    @FXML private Button btnCharges, btnFournisseurs; // Nouveaux boutons
+    @FXML private Button btnCharges, btnFournisseurs;
     @FXML private Label lblUsername;
     @FXML private StackPane contentArea;
 
-    private final String ACTIVE_STYLE = "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color: transparent transparent transparent #00E5CC; -fx-border-width: 0 0 0 3;";
-    private final String INACTIVE_STYLE = "-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-border-width: 0;";
+    private final String ACTIVE_STYLE =
+            "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
+                    + " transparent transparent transparent #00E5CC; -fx-border-width: 0 0 0 3;";
+    private final String INACTIVE_STYLE =
+            "-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-border-width: 0;";
 
     @FXML
     public void initialize() {
@@ -32,22 +34,27 @@ public class dashController {
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
         // 2. Actions des boutons
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
         btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
         btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
-        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
         btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
         btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
-        
+
+        // Modules spécifiques
         btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
         btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
-        
-        // Actions pour Charges et Fournisseurs
-        btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
-        btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
-        
+
+        // Tes nouveaux modules (Charges et Fournisseurs)
+        if (btnCharges != null) {
+            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
+        }
+        if (btnFournisseurs != null) {
+            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
+        }
+
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 3. Hover effects
+        // 3. Effets visuels
         setupHoverEffects();
 
         // 4. Page par défaut
@@ -65,34 +72,30 @@ public class dashController {
 
     private void loadView(String fxmlPath) {
         try {
-            // Sécurité : Vérifier si la ressource existe
             var resource = getClass().getResource(fxmlPath);
             if (resource == null) {
-                System.err.println("Erreur: Fichier " + fxmlPath + " introuvable dans resources.");
-                showPlaceholder("Fichier introuvable: " + fxmlPath); // Fallback visuel
+                System.err.println("Erreur: Fichier " + fxmlPath + " introuvable.");
+                showPlaceholder("Fichier introuvable: " + fxmlPath);
                 return;
             }
-            
-            // Chargement de la vue
+
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
-            
-            // Application du CSS global si nécessaire (pour les vues qui n'ont pas le lien dans le FXML)
-            // Note: Vos fichiers afficherBack... ont déjà le lien ou le chargement dynamique, mais ça ne fait pas de mal ici
-            // view.getStylesheets().add(getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm());
-            
             contentArea.getChildren().setAll(view);
-            
+
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath + "\n" + e.getMessage());
+            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath);
         }
     }
 
     private void updateButtonStyle(Button activeButton) {
-        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs};
+        Button[] allButtons = {
+                btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+        };
         for (Button b : allButtons) {
-            if (b != null) { // Vérification null au cas où un bouton n'est pas injecté
+            if (b != null) {
                 b.setStyle(b == activeButton ? ACTIVE_STYLE : INACTIVE_STYLE);
             }
         }
@@ -127,10 +130,15 @@ public class dashController {
     }
 
     private void setupHoverEffects() {
-        Button[] allButtons = {btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings, btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs};
+        Button[] allButtons = {
+                btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+        };
         for (Button b : allButtons) {
             if (b != null) {
-                b.setOnMouseEntered(e -> { if(!b.getStyle().contains("0.12")) b.setOpacity(0.7); });
+                b.setOnMouseEntered(e -> {
+                    if(!b.getStyle().contains("0.12")) b.setOpacity(0.7);
+                });
                 b.setOnMouseExited(e -> b.setOpacity(1.0));
             }
         }

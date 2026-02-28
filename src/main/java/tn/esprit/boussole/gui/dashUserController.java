@@ -1,5 +1,11 @@
 package tn.esprit.boussole.gui;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,13 +21,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.boussole.utils.ThemeManager;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.prefs.Preferences;
-
 public class dashUserController {
 
     @FXML private StackPane contentArea;
@@ -29,22 +28,10 @@ public class dashUserController {
     @FXML private Label lblPageTitle;
 
     // Boutons du menu
-    @FXML private Button btnDashboard;
-    @FXML private Button btnProduit;
-    @FXML private Button btnCommande;
-    @FXML private Button btnLigneCommande;
-    @FXML private Button btnFournisseur;
-    @FXML private Button btnFranchises;
-    @FXML private Button btnAlertes;
-    @FXML private Button btnReclamations;
-    @FXML private Button btnBilan;
-    @FXML private Button btnBudget;
-    @FXML private Button btnCharge;
-    @FXML private Button btnMensualite;
-    @FXML private Button btnPret;
-    @FXML private Button btnTransaction;
-    @FXML private Button btnLogout;
-    @FXML private Button btnTheme; // Bouton pour le thème
+    @FXML private Button btnDashboard, btnProduit, btnCommande, btnLigneCommande;
+    @FXML private Button btnFournisseur, btnFranchises, btnAlertes, btnReclamations;
+    @FXML private Button btnBilan, btnBudget, btnCharge, btnMensualite, btnPret;
+    @FXML private Button btnTransaction, btnLogout, btnTheme;
 
     private List<Button> menuButtons;
 
@@ -52,13 +39,15 @@ public class dashUserController {
     public void initialize() {
         // Appliquer le thème au démarrage
         Platform.runLater(() -> {
-            ThemeManager.applyTheme(btnTheme.getScene());
-            updateThemeButtonIcon();
+            if (btnTheme != null && btnTheme.getScene() != null) {
+                ThemeManager.applyTheme(btnTheme.getScene());
+                updateThemeButtonIcon();
+            }
         });
 
-        // Initialiser la liste des boutons de menu
+        // Initialiser la liste des boutons de menu pour le style "Active"
         menuButtons = new ArrayList<>();
-        if (btnDashboard.getParent() instanceof VBox) {
+        if (btnDashboard != null && btnDashboard.getParent() instanceof VBox) {
             VBox menuBox = (VBox) btnDashboard.getParent();
             for (Node node : menuBox.getChildrenUnmodifiable()) {
                 if (node instanceof Button && node != btnLogout) {
@@ -76,7 +65,7 @@ public class dashUserController {
 
         // Configuration des actions des boutons
         setupMenuActions();
-        
+
         // Vue par défaut
         handleMenuClick(btnDashboard, "Tableau de bord", null);
     }
@@ -86,22 +75,26 @@ public class dashUserController {
         btnProduit.setOnAction(e -> handleMenuClick(btnProduit, "Gestion des Produits", null));
         btnCommande.setOnAction(e -> handleMenuClick(btnCommande, "Commandes", null));
         btnLigneCommande.setOnAction(e -> handleMenuClick(btnLigneCommande, "Lignes de Commande", null));
-        
-        btnFournisseur.setOnAction(e -> handleMenuClick(btnFournisseur, "Fournisseurs","/afficherFrontFournisseur.fxml" ));
+
+        // Chemins mis à jour avec tes fichiers
+        btnFournisseur.setOnAction(e -> handleMenuClick(btnFournisseur, "Fournisseurs", "/afficherFrontFournisseur.fxml"));
         btnFranchises.setOnAction(e -> handleMenuClick(btnFranchises, "Franchises", null));
-        btnAlertes.setOnAction(e -> handleMenuClick(btnAlertes, "Alertes", "/adminAlerteIA.fxml"));
+        btnAlertes.setOnAction(e -> handleMenuClick(btnAlertes, "Alertes", "/alerteIA.fxml"));
         btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "Réclamations", "/reclamation.fxml"));
-        
+
         btnBilan.setOnAction(e -> handleMenuClick(btnBilan, "Bilan Financier", null));
         btnBudget.setOnAction(e -> handleMenuClick(btnBudget, "Budget Prévisionnel", null));
+
+        // Chemin mis à jour pour les charges
         btnCharge.setOnAction(e -> handleMenuClick(btnCharge, "Charges", "/afficherFrontCharge.fxml"));
+
         btnMensualite.setOnAction(e -> handleMenuClick(btnMensualite, "Mensualités", null));
         btnPret.setOnAction(e -> handleMenuClick(btnPret, "Prêts", null));
         btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Transactions", null));
 
         btnLogout.setOnAction(e -> handleLogout());
     }
-    
+
     @FXML
     private void handleThemeToggle() {
         ThemeManager.toggleTheme(btnTheme.getScene());
@@ -110,20 +103,19 @@ public class dashUserController {
 
     private void updateThemeButtonIcon() {
         if (ThemeManager.isDarkMode()) {
-            btnTheme.setText("☀️"); // Icône pour passer en mode clair
+            btnTheme.setText("☀️");
         } else {
-            btnTheme.setText("🌙"); // Icône pour passer en mode sombre
+            btnTheme.setText("🌙");
         }
     }
 
     private void handleMenuClick(Button button, String title, String fxmlPath) {
         setActiveButton(button);
-        lblPageTitle.setText(title);
-        
+        if (lblPageTitle != null) lblPageTitle.setText(title);
+
         if (fxmlPath != null) {
             loadView(fxmlPath);
         } else {
-            // Placeholder pour les vues non implémentées
             contentArea.getChildren().clear();
             Label placeholder = new Label("Page '" + title + "' en construction");
             placeholder.setStyle("-fx-font-size: 24px; -fx-text-fill: #94A3B8;");
@@ -138,7 +130,6 @@ public class dashUserController {
                 showAlert(Alert.AlertType.ERROR, "Erreur", "Fichier FXML introuvable : " + fxmlPath);
                 return;
             }
-            
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
             contentArea.getChildren().setAll(view);
@@ -149,6 +140,7 @@ public class dashUserController {
     }
 
     private void setActiveButton(Button activeButton) {
+        if (menuButtons == null) return;
         for (Button btn : menuButtons) {
             btn.getStyleClass().remove("menu-button-active");
             if (!btn.getStyleClass().contains("menu-button")) {
@@ -159,10 +151,9 @@ public class dashUserController {
     }
 
     private void handleLogout() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous vraiment vous déconnecter ?", ButtonType.OK, ButtonType.CANCEL);
         alert.setTitle("Déconnexion");
         alert.setHeaderText(null);
-        alert.setContentText("Voulez-vous vraiment vous déconnecter ?");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -172,12 +163,9 @@ public class dashUserController {
             prefs.remove("role");
 
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
-                Parent root = loader.load();
+                Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
                 Stage stage = (Stage) btnLogout.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.setMaximized(true);
+                stage.setScene(new Scene(root));
                 stage.show();
             } catch (IOException e) {
                 e.printStackTrace();

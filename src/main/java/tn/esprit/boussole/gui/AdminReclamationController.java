@@ -1,6 +1,7 @@
 package tn.esprit.boussole.gui;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -12,6 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.Reclamation;
 import tn.esprit.boussole.service.ReclamationService;
+import tn.esprit.boussole.service.franchiseService;
 import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.Gemini;
 
@@ -34,7 +36,17 @@ public class AdminReclamationController {
     colFranchise.setCellValueFactory(new PropertyValueFactory<>("franchiseId"));
     colFranchise.setCellValueFactory(
         cellData -> {
-          return new SimpleStringProperty("nom/ville#" + cellData.getValue().getFranchiseId());
+          int id = cellData.getValue().getFranchiseId();
+          String nomFranchise;
+          try {
+            // Initialize service and fetch the name
+            franchiseService fs = new franchiseService();
+            nomFranchise = fs.getNomById(id);
+          } catch (SQLException e) {
+            e.printStackTrace();
+            nomFranchise = "Error ID: " + id;
+          }
+          return new SimpleStringProperty(nomFranchise);
         });
     // makes description column scrollable
     colDescription.setCellFactory(
@@ -104,9 +116,7 @@ public class AdminReclamationController {
       return;
     }
     try {
-      FXMLLoader loader =
-          new FXMLLoader(
-              getClass().getResource("/updateReclamation.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/updateReclamation.fxml"));
       Parent root = loader.load();
       UpdateReclamationController controller = loader.getController();
       controller.setReclamation(selected);
@@ -132,14 +142,16 @@ public class AdminReclamationController {
     String prompt =
         String.format(
             """
-            Analysez cette réclamation et évaluez son niveau de gravité / impact :
+            Tu es un expert en gestion de la relation client. Analyse la réclamation suivante et réponds uniquement en suivant strictement ce format, sans texte d'introduction ni de conclusion.
+
+            DONNÉES :
             Sujet : %s
             Description : %s
 
-            Fournissez :
-            1. Gravité : Critique / Élevée / Moyenne / Faible
-            2. Justification : explication en 1 à 2 phrases
-            3. Action recommandée : que faut-il faire ? (Classifier: en attente, en cours ou résolue)
+            FORMAT DE RÉPONSE :
+            Gravité : [Critique | Élevée | Moyenne | Faible]
+            Justification : [1-2 phrases maximum]
+            Action : [en attente | en cours | résolue]
             """,
             selected.getSujet(), selected.getDescription());
 

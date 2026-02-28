@@ -13,26 +13,11 @@
   stylesheets="/dark-table.css">
 
   <padding>
-    <Insets top="25" right="25" bottom="25" left="25" />
+    <Insets top="25" right="25" bottom="5" left="25" />
   </padding>
 
   <!-- Header with title and button -->
-  <HBox spacing="10" alignment="CENTER_LEFT">
-
-    <VBox spacing="4" HBox.hgrow="ALWAYS">
-
-      <Label text="Réclamations"
-        textFill="#E8EDF5">
-        <font>
-          <Font name="System Bold" size="22" />
-        </font>
-      </Label>
-
-      <Label text="Gérez et suivez les réclamations"
-        textFill="#8e9aaf" />
-
-    </VBox>
-
+  <HBox spacing="10" alignment="CENTER_RIGHT">
     <Button onAction="#delete"
       maxWidth="1.7976931348623157E308"
       prefHeight="40"
@@ -97,16 +82,16 @@
 
         <TableColumn fx:id="colStatut"
           text="Statut"
-          style="-fx-text-fill: #E8EDF5;" prefWidth="50" />
+          style="-fx-text-fill: #E8EDF5;" />
 
         <TableColumn fx:id="colDate"
           text="Date"
-          style="-fx-text-fill: #E8EDF5;" prefWidth="60" />
+          style="-fx-text-fill: #E8EDF5;" />
 
       </columns>
 
       <columnResizePolicy>
-        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
       </columnResizePolicy>
 
     </TableView>
