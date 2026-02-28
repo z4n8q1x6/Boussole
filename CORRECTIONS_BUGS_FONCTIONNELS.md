@@ -173,32 +173,49 @@ private void refreshTable() {
 ### 4️⃣ **App.java et Contrôleurs** — Chargement de la CSS
 
 #### ✅ Dans App.java
+
 ```java
 Parent root = FXMLLoader.load(fxmlUrl);
 Scene scene = new Scene(root);
 
 // Charger la feuille CSS
-String css = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css").toExternalForm();
-scene.getStylesheets().add(css);
+String css = getClass().getResource("/tn/esprit/boussole/gui/styles.css").toExternalForm();
+scene.
 
-primaryStage.setScene(scene);
+getStylesheets().
+
+add(css);
+
+primaryStage.
+
+setScene(scene);
 ```
 
 #### ✅ Dans les méthodes `changerPage()` (tous les contrôleurs)
+
 ```java
 Parent root = FXMLLoader.load(fxmlUrl);
 Scene scene = new Scene(root);
 
 // Charger la feuille CSS
-try {
-    String css = getClass().getResource("/tn/esprit/Boussole/GUI/styles.css").toExternalForm();
-    scene.getStylesheets().add(css);
-} catch (Exception e) {
-    System.out.println("Attention : CSS non chargée (" + e.getMessage() + ")");
-}
+try{
+String css = getClass().getResource("/tn/esprit/boussole/gui/styles.css").toExternalForm();
+    scene.
+
+getStylesheets().
+
+add(css);
+}catch(
+Exception e){
+        System.out.
+
+println("Attention : CSS non chargée ("+e.getMessage() +")");
+        }
 
 Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
-stage.setScene(scene);
+stage.
+
+setScene(scene);
 ```
 
 ---

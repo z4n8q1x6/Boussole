@@ -20,13 +20,13 @@ Si Maven n'est pas installé, tu peux exécuter avec `java` en spécifiant le mo
 # Exemple (adapte le chemin vers ton SDK JavaFX)
 $env:PATH_TO_FX = 'C:\path\to\javafx-sdk-17\lib'
 javac -d out -cp src\main\resources src\main\java\tn\esprit\Boussole\App.java
-java --module-path $env:PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp out tn.esprit.Boussole.App
+java --module-path $env:PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp out tn.esprit.boussole.App
 ```
 
 Notes
 - Le fichier FXML `DashboardSiege.fxml` a été placé dans `src/main/resources/tn/esprit/Boussole/GUI` pour être trouvé par `App` via `getResource("/tn/esprit/Boussole/GUI/DashboardSiege.fxml")`.
 - Si l'IDE signale des erreurs liées à JavaFX, vérifie que les dépendances OpenJFX sont bien présentes dans le `pom.xml` ou que le SDK JavaFX est configuré dans les libraries de ton IDE.
-- La configuration de la base de données se trouve dans `tn.esprit.Boussole.Utilis.MyBDConnexion`.
+- La configuration de la base de données se trouve dans `tn.esprit.boussole.Utilis.MyBdConnexion`.
 
 Si tu veux, je peux :
 - Ajouter un contrôleur `DashboardSiegeController` et préremplir des données pour les KPI et le BarChart.

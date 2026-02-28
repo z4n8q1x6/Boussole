@@ -148,8 +148,9 @@ import javafx.scene.layout.VBox;
 ```
 
 ### Imports ajoutés (GestionBudgetsController)
+
 ```java
-import tn.esprit.Boussole.Models.TypeCharge;
+import tn.esprit.boussole.models.TypeCharge;
 ```
 
 ### Services utilisés
@@ -178,7 +179,7 @@ import tn.esprit.Boussole.Models.TypeCharge;
 ## 📝 Notes importantes
 
 - **franchiseId hardcodé** : actuellement fixé à 1 dans les deux contrôleurs. À adapter selon le contexte (login/session utilisateur).
-- **TypeCharge enum** : utilisé pour dynamiquement remplir les catégories. Assure-toi qu'il existe dans `tn.esprit.Boussole.Models.TypeCharge`.
+- **TypeCharge enum** : utilisé pour dynamiquement remplir les catégories. Assure-toi qu'il existe dans `tn.esprit.boussole.models.TypeCharge`.
 - **Dialog de modification** : inclut une validation basique (try/catch NumericFormat) ; à améliorer avec AlertDialog si les entrées sont invalides.
 - **Rafraîchissement** : la méthode `chargerHistoriqueBilans()` est appelée après chaque action (modifier/supprimer) pour garantir que la table est à jour.
 

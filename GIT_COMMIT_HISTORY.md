@@ -84,11 +84,11 @@ cd C:\Users\siwar\IdeaProjects\Boussole
 git init
 
 # 2. Ajouter les fichiers modifiés/créés
-git add src/main/java/tn/esprit/Boussole/App.java
-git add src/main/java/tn/esprit/Boussole/GUI/*.java
-git add src/main/java/tn/esprit/Boussole/Services/ServiceBilan.java
-git add src/main/resources/tn/esprit/Boussole/GUI/*.fxml
-git add src/main/resources/tn/esprit/Boussole/GUI/styles.css
+git add src/main/java/tn/esprit/boussole/App.java
+git add src/main/java/tn/esprit/boussole/gui/*.java
+git add src/main/java/tn/esprit/boussole/services/ServiceBilan.java
+git add src/main/resources/tn/esprit/boussole/gui/*.fxml
+git add src/main/resources/tn/esprit/boussole/gui/styles.css
 git add *.md
 
 # 3. Commit avec messages descriptifs (voir ci-dessus)

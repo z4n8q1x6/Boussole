@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.boussole.gui.JournalTransactionsController"
+      spacing="20"
+      styleClass="content-area"
+      stylesheets="@styles.css"
+      prefWidth="1000" prefHeight="700">
+
+    <!-- 1. TITRE -->
+    <HBox alignment="CENTER_LEFT" styleClass="page-header">
+        <VBox>
+            <Label text="Journal des Mouvements" styleClass="page-title" />
+            <Label text="Historique détaillé des transactions" styleClass="page-subtitle" />
+        </VBox>
+    </HBox>
+
+    <!-- 2. BARRE DE FILTRES -->
+    <HBox spacing="15" alignment="CENTER_LEFT" styleClass="kpi-card" style="-fx-padding: 20;">
+        <VBox spacing="8">
+            <Label text="Date Début" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
+            <DatePicker fx:id="dpDateDebut" promptText="Sélectionner..." />
+        </VBox>
+
+        <VBox spacing="8">
+            <Label text="Date Fin" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
+            <DatePicker fx:id="dpDateFin" promptText="Sélectionner..." />
+        </VBox>
+
+        <VBox spacing="8">
+            <Label text="Type" styleClass="kpi-title" style="-fx-font-size:11px; -fx-font-weight:bold;"/>
+            <ComboBox fx:id="cbTypeFiltre" promptText="TOUT" prefWidth="150" />
+        </VBox>
+
+        <Pane HBox.hgrow="ALWAYS" />
+
+        <Button fx:id="btnRechercher" text="Rechercher" onAction="#appliquerFiltres" styleClass="button-primary" />
+        <Button fx:id="btnReinitialiser" text="Réinitialiser" onAction="#reinitialiserFiltres" styleClass="nav-button" />
+    </HBox>
+
+    <!-- 3. TABLEAU -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="kpi-card" style="-fx-padding: 0;">
+        <TableView fx:id="tableTransactions" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colDate" text="DATE" prefWidth="120"/>
+                <TableColumn fx:id="colType" text="TYPE" prefWidth="100"/>
+                <TableColumn fx:id="colMontant" text="MONTANT" prefWidth="120"/>
+                <TableColumn fx:id="colDescription" text="DESCRIPTION" prefWidth="300"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </VBox>
+
+    <!-- 4. STATISTIQUES (KPIs) -->
+    <HBox spacing="20" styleClass="kpi-card" style="-fx-padding: 20;">
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="TRANSACTIONS" styleClass="kpi-title"/>
+            <Label fx:id="lblNombreTransactions" text="0" styleClass="kpi-value" style="-fx-text-fill: #0B3D91;" />
+        </VBox>
+
+        <Separator orientation="VERTICAL" />
+
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="RECETTES" styleClass="kpi-title"/>
+            <Label fx:id="lblTotalRecettes" text="0.00 TND" styleClass="kpi-value" style="-fx-text-fill: #2e7d32;" />
+        </VBox>
+
+        <Separator orientation="VERTICAL" />
+
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="CHARGES" styleClass="kpi-title"/>
+            <Label fx:id="lblTotalCharges" text="0.00 TND" styleClass="kpi-value" style="-fx-text-fill: #c62828;" />
+        </VBox>
+
+        <Separator orientation="VERTICAL" />
+
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="SOLDE PÉRIODE" styleClass="kpi-title"/>
+            <Label fx:id="lblSoldeFiltre" text="0.00 TND" styleClass="kpi-value" style="-fx-text-fill: #0B3D91;" />
+        </VBox>
+    </HBox>
+
+    <!-- 5. ACTIONS -->
+    <HBox alignment="CENTER_RIGHT" spacing="15">
+        <Button fx:id="btnExporter" text="Exporter en CSV" onAction="#exporterCSV" styleClass="button-primary" style="-fx-background-color: linear-gradient(to right, #3B82F6, #2563EB);" />
+    </HBox>
+
+</VBox>

@@ -65,7 +65,7 @@ Boussole/
 **Changements** :
 - ✅ Ajout de `@FXML private ComboBox<budget_previsionnel.TypeBudget> cbTypeBudget;`
 - ✅ Renommage `combCategorie` → `cbCategorie`
-- ✅ Import de `tn.esprit.Boussole.Models.TypeCharge`
+- ✅ Import de `tn.esprit.boussole.models.TypeCharge`
 - ✅ Création de la méthode `mettreAJourCategories()`
 - ✅ Configuration du listener `cbTypeBudget.setOnAction(...)`
 - ✅ Mise à jour de `sauvegarderBudget()` pour utiliser le TypeBudget dynamique

@@ -157,7 +157,7 @@
 ### GestionBudgets : Catégories ne changent pas
 **Problème** : Tu sélectionnes LIMITE_DEPENSE mais les catégories ne s'affichent pas.
 **Cause** : TypeCharge enum non trouvé.
-**Solution** : Vérifie que `tn.esprit.Boussole.Models.TypeCharge` existe :
+**Solution** : Vérifie que `tn.esprit.boussole.models.TypeCharge` existe :
 ```bash
 # Cherche le fichier
 find src/ -name "*TypeCharge*"

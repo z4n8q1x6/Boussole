@@ -157,7 +157,7 @@ mvn javafx:run
 
 ### Run Configuration
 ```
-Main class: tn.esprit.Boussole.App
+Main class: tn.esprit.boussole.App
 Module: Boussole.main
 VM options: --module-path "C:\javafx-sdk-17\lib" --add-modules javafx.controls,javafx.fxml
 ```

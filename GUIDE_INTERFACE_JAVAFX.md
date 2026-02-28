@@ -63,7 +63,7 @@ private void changerPage(ActionEvent event, String fxmlPath) {
         // Obtenir la stage actuelle depuis le bouton source et changer la scène
         Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
         stage.setScene(scene);
-        stage.setTitle("Boussole - " + fxmlPath);
+        stage.setTitle("boussole - " + fxmlPath);
         stage.show();
 
     } catch (IOException e) {

@@ -14,7 +14,7 @@ La méthode `changerPage(ActionEvent event, String fxmlPath)` est une méthode *
  * À utiliser comme handler de bouton : btnNavigation.setOnAction(event -> changerPage(event, "/chemin/vers/Page.fxml"));
  *
  * @param event ActionEvent du bouton cliqué
- * @param fxmlPath chemin absolu de la ressource FXML, ex: "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"
+ * @param fxmlPath chemin absolu de la ressource FXML, ex: "/tn/esprit/boussole/gui/DashboardSiege.fxml"
  */
 private void changerPage(ActionEvent event, String fxmlPath) {
     try {
@@ -31,7 +31,7 @@ private void changerPage(ActionEvent event, String fxmlPath) {
         // Obtenir la stage actuelle depuis le bouton source et changer la scène
         Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
         stage.setScene(scene);
-        stage.setTitle("Boussole - " + fxmlPath);
+        stage.setTitle("boussole - " + fxmlPath);
         stage.show();
 
     } catch (IOException e) {
@@ -67,14 +67,15 @@ import java.net.URL;
 ### Exemple 1 : Dans `initialize()` (recommandé)
 
 ```java
+
 @Override
 public void initialize(URL location, ResourceBundle resources) {
     // ... autres initialisations ...
 
     // Configurer les boutons de navigation
-    btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"));
-    btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
-    btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
+    btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml"));
+    btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBudgets.fxml"));
+    btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBilans.fxml"));
 }
 ```
 
@@ -86,10 +87,12 @@ public void initialize(URL location, ResourceBundle resources) {
 ```
 
 **Contrôleur** :
+
 ```java
+
 @FXML
 public void allerAuDashboard(ActionEvent event) {
-    changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml");
+    changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml");
 }
 ```
 
@@ -101,10 +104,10 @@ private void sauvegarderEtRetourner(Button sourceButton) {
     try {
         // Effectuer la sauvegarde
         serviceBudget.add(budget);
-        
+
         // Créer un événement ActionEvent simulé et naviguer
         ActionEvent event = new ActionEvent(sourceButton, sourceButton);
-        changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml");
+        changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml");
     } catch (Exception e) {
         System.out.println("Erreur : " + e.getMessage());
     }
@@ -205,7 +208,7 @@ La méthode inclut plusieurs niveaux de gestion d'erreurs :
 **Fichier** : `MonNouveauControleur.java`
 
 ```java
-package tn.esprit.Boussole.GUI;
+package tn.esprit.boussole.gui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -234,9 +237,9 @@ public class MonNouveauControleur implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Configurer les boutons de navigation
-        btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/DashboardSiege.fxml"));
-        btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBudgets.fxml"));
-        btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/Boussole/GUI/GestionBilans.fxml"));
+        btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml"));
+        btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBudgets.fxml"));
+        btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBilans.fxml"));
     }
 
     /**
@@ -255,7 +258,7 @@ public class MonNouveauControleur implements Initializable {
 
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Boussole - " + fxmlPath);
+            stage.setTitle("boussole - " + fxmlPath);
             stage.show();
 
         } catch (IOException e) {
