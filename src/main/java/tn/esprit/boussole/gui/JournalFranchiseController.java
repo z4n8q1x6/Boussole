@@ -189,7 +189,7 @@ public class JournalFranchiseController implements Initializable {
             transaction t = event.getRowValue();
             if (t.getType() == transaction.Type.RECETTE) {
                 t.setDescription(event.getNewValue());
-                serviceTransaction.updateOne(t);
+                serviceTransaction.updateone(t);
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
                 tableTransactions.refresh();
@@ -201,7 +201,7 @@ public class JournalFranchiseController implements Initializable {
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null && event.getNewValue() > 0) {
                     t.setMontant(event.getNewValue());
-                    serviceTransaction.updateOne(t);
+                    serviceTransaction.updateone(t);
                     updatePredicate();
                 }
             } else {
@@ -240,7 +240,7 @@ public class JournalFranchiseController implements Initializable {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 for (transaction t : selectedItems) {
-                    serviceTransaction.deleteOne(t);
+                    serviceTransaction.deleteone(t);
                 }
 
                 masterData.removeAll(selectedItems);
@@ -432,7 +432,7 @@ public class JournalFranchiseController implements Initializable {
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null) {
                     t.setDate(event.getNewValue());
-                    serviceTransaction.updateOne(t);
+                    serviceTransaction.updateone(t);
                 }
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
@@ -455,7 +455,7 @@ public class JournalFranchiseController implements Initializable {
             transaction t = event.getRowValue();
             if (t.getType() == transaction.Type.RECETTE) {
                 t.setDescription(event.getNewValue());
-                serviceTransaction.updateOne(t);
+                serviceTransaction.updateone(t);
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
                 tableTransactions.refresh();
@@ -468,7 +468,7 @@ public class JournalFranchiseController implements Initializable {
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null && event.getNewValue() > 0) {
                     t.setMontant(event.getNewValue());
-                    serviceTransaction.updateOne(t);
+                    serviceTransaction.updateone(t);
                     updatePredicate();
                 }
             } else {

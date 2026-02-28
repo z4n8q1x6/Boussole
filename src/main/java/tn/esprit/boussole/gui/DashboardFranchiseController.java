@@ -492,7 +492,7 @@ public class DashboardFranchiseController implements Initializable {
             t.setType(transaction.Type.RECETTE);
             t.setFranchiseId(SessionManager.getInstance().getIdFranchise());
 
-            serviceTransaction.insertOne(t);
+            serviceTransaction.insertone(t);
             afficherMessageSucces("Recette ajoutée avec succès.");
 
             // Rafraîchir la table et le solde

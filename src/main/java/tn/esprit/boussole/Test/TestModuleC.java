@@ -28,11 +28,11 @@ public class TestModuleC {
         Date dateOct2025 = cal.getTime();
 
         transaction t1 = new transaction(dateOct2025, 5000.0, Type.RECETTE, "Vente produit", 1);
-        serviceTransaction.insertOne(t1);
+        serviceTransaction.insertone(t1);
         System.out.println("Inséré transaction RECETTE id=" + t1.getId() + " montant=" + t1.getMontant());
 
         transaction t2 = new transaction(dateOct2025, 1500.0, Type.DEPENSE, "Achat fournitures", 1);
-        serviceTransaction.insertOne(t2);
+        serviceTransaction.insertone(t2);
         System.out.println("Inséré transaction DEPENSE id=" + t2.getId() + " montant=" + t2.getMontant());
 
         System.out.println("--- ETAPE 3: LISTE TRANSACTIONS POUR FRANCHISE 1 ---");

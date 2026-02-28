@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import tn.esprit.boussole.Utilis.MyBdConnexion;
+import tn.esprit.boussole.models.Charge;
 import tn.esprit.boussole.models.budget_previsionnel;
 import tn.esprit.boussole.models.franchise;
 import tn.esprit.boussole.services.ServiceBudgetPrevisionnel;
@@ -134,7 +135,7 @@ public class GestionBudgetsController implements Initializable {
             if (nvMois != null) {
                 budget.setMois(nvMois);
                 try {
-                    serviceBudget.updateOne(budget);
+                    serviceBudget.updateone(budget);
                     afficherMessageSucces("Mois modifié !");
                 } catch (Exception e) {
                     afficherMessageErreur("Erreur : " + e.getMessage());
@@ -151,7 +152,7 @@ public class GestionBudgetsController implements Initializable {
             if (nvAnnee != null) {
                 budget.setAnnee(nvAnnee);
                 try {
-                    serviceBudget.updateOne(budget);
+                    serviceBudget.updateone(budget);
                     afficherMessageSucces("Année modifiée !");
                 } catch (Exception e) {
                     afficherMessageErreur("Erreur : " + e.getMessage());
@@ -176,7 +177,7 @@ public class GestionBudgetsController implements Initializable {
             if (nouvelleCategorie == null || nouvelleCategorie.isEmpty()) return;
             budget.setCategorie(nouvelleCategorie);
             try {
-                serviceBudget.updateOne(budget);
+                serviceBudget.updateone(budget);
             } catch (Exception e) {
                 afficherMessageErreur("Erreur lors de la mise à jour de la catégorie : " + e.getMessage());
                 tableBudgets.refresh();
@@ -321,7 +322,7 @@ public class GestionBudgetsController implements Initializable {
         String sql = "SELECT id, nom FROM franchises";
         int count = 0;
         
-        java.sql.Connection cnx = MyBdConnexion.getInstance().getCnx();
+        java.sql.Connection cnx = MyBdConnexion.getinstance().getCnx();
         try (java.sql.PreparedStatement ps = cnx.prepareStatement(sql);
              java.sql.ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -385,7 +386,7 @@ public class GestionBudgetsController implements Initializable {
 
                 if (isModification) {
                     budget.setId(idBudgetAModifier);
-                    serviceBudget.updateOne(budget);
+                    serviceBudget.updateone(budget);
                 } else {
                     serviceBudget.add(budget);
                 }
@@ -469,7 +470,7 @@ public class GestionBudgetsController implements Initializable {
         }
 
         try {
-            serviceBudget.deleteOne(b);
+            serviceBudget.deleteone(b);
             rafraichirTable();
             afficherMessageSucces("Budget supprimé avec succès !");
         } catch (Exception e) {

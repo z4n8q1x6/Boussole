@@ -83,7 +83,7 @@ public class GestionBilansController implements Initializable {
 
         // Initialisation de cbFranchiseCible
         try {
-            Connection cnx = MyBdConnexion.getInstance().getCnx();
+            Connection cnx = MyBdConnexion.getinstance().getCnx();
             String sql = "SELECT id, nom FROM franchises";
             cbFranchiseCible.getItems().add(new franchise(0, "TOUT LE RÉSEAU", "", "", "", null, true, 0.0));
             try (PreparedStatement ps = cnx.prepareStatement(sql);
@@ -242,7 +242,7 @@ public class GestionBilansController implements Initializable {
             b.setTotalRecettes(newVal);
             b.setResultatNet(newVal - b.getTotalCharges()); // Recalcul auto
             try {
-                serviceBilan.updateOne(b);
+                serviceBilan.updateone(b);
                 tableBilans.refresh(); // Pour mettre à jour la colonne ColResultat visuellement
             } catch (Exception e) {
                 afficherMessageErreur("Erreur mise à jour : " + e.getMessage());
@@ -262,7 +262,7 @@ public class GestionBilansController implements Initializable {
             b.setTotalCharges(newVal);
             b.setResultatNet(b.getTotalRecettes() - newVal); // Recalcul auto
             try {
-                serviceBilan.updateOne(b);
+                serviceBilan.updateone(b);
                 tableBilans.refresh(); // Pour mettre à jour la colonne ColResultat visuellement
             } catch (Exception e) {
                 afficherMessageErreur("Erreur mise à jour : " + e.getMessage());
@@ -342,7 +342,7 @@ public class GestionBilansController implements Initializable {
         }
 
         try {
-            serviceBilan.deleteOne(b);
+            serviceBilan.deleteone(b);
             rafraichirTable();
             afficherMessageSucces("Bilan supprimé avec succès !");
         } catch (Exception e) {
@@ -424,7 +424,7 @@ public class GestionBilansController implements Initializable {
 
         // Récupérer les données
         try {
-            Connection cnx = MyBdConnexion.getInstance().getCnx();
+            Connection cnx = MyBdConnexion.getinstance().getCnx();
             String sql = "SELECT * FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
             if (b.getFranchiseId() != 0) {
                 sql += " AND franchise_id = ?";
@@ -612,7 +612,7 @@ public class GestionBilansController implements Initializable {
             // On demandera l'email ci-dessous car il n'y a pas de gérant spécifique dans la table franchises
         } else {
             try {
-                Connection cnx = MyBdConnexion.getInstance().getCnx();
+                Connection cnx = MyBdConnexion.getinstance().getCnx();
                 String sql = "SELECT nom, email FROM franchises WHERE id = ?";
                 PreparedStatement ps = cnx.prepareStatement(sql);
                 ps.setInt(1, bilanSel.getFranchiseId());
