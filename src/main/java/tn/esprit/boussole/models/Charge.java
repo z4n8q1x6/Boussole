@@ -89,4 +89,8 @@ public class Charge {
                 ", franchiseId=" + franchiseId +
                 '}';
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9

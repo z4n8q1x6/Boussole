@@ -23,12 +23,15 @@ import javafx.util.Duration;
 
 public class NotificationManager {
 
+<<<<<<< HEAD
     // Dans NotificationManager.java
     public static void showInfo(String title, String message) {
         // On appelle la méthode générique 'show' avec le type INFO
         // On passe null pour 'owner' pour qu'il s'affiche par défaut sur l'écran principal
         show(null, Type.INFO, title, message);
     }
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
     public enum Type {
         SUCCESS("#10B981", "✅"),
         ERROR("#EF4444", "⛔"),
@@ -47,6 +50,7 @@ public class NotificationManager {
     public static void show(Window owner, Type type, String title, String message) {
         Platform.runLater(() -> createAndShowNotification(owner, type, title, message));
     }
+<<<<<<< HEAD
     public static void showError(String title, String message) {
         show(null, Type.ERROR, title, message);
     }
@@ -54,6 +58,8 @@ public class NotificationManager {
     public static void showSuccess(String title, String message) {
         show(null, Type.SUCCESS, title, message);
     }
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
     private static void createAndShowNotification(Window owner, Type type, String title, String message) {
         Popup popup = new Popup();
@@ -66,11 +72,19 @@ public class NotificationManager {
         root.setPrefWidth(350);
         root.setStyle(
                 "-fx-background-color: #0F172A;" + // Fond sombre
+<<<<<<< HEAD
                         "-fx-background-radius: 12;" +
                         "-fx-border-color: rgba(255,255,255,0.1);" +
                         "-fx-border-radius: 12;" +
                         "-fx-border-width: 1;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);"
+=======
+                "-fx-background-radius: 12;" +
+                "-fx-border-color: rgba(255,255,255,0.1);" +
+                "-fx-border-radius: 12;" +
+                "-fx-border-width: 1;" +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);"
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         );
 
         // Barre de couleur latérale
@@ -126,10 +140,17 @@ public class NotificationManager {
                 new KeyValue(root.translateYProperty(), 20)
         ));
         timelineOut.setOnFinished(e -> popup.hide());
+<<<<<<< HEAD
 
         // Délai avant fermeture
         new Timeline(new KeyFrame(Duration.seconds(4), e -> timelineOut.play())).play();
 
+=======
+        
+        // Délai avant fermeture
+        new Timeline(new KeyFrame(Duration.seconds(4), e -> timelineOut.play())).play();
+        
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         // Fermer au clic
         root.setOnMouseClicked(e -> {
             timelineOut.play();

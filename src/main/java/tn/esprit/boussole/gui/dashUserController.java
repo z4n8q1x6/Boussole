@@ -71,7 +71,11 @@ public class dashUserController {
     }
 
     private void setupMenuActions() {
+<<<<<<< HEAD
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Tableau de bord", "/DashboardFranchise.fxml"));
+=======
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Tableau de bord", null));
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         btnProduit.setOnAction(e -> handleMenuClick(btnProduit, "Gestion des Produits", null));
         btnCommande.setOnAction(e -> handleMenuClick(btnCommande, "Commandes", null));
         btnLigneCommande.setOnAction(e -> handleMenuClick(btnLigneCommande, "Lignes de Commande", null));
@@ -90,7 +94,11 @@ public class dashUserController {
 
         btnMensualite.setOnAction(e -> handleMenuClick(btnMensualite, "Mensualités", null));
         btnPret.setOnAction(e -> handleMenuClick(btnPret, "Prêts", null));
+<<<<<<< HEAD
         btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Historique des transactions", "/JournalFranchise.fxml"));
+=======
+        btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Transactions", null));
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
         btnLogout.setOnAction(e -> handleLogout());
     }

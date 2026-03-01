@@ -46,8 +46,13 @@
 
             <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnAlertesIA" text="🤖   Alertes IA" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+<<<<<<< HEAD
             <Button fx:id="btnReports" text="📊   Bilans" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnSettings" text="💰  Budgets" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+=======
+            <Button fx:id="btnReports" text="📊   Rapports" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnSettings" text="⚙️   Paramètres" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
             <Region VBox.vgrow="ALWAYS"/>
         </VBox>

@@ -7,7 +7,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+<<<<<<< HEAD
 import com.google.api.client.util.store.FileDataStoreFactory;
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.model.Userinfo;
 import javafx.animation.*;
@@ -32,7 +35,10 @@ import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+<<<<<<< HEAD
 import nu.pattern.OpenCV;
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -45,7 +51,10 @@ import tn.esprit.boussole.utils.NotificationManager;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+<<<<<<< HEAD
 import java.lang.reflect.Method;
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -64,7 +73,11 @@ public class loginController {
     static {
         // Charger la librairie native OpenCV
         try {
+<<<<<<< HEAD
             OpenCV.loadLocally();
+=======
+            nu.pattern.OpenCV.loadLocally();
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         } catch (Exception e) {
             System.err.println("Erreur chargement OpenCV : " + e.getMessage());
         }
@@ -315,7 +328,11 @@ public class loginController {
 
                 GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                         GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), clientSecrets, SCOPES)
+<<<<<<< HEAD
                         .setDataStoreFactory(new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH)))
+=======
+                        .setDataStoreFactory(new com.google.api.client.util.store.FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
                         .setAccessType("offline")
                         .build();
 
@@ -428,16 +445,25 @@ public class loginController {
     }
 
     private static class AuthInfo {
+<<<<<<< HEAD
         final String email;
         String storedPassword = new String();
         final String role;
         final String prenom;
+=======
+        final String email, storedPassword, role, prenom;
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         final boolean isActif;
 
         AuthInfo(String email, String storedPassword, String role, String prenom, boolean isActif) {
             this.email = email;
+<<<<<<< HEAD
             this.role = role;
             this.storedPassword = storedPassword;
+=======
+            this.storedPassword = storedPassword;
+            this.role = role;
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
             this.prenom = prenom;
             this.isActif = isActif;
         }
@@ -502,7 +528,11 @@ public class loginController {
         if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
             try {
                 Class<?> bc = Class.forName("org.mindrot.jbcrypt.BCrypt");
+<<<<<<< HEAD
                 Method checkpw = bc.getMethod("checkpw", String.class, String.class);
+=======
+                java.lang.reflect.Method checkpw = bc.getMethod("checkpw", String.class, String.class);
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
                 return (Boolean) checkpw.invoke(null, plain, stored);
             } catch (Exception ex) { return false; }
         }

@@ -82,11 +82,14 @@ public class ChargeService implements crud<Charge> {
         return charges;
     }
 
+<<<<<<< HEAD
     @Override
     public List<Charge> selectAll() {
         return List.of();
     }
 
+=======
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
     // Nouvelle méthode pour trouver l'ID par le nom
     public int getFranchiseIdByName(String name) throws SQLException {
         String req = "SELECT id FROM franchises WHERE nom = ?";

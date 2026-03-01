@@ -89,12 +89,16 @@ public class franchiseService implements crud<franchise> {
     return list;
   }
 
+<<<<<<< HEAD
     @Override
     public List<franchise> selectAll() {
         return List.of();
     }
 
     public franchise getById(int id) throws SQLException {
+=======
+  public franchise getById(int id) throws SQLException {
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
     String req = "SELECT * FROM franchises WHERE id = ?";
     try (PreparedStatement ps = cnx.prepareStatement(req)) {
       ps.setInt(1, id);

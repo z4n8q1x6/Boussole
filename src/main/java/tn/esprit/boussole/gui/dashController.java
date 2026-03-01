@@ -34,11 +34,19 @@ public class dashController {
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
         // 2. Actions des boutons
+<<<<<<< HEAD
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "/DashboardSiege.fxml"));
         btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
         btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
         btnReports.setOnAction(e -> handleMenuClick(btnReports, "/GestionBilans.fxml"));
         btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "/GestionBudgets.fxml"));
+=======
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
+        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
+        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
         // Modules spécifiques
         btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
