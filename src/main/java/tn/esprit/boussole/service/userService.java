@@ -239,6 +239,12 @@ public class userService implements crud<user> {
         return list;
     }
 
+    @Override
+    public List<user> selectAll() {
+        return List.of();
+    }
+
+
     // ----------------- INITIALIZE ADMIN -----------------
     public void initializeAdmin() {
         System.out.println("Début de l'initialisation de l'admin...");

@@ -5,30 +5,58 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class MyBdConnexion {
-  private static final String USER = "root";
-  private static final String PASSWORD = "";
-  private static final String URL = "jdbc:mysql://localhost:3306/boussole";
-  private static MyBdConnexion instance;
+    // Identifiants de la base de données
+    private static final String USER     = "root"; // Ou "boussole_user" selon votre config
+    private static final String PASSWORD = "";     // Ou "2121"
+    private static final String URL      = "jdbc:mysql://localhost:3306/boussole";
 
-  private Connection cnx;
+    private static MyBdConnexion instance;
+    private Connection cnx;
 
-  // singleton pour creation d'une seul instance : constructeur privé + cree variable ayant mm type
-  // de la class+retourner linstance avec une methode getinstance()
-  private MyBdConnexion() {
-    try {
-      cnx = DriverManager.getConnection(URL, USER, PASSWORD);
-      System.out.println("CONNECTION OK!");
-    } catch (SQLException e) {
-      System.err.println(e.getMessage());
+    /**
+     * Singleton : Constructeur privé pour empêcher l'instanciation multiple
+     */
+    private MyBdConnexion() {
+        connect();
     }
-  }
 
-  public static MyBdConnexion getinstance() {
-    if (instance == null) instance = new MyBdConnexion();
-    return instance;
-  }
+    /**
+     * Établit la connexion initiale
+     */
+    private void connect() {
+        try {
+            cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("✅ MyBdConnexion: CONNECTION OK");
+        } catch (SQLException e) {
+            System.err.println("❌ MyBdConnexion: " + e.getMessage());
+        }
+    }
 
-  public Connection getCnx() {
-    return cnx;
-  }
+    /**
+     * Retourne l'instance unique de la classe (Design Pattern Singleton)
+     */
+    public static MyBdConnexion getinstance() {
+        if (instance == null) {
+            instance = new MyBdConnexion();
+        }
+        return instance;
+    }
+
+    /**
+     * Retourne l'objet Connection.
+     * Vérifie si la connexion est fermée ou expirée avant de la fournir.
+     */
+    public Connection getCnx() {
+        try {
+            // Vérifie si la connexion est nulle, fermée ou n'est plus valide (timeout de 2s)
+            if (cnx == null || cnx.isClosed() || !cnx.isValid(2)) {
+                System.out.println("🔄 MyBdConnexion: reconnexion...");
+                connect();
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ MyBdConnexion.getCnx: " + e.getMessage());
+            connect();
+        }
+        return cnx;
+    }
 }

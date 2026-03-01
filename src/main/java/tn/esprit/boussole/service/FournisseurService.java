@@ -80,6 +80,13 @@ public class FournisseurService implements crud<Fournisseur> {
         return fournisseurs;
     }
 
+
+    @Override
+    public List<Fournisseur> selectAll() {
+        return List.of();
+    }
+
+
     // Nouvelle méthode pour trouver l'ID par le nom
     public int getFranchiseIdByName(String name) throws SQLException {
         String req = "SELECT id FROM franchises WHERE nom = ?";

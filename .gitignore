@@ -1,18 +1,29 @@
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
 >>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+<<<<<<< HEAD
+=======
 .kotlin
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+<<<<<<< HEAD
+*.iws
+*.iml
+*.ipr
+=======
 <<<<<<< HEAD
 .idea/
 *.iws
@@ -27,6 +38,7 @@ target/
 /tokens/
 src/main/resources/credentials.json
 >>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
 ### Eclipse ###
 .apt_generated
@@ -51,6 +63,9 @@ build/
 .vscode/
 
 ### Mac OS ###
+<<<<<<< HEAD
+.DS_Store
+=======
 <<<<<<< HEAD
 .DS_Store
 =======
@@ -94,3 +109,4 @@ src/main/generated/
 
 >>>>>>> e94015978ac89d427a5800471b51c55ad3927b46
 >>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
+>>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9

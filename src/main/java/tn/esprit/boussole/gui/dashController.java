@@ -29,22 +29,22 @@ public class dashController {
 
     @FXML
     public void initialize() {
-        // 1. Session
+        // 1. Session : Récupération de l'email de l'utilisateur connecté
         Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
-        // 2. Actions des boutons
-        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, null));
+        // 2. Actions des boutons (Fusion des chemins FXML actifs)
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "/DashboardSiege.fxml"));
         btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
         btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
-        btnReports.setOnAction(e -> handleMenuClick(btnReports, null));
-        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, null));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, "/GestionBilans.fxml"));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "/GestionBudgets.fxml"));
 
         // Modules spécifiques
         btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
         btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
 
-        // Tes nouveaux modules (Charges et Fournisseurs)
+        // Modules Charges et Fournisseurs
         if (btnCharges != null) {
             btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
         }
@@ -54,10 +54,10 @@ public class dashController {
 
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 3. Effets visuels
+        // 3. Effets visuels au survol
         setupHoverEffects();
 
-        // 4. Page par défaut
+        // 4. Page par défaut au chargement
         handleMenuClick(btnUsers, "/users.fxml");
     }
 

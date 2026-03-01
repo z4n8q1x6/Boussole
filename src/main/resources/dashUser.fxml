@@ -55,7 +55,7 @@
                     <Button fx:id="btnCharge" text="💸   Charge" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnMensualite" text="📅   Mensualité" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnPret" text="🏦   Prêt" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnTransaction" text="💳   Transaction" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnTransaction" text="💳   Historique des transactions" maxWidth="Infinity" styleClass="nav-button"/>
                 </VBox>
             </content>
         </ScrollPane>
