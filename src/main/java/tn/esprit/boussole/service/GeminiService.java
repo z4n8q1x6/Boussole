@@ -1,5 +1,7 @@
-package service;
+package tn.esprit.boussole.service; // On garde le package de tes amis
 
+import java.io.InputStream;
+import java.util.Properties;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -8,13 +10,35 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class GeminiService {
-    private static final String API_KEY = "AIzaSyDxwuzzTfpXH5vs5vkboxKI0n4Lo3UHI-Q";
 
-    // Changement d'URL pour correspondre exactement au modèle de votre console
-    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
+
+    private static String API_KEY = loadApiKey();
+    private static final String URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+
+
+    private static String loadApiKey() {
+        Properties prop = new Properties();
+        try (InputStream input = GeminiService.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                System.out.println("Désolé, impossible de trouver config.properties");
+                return "";
+            }
+            prop.load(input);
+            return prop.getProperty("gemini.api.key");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "";
+        }
+    }
 
     public static String getGeminiResponse(String userPrompt) {
+        if (API_KEY == null || API_KEY.isEmpty()) {
+            return "Erreur : Clé API manquante dans config.properties";
+        }
+
         try {
+            String fullUrl = URL_BASE + API_KEY;
+
             JSONObject jsonRequest = new JSONObject();
             JSONArray contents = new JSONArray();
             JSONObject part = new JSONObject().put("text", "Réponds brièvement en tant qu'assistant Boussole : " + userPrompt);
@@ -23,18 +47,15 @@ public class GeminiService {
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(URL))
+                    .uri(URI.create(fullUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonRequest.toString()))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            // Si le code n'est pas 200 (Succès), on affiche l'erreur dans la console pour comprendre
             if (response.statusCode() != 200) {
-                System.out.println("DEBUG - Code Erreur: " + response.statusCode());
-                System.out.println("DEBUG - Réponse brute: " + response.body());
-                return "Désolé, une erreur serveur (Code " + response.statusCode() + ") empêche la réponse.";
+                return "Désolé, erreur API (Code " + response.statusCode() + ").";
             }
 
             JSONObject jsonResponse = new JSONObject(response.body());

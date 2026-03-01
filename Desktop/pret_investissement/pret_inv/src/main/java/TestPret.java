@@ -1,5 +1,5 @@
-import entity.Pret;
-import entity.StatutPret;
+import models.Pret;
+import models.StatutPret;
 import service.PretService;
 
 public class TestPret {

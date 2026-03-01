@@ -70,19 +70,8 @@
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>

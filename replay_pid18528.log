@@ -24,7 +24,7 @@ instanceKlass  @bci service/MailService envoyerEmailStatut (Lentity/Pret;Ljava/l
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a0145c000
 instanceKlass com/mysql/cj/protocol/result/AbstractResultsetRow$1
 instanceKlass com/mysql/cj/protocol/a/StringValueEncoder$1
-instanceKlass  @bci controller/ListePretsController confirmerDecision (Lentity/Pret;Ljava/lang/String;)V 61 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01459208
+instanceKlass  @bci gui/ListePretsController confirmerDecision (Lentity/Pret;Ljava/lang/String;)V 61 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01459208
 instanceKlass com/sun/glass/ui/EventLoop
 instanceKlass com/sun/javafx/scene/KeyboardShortcutsHandler$CopyOnWriteMap$1$1
 instanceKlass  @bci javafx/scene/control/skin/ButtonBarSkin <init> (Ljavafx/scene/control/ButtonBar;)V 117 <appendix> member <vmtarget> ; # javafx/scene/control/skin/ButtonBarSkin$$Lambda+0x0000015a01457ae8
@@ -920,7 +920,7 @@ instanceKlass  @bci com/mysql/cj/jdbc/ClientPreparedStatement executeUpdateInter
 instanceKlass  @bci com/mysql/cj/jdbc/ClientPreparedStatement executeUpdateInternal (Lcom/mysql/cj/QueryBindings;Z)J 136 <appendix> member <vmtarget> ; # com/mysql/cj/jdbc/ClientPreparedStatement$$Lambda+0x0000015a0138c950
 instanceKlass  @bci com/mysql/cj/jdbc/ClientPreparedStatement executeUpdateInternal (Lcom/mysql/cj/QueryBindings;Z)J 66 <appendix> member <vmtarget> ; # com/mysql/cj/jdbc/ClientPreparedStatement$$Lambda+0x0000015a0138c728
 instanceKlass  @bci com/sun/prism/impl/BaseResourcePool cleanup (J)Z 106 <appendix> argL0 ; # com/sun/prism/impl/BaseResourcePool$$Lambda+0x0000015a0138c508
-instanceKlass  @bci controller/MensualiteController$1 <init> (Lcontroller/MensualiteController;)V 36 <appendix> member <vmtarget> ; # controller/MensualiteController$1$$Lambda+0x0000015a0138c2e0
+instanceKlass  @bci gui/MensualiteController$1 <init> (Lcontroller/MensualiteController;)V 36 <appendix> member <vmtarget> ; # gui/MensualiteController$1$$Lambda+0x0000015a0138c2e0
 instanceKlass javafx/scene/control/TreeTableView$3
 instanceKlass javafx/scene/control/TreeTableView$2
 instanceKlass javafx/scene/control/TreeTableView$1
@@ -941,9 +941,9 @@ instanceKlass com/mysql/cj/PreparedQuery
 instanceKlass java/sql/ParameterMetaData
 instanceKlass com/mysql/cj/jdbc/ParameterBindings
 instanceKlass com/mysql/cj/QueryBindings
-instanceKlass  @bci controller/MensualiteController ajouterBoutonPayer ()V 5 <appendix> member <vmtarget> ; # controller/MensualiteController$$Lambda+0x0000015a01382c38
-instanceKlass entity/Mensualite
-instanceKlass controller/MensualiteController
+instanceKlass  @bci gui/MensualiteController ajouterBoutonPayer ()V 5 <appendix> member <vmtarget> ; # gui/MensualiteController$$Lambda+0x0000015a01382c38
+instanceKlass models/Mensualite
+instanceKlass gui/MensualiteController
 instanceKlass  @bci com/sun/javafx/tk/quantum/GlassSceneDnDEventHandler handleDragStart (IIIIILcom/sun/glass/ui/ClipboardAssistance;)V 30 <adapter> ; # java/lang/invoke/LambdaForm$MH+0x0000015a01385c00
 # instanceKlass java/lang/invoke/LambdaForm$DMH+0x0000015a01385800
 instanceKlass  @bci com/sun/javafx/tk/quantum/GlassSceneDnDEventHandler handleDragStart (IIIIILcom/sun/glass/ui/ClipboardAssistance;)V 30 <appendix> form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x0000015a01385400
@@ -965,8 +965,8 @@ instanceKlass  @bci com/sun/javafx/tk/quantum/WindowStage close ()V 5 <appendix>
 instanceKlass  @bci com/sun/javafx/tk/quantum/ViewScene dispose ()V 8 <appendix> member <vmtarget> ; # com/sun/javafx/tk/quantum/ViewScene$$Lambda+0x0000015a0137dc80
 instanceKlass  @bci com/sun/javafx/tk/quantum/WindowStage setScene (Lcom/sun/javafx/tk/TKScene;)V 58 <appendix> member <vmtarget> ; # com/sun/javafx/tk/quantum/WindowStage$$Lambda+0x0000015a0137da58
 instanceKlass com/sun/javafx/geom/DirtyRegionPool$PoolItem
-instanceKlass  @bci controller/ListePretsController lambda$configurerFiltrageMultiCritere$2 ()V 47 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a0137d800
-instanceKlass  @cpi controller/ListePretsController 729 form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x0000015a0137d000
+instanceKlass  @bci gui/ListePretsController lambda$configurerFiltrageMultiCritere$2 ()V 47 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a0137d800
+instanceKlass  @cpi gui/ListePretsController 729 form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x0000015a0137d000
 instanceKlass javafx/scene/input/MouseEvent$1
 instanceKlass javafx/scene/control/ListCell$5
 instanceKlass javafx/scene/control/skin/ListViewSkin$3
@@ -1264,10 +1264,10 @@ instanceKlass  @bci com/sun/javafx/property/MethodHelper <clinit> ()V 0 <appendi
 instanceKlass com/sun/javafx/property/MethodHelper
 instanceKlass com/sun/javafx/property/PropertyReference
 instanceKlass javafx/scene/control/TableColumn$CellDataFeatures
-instanceKlass  @bci controller/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 155 <appendix> member <vmtarget> ; # controller/ListePretsController$1$$Lambda+0x0000015a01341140
-instanceKlass  @bci controller/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 142 <appendix> member <vmtarget> ; # controller/ListePretsController$1$$Lambda+0x0000015a01340f18
-instanceKlass  @bci controller/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 129 <appendix> member <vmtarget> ; # controller/ListePretsController$1$$Lambda+0x0000015a01340cf0
-instanceKlass  @bci controller/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 116 <appendix> member <vmtarget> ; # controller/ListePretsController$1$$Lambda+0x0000015a01340ac8
+instanceKlass  @bci gui/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 155 <appendix> member <vmtarget> ; # gui/ListePretsController$1$$Lambda+0x0000015a01341140
+instanceKlass  @bci gui/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 142 <appendix> member <vmtarget> ; # gui/ListePretsController$1$$Lambda+0x0000015a01340f18
+instanceKlass  @bci gui/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 129 <appendix> member <vmtarget> ; # gui/ListePretsController$1$$Lambda+0x0000015a01340cf0
+instanceKlass  @bci gui/ListePretsController$1 <init> (Lcontroller/ListePretsController;)V 116 <appendix> member <vmtarget> ; # gui/ListePretsController$1$$Lambda+0x0000015a01340ac8
 instanceKlass  @bci javafx/scene/control/TableCell <init> ()V 86 <appendix> member <vmtarget> ; # javafx/scene/control/TableCell$$Lambda+0x0000015a013408a0
 instanceKlass  @bci javafx/scene/control/TableCell <init> ()V 76 <appendix> member <vmtarget> ; # javafx/scene/control/TableCell$$Lambda+0x0000015a01340678
 instanceKlass  @bci javafx/scene/control/TableCell <init> ()V 66 <appendix> member <vmtarget> ; # javafx/scene/control/TableCell$$Lambda+0x0000015a01340450
@@ -2117,13 +2117,13 @@ instanceKlass com/sun/javafx/tk/TKSceneListener
 instanceKlass com/sun/javafx/scene/SceneHelper$SceneAccessor
 instanceKlass com/sun/javafx/perf/PerformanceTracker$SceneAccessor
 instanceKlass javafx/beans/property/ObjectPropertyBase$Listener
-instanceKlass  @bci controller/ListePretsController configurerFiltrageMultiCritere ()V 51 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01229c80
-instanceKlass  @bci controller/ListePretsController configurerFiltrageMultiCritere ()V 35 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01229a58
-instanceKlass  @bci controller/ListePretsController configurerFiltrageMultiCritere ()V 21 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01229830
-instanceKlass  @bci controller/ListePretsController configurerFiltrageMultiCritere ()V 9 <appendix> argL0 ; # controller/ListePretsController$$Lambda+0x0000015a012295e0
+instanceKlass  @bci gui/ListePretsController configurerFiltrageMultiCritere ()V 51 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01229c80
+instanceKlass  @bci gui/ListePretsController configurerFiltrageMultiCritere ()V 35 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01229a58
+instanceKlass  @bci gui/ListePretsController configurerFiltrageMultiCritere ()V 21 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01229830
+instanceKlass  @bci gui/ListePretsController configurerFiltrageMultiCritere ()V 9 <appendix> argL0 ; # gui/ListePretsController$$Lambda+0x0000015a012295e0
 instanceKlass  @bci javafx/collections/transformation/FilteredList <clinit> ()V 0 <appendix> argL0 ; # javafx/collections/transformation/FilteredList$$Lambda+0x0000015a01229390
 instanceKlass  @cpi com/sun/prism/impl/BaseResourcePool 452 form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x0000015a0122c400
-instanceKlass  @bci controller/ListePretsController ajouterBoutonsActions ()V 1 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01228d90
+instanceKlass  @bci gui/ListePretsController ajouterBoutonsActions ()V 1 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01228d90
 instanceKlass  @bci com/mysql/cj/jdbc/ConnectionImpl doClose (Ljava/lang/Throwable;[Lcom/mysql/cj/jdbc/CloseOption;)V 285 <appendix> argL0 ; # com/mysql/cj/jdbc/ConnectionImpl$$Lambda+0x0000015a01228b60
 instanceKlass  @cpi com/mysql/cj/jdbc/ConnectionImpl 1730 form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x0000015a0122c000
 instanceKlass  @bci com/mysql/cj/protocol/ExportControlled <clinit> ()V 169 <appendix> argL0 ; # com/mysql/cj/protocol/ExportControlled$$Lambda+0x0000015a01228930
@@ -2463,10 +2463,10 @@ instanceKlass java/sql/DriverManager$2
 instanceKlass java/sql/DriverManager$1
 instanceKlass java/sql/DriverManager
 instanceKlass util/DBConnection
-instanceKlass  @bci controller/ListePretsController configurerColonnes ()V 169 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01198228
-instanceKlass  @bci controller/ListePretsController configurerColonnes ()V 123 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01198000
-instanceKlass  @bci controller/ListePretsController configurerColonnes ()V 77 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01195c50
-instanceKlass  @bci controller/ListePretsController configurerColonnes ()V 31 <appendix> member <vmtarget> ; # controller/ListePretsController$$Lambda+0x0000015a01195a28
+instanceKlass  @bci gui/ListePretsController configurerColonnes ()V 169 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01198228
+instanceKlass  @bci gui/ListePretsController configurerColonnes ()V 123 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01198000
+instanceKlass  @bci gui/ListePretsController configurerColonnes ()V 77 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01195c50
+instanceKlass  @bci gui/ListePretsController configurerColonnes ()V 31 <appendix> member <vmtarget> ; # gui/ListePretsController$$Lambda+0x0000015a01195a28
 instanceKlass  @bci javafx/scene/control/cell/TextFieldTableCell forTableColumn (Ljavafx/util/StringConverter;)Ljavafx/util/Callback; 1 <appendix> member <vmtarget> ; # javafx/scene/control/cell/TextFieldTableCell$$Lambda+0x0000015a01195800
 instanceKlass javafx/scene/control/cell/PropertyValueFactory
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01195400
@@ -2594,7 +2594,7 @@ instanceKlass javafx/fxml/FXMLLoader$ControllerMethodEventHandler
 instanceKlass javafx/fxml/FXMLLoader$MethodHandler
 instanceKlass javafx/fxml/FXML
 instanceKlass javafx/scene/control/ButtonType
-instanceKlass entity/Pret
+instanceKlass models/Pret
 instanceKlass javafx/fxml/FXMLLoader$ControllerAccessor$1
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01160000
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a0115cc00
@@ -3035,7 +3035,7 @@ instanceKlass com/itextpdf/layout/IPropertyContainer
 instanceKlass service/PretService
 instanceKlass javafx/util/StringConverter
 instanceKlass com/sun/javafx/reflect/ReflectUtil
-instanceKlass controller/ListePretsController
+instanceKlass gui/ListePretsController
 instanceKlass javafx/fxml/FXMLLoader$Attribute
 instanceKlass javafx/beans/value/ChangeListener
 instanceKlass javafx/event/EventHandler
@@ -3924,7 +3924,7 @@ instanceKlass  @bci jdk/internal/reflect/DirectConstructorHandleAccessor invokeI
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01002000
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01001c00
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01001800
-instanceKlass  @bci controller/MensualiteController setPretId (ILjava/lang/String;)V 22 <appendix> form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$MH+0x0000015a01001400
+instanceKlass  @bci gui/MensualiteController setPretId (ILjava/lang/String;)V 22 <appendix> form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$MH+0x0000015a01001400
 # instanceKlass java/lang/invoke/LambdaForm$MH+0x0000015a01001000
 instanceKlass sun/invoke/util/VerifyAccess$1
 instanceKlass com/intellij/rt/execution/application/AppMainV2$Agent
@@ -4818,7 +4818,7 @@ instanceKlass javafx/scene/text/FontPosture
 instanceKlass javafx/scene/input/MouseButton
 instanceKlass javafx/scene/Scene$DirtyBits
 instanceKlass com/mysql/cj/jdbc/CloseOption
-instanceKlass entity/StatutPret
+instanceKlass models/StatutPret
 instanceKlass com/mysql/cj/QueryReturnType
 instanceKlass com/mysql/cj/Query$CancelStatus
 instanceKlass com/mysql/cj/MysqlType

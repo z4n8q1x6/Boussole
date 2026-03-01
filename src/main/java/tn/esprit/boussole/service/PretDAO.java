@@ -1,7 +1,7 @@
-package dao;
+/*package tn.esprit.boussole.service;
 
-import entity.Pret;
-import entity.StatutPret;
+import models.Pret;
+import models.StatutPret;
 import util.DBConnection;
 
 import java.sql.*;
@@ -75,7 +75,7 @@ public class PretDAO {
     /**
      * MODIFICATION MAJEURE : Recherche sécurisée par PreparedStatement
      */
-    public List<Pret> search(Double montantMin, Double montantMax, StatutPret statut, String motif) throws SQLException {
+    /*public List<Pret> search(Double montantMin, Double montantMax, StatutPret statut, String motif) throws SQLException {
         List<Pret> list = new ArrayList<>();
 
         // Construction de la requête dynamique
@@ -102,11 +102,11 @@ public class PretDAO {
         }
         return list;
     }
-
+*/
     /**
      * Petite astuce : Méthode utilitaire pour éviter la répétition du code de mapping
      */
-    private Pret mapResultSetToPret(ResultSet rs) throws SQLException {
+   /* private Pret mapResultSetToPret(ResultSet rs) throws SQLException {
         Pret p = new Pret();
         p.setId(rs.getInt("id"));
         p.setMontantDemande(rs.getDouble("montant_demande"));
@@ -116,4 +116,4 @@ public class PretDAO {
         p.setMotif(rs.getString("motif"));
         return p;
     }
-}
+}*/

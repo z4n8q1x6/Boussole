@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox prefHeight="720.0" prefWidth="1150.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ListePretsController">
+<HBox prefHeight="720.0" prefWidth="1150.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.ListePretsController">
 
     <VBox spacing="20" styleClass="sidebar" prefWidth="240" minWidth="240" alignment="TOP_CENTER">
         <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20 0 10 0;">

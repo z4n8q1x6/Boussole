@@ -1,6 +1,6 @@
-package service;
+package tn.esprit.boussole.service;
 
-import entity.Pret;
+import tn.esprit.boussole.models.Pret;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;

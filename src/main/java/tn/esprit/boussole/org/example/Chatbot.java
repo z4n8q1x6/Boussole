@@ -1,4 +1,4 @@
-package org.example;
+package tn.esprit.boussole.org.example;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import service.GeminiService;
+import tn.esprit.boussole.service.GeminiService;
 
 public class Chatbot {
     private TextField t1;

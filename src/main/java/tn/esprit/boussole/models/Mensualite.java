@@ -1,4 +1,4 @@
-package entity;
+package tn.esprit.boussole.models;
 import java.sql.Date;
 
 public class Mensualite {

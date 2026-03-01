@@ -1,10 +1,9 @@
-package controller;
+package tn.esprit.boussole.gui;
 
-import entity.Mensualite;
-import service.PretService;
-import service.MailService;
+import tn.esprit.boussole.models.Mensualite;
+import tn.esprit.boussole.service.PretService;
+import tn.esprit.boussole.service.MailService;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +11,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.paint.Color;
 
 import java.util.List;
 
@@ -21,12 +19,12 @@ public class MensualiteController {
     @FXML private TableView<Mensualite> tableMensualites;
     @FXML private TableColumn<Mensualite, String> colDate;
     @FXML private TableColumn<Mensualite, Double> colMontant;
-    @FXML private TableColumn<Mensualite, String> colStatus; // AJOUTÉ
+    @FXML private TableColumn<Mensualite, String> colStatus;
     @FXML private TableColumn<Mensualite, Void> colAction;
 
     @FXML private Label lblTitre;
-    @FXML private Label lblStatusPret; // AJOUTÉ
-    @FXML private Label lblResteAPayer; // AJOUTÉ
+    @FXML private Label lblStatusPret;
+    @FXML private Label lblResteAPayer;
 
     private PretService pretService = new PretService();
     private MailService mailService = new MailService();
@@ -44,14 +42,9 @@ public class MensualiteController {
 
     @FXML
     public void initialize() {
-        // Configuration des colonnes de base
         colDate.setCellValueFactory(new PropertyValueFactory<>("dateEcheance"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
-
-        // Configuration de la colonne ÉTAT (Visuel)
         configurerColonneEtat();
-
-        // Boutons d'action
         ajouterBoutonPayer();
     }
 
@@ -59,8 +52,6 @@ public class MensualiteController {
         try {
             List<Mensualite> liste = pretService.getMensualitesByPret(currentPretId);
             tableMensualites.setItems(FXCollections.observableArrayList(liste));
-
-            // Mise à jour des labels de résumé
             mettreAJourResume(liste);
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,7 +101,6 @@ public class MensualiteController {
         colAction.setCellFactory(param -> new TableCell<>() {
             private final Button btnPayer = new Button("Enregistrer Paiement");
             {
-                // Style néon pour le bouton
                 btnPayer.setStyle("-fx-background-color: #00E5CC; -fx-text-fill: #06080F; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
                 btnPayer.setOnAction(e -> procederPaiement(getTableView().getItems().get(getIndex())));
             }
@@ -123,7 +113,7 @@ public class MensualiteController {
                 } else {
                     Mensualite m = getTableView().getItems().get(getIndex());
                     if (m.isEstPaye()) {
-                        setGraphic(null); // Pas de bouton si déjà payé
+                        setGraphic(null);
                     } else {
                         setGraphic(btnPayer);
                     }
@@ -133,14 +123,13 @@ public class MensualiteController {
     }
 
     private void procederPaiement(Mensualite m) {
-        // Confirmation simple avant paiement
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Confirmer l'encaissement de " + m.getMontant() + " DT ?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
                 try {
                     pretService.marquerMensualiteCommePayee(m);
                     mailService.envoyerEmailPaiement(m, currentMotif);
-                    chargerMensualites(); // Rafraîchit tout (tableau + labels)
+                    chargerMensualites();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

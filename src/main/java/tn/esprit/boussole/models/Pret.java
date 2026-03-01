@@ -1,11 +1,11 @@
-package entity;
+package tn.esprit.boussole.models;
 
 public class Pret {
     private int id;
     private double montantDemande;
     private int dureeMois;
     private float taux;
-    private StatutPret statut;
+    private StatutPret statut; // Maintenant reconnu car dans le même package
     private String motif;
 
     public Pret() {}
@@ -19,7 +19,7 @@ public class Pret {
         this.motif = motif;
     }
 
-    // --- GETTERS (Déjà présents) ---
+    // --- GETTERS ---
     public int getId() { return id; }
     public double getMontantDemande() { return montantDemande; }
     public int getDureeMois() { return dureeMois; }
@@ -27,7 +27,7 @@ public class Pret {
     public StatutPret getStatut() { return statut; }
     public String getMotif() { return motif; }
 
-    // --- SETTERS À AJOUTER (Résout l'erreur "Cannot find symbol") ---
+    // --- SETTERS ---
     public void setId(int id) { this.id = id; }
     public void setMontantDemande(double montantDemande) { this.montantDemande = montantDemande; }
     public void setDureeMois(int dureeMois) { this.dureeMois = dureeMois; }

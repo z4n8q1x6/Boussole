@@ -1,7 +1,7 @@
-package controller;
+package gui;
 
-import entity.Pret;
-import entity.StatutPret;
+import models.Pret;
+import models.StatutPret;
 import service.PretService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox prefHeight="720.0" prefWidth="1080.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.DemandePretController">
+<HBox prefHeight="720.0" prefWidth="1080.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.DemandePretController">
 
     <VBox alignment="TOP_CENTER" prefWidth="240.0" spacing="20" styleClass="sidebar">
         <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20 0 10 0;">

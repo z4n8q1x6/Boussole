@@ -1,4 +1,4 @@
-package org.example;
+package tn.esprit.boussole.org.example;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

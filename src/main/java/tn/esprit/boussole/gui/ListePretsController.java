@@ -1,10 +1,12 @@
-package controller;
+package tn.esprit.boussole.gui;
 
-import entity.Pret;
-import entity.StatutPret;
-import service.PretService;
-import service.MailService;
-import org.example.Chatbot;
+
+import tn.esprit.boussole.models.Pret;
+import tn.esprit.boussole.models.StatutPret;
+import tn.esprit.boussole.service.PretService;
+import tn.esprit.boussole.service.MailService;
+
+import tn.esprit.boussole.org.example.Chatbot;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -20,7 +22,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.net.URL;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.FloatStringConverter;
 import javafx.util.converter.IntegerStringConverter;

@@ -1,9 +1,9 @@
-package controller;
+package tn.esprit.boussole.gui;
 
-import entity.Pret;
-import entity.StatutPret;
-import service.PretService;
-import org.example.Chatbot;
+import tn.esprit.boussole.models.Pret;
+import tn.esprit.boussole.models.StatutPret;
+import tn.esprit.boussole.service.PretService;
+import tn.esprit.boussole.org.example.Chatbot;
 import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,21 +19,14 @@ import java.net.URL;
 
 public class DemandePretController {
 
-    @FXML
-    private TextField txtMontant, txtDuree, txtTaux, txtMotif;
-
-    @FXML
-    private Label lblMessage;
+    @FXML private TextField txtMontant, txtDuree, txtTaux, txtMotif;
+    @FXML private Label lblMessage;
 
     private PretService pretService = new PretService();
 
-    /**
-     * Ajoute un nouveau prêt après validation des champs.
-     */
     @FXML
     private void ajouterPret() {
         try {
-            // 1. Validation des champs numériques et texte
             if (!txtMontant.getText().matches("\\d+(\\.\\d+)?")) {
                 lblMessage.setText("Montant invalide !");
                 lblMessage.setStyle("-fx-text-fill: red;");
@@ -55,7 +48,6 @@ public class DemandePretController {
                 return;
             }
 
-            // 2. Création de l'objet Pret (utilise les Setters ajoutés dans Pret.java)
             Pret p = new Pret();
             p.setMontantDemande(Double.parseDouble(txtMontant.getText()));
             p.setDureeMois(Integer.parseInt(txtDuree.getText()));
@@ -63,10 +55,8 @@ public class DemandePretController {
             p.setMotif(txtMotif.getText());
             p.setStatut(StatutPret.EN_ATTENTE);
 
-            // 3. Appel du service pour l'insertion en BDD
-            pretService.ajouterPret(p);
+            pretService.insertone(p);
 
-            // 4. Message de succès et nettoyage
             lblMessage.setText("Prêt ajouté avec succès !");
             lblMessage.setStyle("-fx-text-fill: #00E5CC;");
 
@@ -82,62 +72,43 @@ public class DemandePretController {
         }
     }
 
-    /**
-     * Ouvre la fenêtre pop-up du Chatbot Gemini avec le contexte du formulaire.
-     */
     @FXML
     private void ouvrirChatbot(ActionEvent event) {
         try {
-            // 1. ALLER CHERCHER LES INFOS EN BDD (C'est ce qui manquait !)
+            // Ces méthodes existent maintenant dans PretService
             double totalAccorde = pretService.getMontantTotalParStatut(StatutPret.ACCORDE);
             long nbAccorde = pretService.countPretsParStatut(StatutPret.ACCORDE);
             double totalAttente = pretService.getMontantTotalParStatut(StatutPret.EN_ATTENTE);
 
-            // 2. PRÉPARER LE CONTEXTE COMPLET
             StringBuilder contexte = new StringBuilder();
             contexte.append("Tu es Boussole IA, l'assistant expert en crédits.\n");
-            contexte.append("Voici les chiffres réels de la base de données :\n");
+            contexte.append("Données SQL :\n");
             contexte.append("- Total Accordé : ").append(totalAccorde).append(" DT\n");
             contexte.append("- Nombre de dossiers : ").append(nbAccorde).append("\n");
             contexte.append("- En attente : ").append(totalAttente).append(" DT\n\n");
+            contexte.append("Saisie actuelle : ").append(txtMontant.getText()).append(" DT.");
 
-            contexte.append("L'utilisateur est AUSSI en train de remplir ce formulaire :\n");
-            contexte.append("- Montant saisi : ").append(txtMontant.getText()).append(" DT\n");
-            contexte.append("- Motif : ").append(txtMotif.getText()).append("\n");
-            contexte.append("Réponds aux questions en utilisant ces données.");
-
-            // 3. LANCER LE CHATBOT
             Chatbot chatbotApp = new Chatbot(contexte.toString());
             Stage stage = new Stage();
             stage.setScene(chatbotApp.creerSceneChatbot());
-            stage.initModality(Modality.APPLICATION_MODAL); // Optionnel : bloque la fenêtre arrière
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Assistant IA Boussole");
             stage.show();
 
         } catch (Exception e) {
-            System.err.println("Erreur IA : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    /**
-     * Redirige vers la liste des prêts.
-     */
     @FXML
     private void ouvrirListe() {
         chargerPage("/view/ListePrets.fxml");
     }
 
-    /**
-     * Méthode utilitaire pour naviguer entre les vues avec une transition fluide.
-     */
     private void chargerPage(String fxmlPath) {
         try {
             URL resource = getClass().getResource(fxmlPath);
-            if (resource == null) {
-                System.err.println("ERREUR : Fichier FXML introuvable -> " + fxmlPath);
-                return;
-            }
+            if (resource == null) return;
 
             Parent nextRoot = FXMLLoader.load(resource);
             Scene currentScene = txtMontant.getScene();
@@ -154,10 +125,7 @@ public class DemandePretController {
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
             });
-
             fadeOut.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

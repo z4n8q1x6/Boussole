@@ -1,7 +1,7 @@
 package dao;
 
-import entity.Pret;
-import entity.StatutPret;
+import models.Pret;
+import models.StatutPret;
 import util.DBConnection;
 
 import java.sql.*;

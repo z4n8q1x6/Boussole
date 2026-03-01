@@ -2,8 +2,8 @@ package service;
 
 import dao.MensualiteDAO;
 import dao.PretDAO;
-import entity.Mensualite;
-import entity.Pret;
+import models.Mensualite;
+import models.Pret;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
@@ -81,7 +81,7 @@ public class PretService {
     }
 
 
-    public List<Pret> searchPret(Double min, Double max, entity.StatutPret statut, String motif) throws Exception {
+    public List<Pret> searchPret(Double min, Double max, models.StatutPret statut, String motif) throws Exception {
         return pretDAO.search(min, max, statut, motif);
     }
 

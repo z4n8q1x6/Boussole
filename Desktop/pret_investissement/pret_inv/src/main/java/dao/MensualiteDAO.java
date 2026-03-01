@@ -1,6 +1,6 @@
 package dao;
 
-import entity.Mensualite;
+import models.Mensualite;
 import util.DBConnection;
 
 import java.sql.*;
