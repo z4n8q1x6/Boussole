@@ -7,31 +7,19 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
 public class NotificationManager {
 
-<<<<<<< HEAD
-    // Dans NotificationManager.java
-    public static void showInfo(String title, String message) {
-        // On appelle la méthode générique 'show' avec le type INFO
-        // On passe null pour 'owner' pour qu'il s'affiche par défaut sur l'écran principal
-        show(null, Type.INFO, title, message);
-    }
-=======
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
     public enum Type {
         SUCCESS("#10B981", "✅"),
         ERROR("#EF4444", "⛔"),
@@ -47,10 +35,12 @@ public class NotificationManager {
         }
     }
 
-    public static void show(Window owner, Type type, String title, String message) {
-        Platform.runLater(() -> createAndShowNotification(owner, type, title, message));
+    // --- Méthodes de commodité (Raccourcis) ---
+
+    public static void showInfo(String title, String message) {
+        show(null, Type.INFO, title, message);
     }
-<<<<<<< HEAD
+
     public static void showError(String title, String message) {
         show(null, Type.ERROR, title, message);
     }
@@ -58,47 +48,44 @@ public class NotificationManager {
     public static void showSuccess(String title, String message) {
         show(null, Type.SUCCESS, title, message);
     }
-=======
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
+
+    /**
+     * Affiche une notification générique
+     */
+    public static void show(Window owner, Type type, String title, String message) {
+        Platform.runLater(() -> createAndShowNotification(owner, type, title, message));
+    }
 
     private static void createAndShowNotification(Window owner, Type type, String title, String message) {
         Popup popup = new Popup();
         popup.setAutoFix(true);
 
-        // Conteneur principal (Carte)
+        // Conteneur principal (Design moderne type "Toast")
         HBox root = new HBox(15);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(15, 20, 15, 20));
         root.setPrefWidth(350);
         root.setStyle(
-                "-fx-background-color: #0F172A;" + // Fond sombre
-<<<<<<< HEAD
+                "-fx-background-color: #0F172A;" + // Fond sombre (Slate 900)
                         "-fx-background-radius: 12;" +
                         "-fx-border-color: rgba(255,255,255,0.1);" +
                         "-fx-border-radius: 12;" +
                         "-fx-border-width: 1;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);"
-=======
-                "-fx-background-radius: 12;" +
-                "-fx-border-color: rgba(255,255,255,0.1);" +
-                "-fx-border-radius: 12;" +
-                "-fx-border-width: 1;" +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);"
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         );
 
-        // Barre de couleur latérale
+        // Barre de couleur latérale décorative
         Label colorBar = new Label();
         colorBar.setMinWidth(4);
         colorBar.setPrefHeight(40);
         colorBar.setStyle("-fx-background-color: " + type.color + "; -fx-background-radius: 2;");
 
-        // Icône
+        // Icône selon le type
         Label iconLabel = new Label(type.icon);
         iconLabel.setFont(Font.font("Segoe UI Emoji", 24));
         iconLabel.setTextFill(Color.web(type.color));
 
-        // Texte
+        // Conteneur de texte
         VBox textContainer = new VBox(4);
         Label titleLabel = new Label(title);
         titleLabel.setTextFill(Color.WHITE);
@@ -114,15 +101,16 @@ public class NotificationManager {
         root.getChildren().addAll(colorBar, iconLabel, textContainer);
         popup.getContent().add(root);
 
-        // Positionnement (Bas Droite)
+        // Calcul de la position (Bas Droite de l'écran principal)
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        // Si une fenêtre propriétaire est fournie, on essaie de se positionner par rapport à elle, sinon écran principal
         double x = screenBounds.getMaxX() - 370; // Largeur popup + marge
-        double y = screenBounds.getMaxY() - 100; // Hauteur popup + marge
+        double y = screenBounds.getMaxY() - 100; // Hauteur estimée + marge
 
         popup.show(owner, x, y);
 
-        // Animation d'entrée (Slide Up + Fade In)
+        // --- Animations ---
+
+        // Animation d'entrée (Glissement vers le haut + Fondu)
         root.setOpacity(0);
         root.setTranslateY(20);
 
@@ -133,27 +121,18 @@ public class NotificationManager {
         ));
         timelineIn.play();
 
-        // Fermeture automatique après 4 secondes
+        // Animation de sortie (Fondu inverse)
         Timeline timelineOut = new Timeline();
-        timelineOut.getKeyFrames().add(new KeyFrame(Duration.seconds(4),
+        timelineOut.getKeyFrames().add(new KeyFrame(Duration.millis(300),
                 new KeyValue(root.opacityProperty(), 0),
                 new KeyValue(root.translateYProperty(), 20)
         ));
         timelineOut.setOnFinished(e -> popup.hide());
-<<<<<<< HEAD
 
-        // Délai avant fermeture
+        // Délai avant fermeture automatique (4 secondes)
         new Timeline(new KeyFrame(Duration.seconds(4), e -> timelineOut.play())).play();
 
-=======
-        
-        // Délai avant fermeture
-        new Timeline(new KeyFrame(Duration.seconds(4), e -> timelineOut.play())).play();
-        
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
-        // Fermer au clic
-        root.setOnMouseClicked(e -> {
-            timelineOut.play();
-        });
+        // Fermer instantanément au clic sur la notification
+        root.setOnMouseClicked(e -> timelineOut.play());
     }
 }

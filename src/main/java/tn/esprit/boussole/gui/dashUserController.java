@@ -66,21 +66,18 @@ public class dashUserController {
         // Configuration des actions des boutons
         setupMenuActions();
 
-        // Vue par défaut
-        handleMenuClick(btnDashboard, "Tableau de bord", null);
+        // Vue par défaut : On charge le Dashboard réel
+        handleMenuClick(btnDashboard, "Tableau de bord", "/DashboardFranchise.fxml");
     }
 
     private void setupMenuActions() {
-<<<<<<< HEAD
+        // Chemins FXML restaurés
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Tableau de bord", "/DashboardFranchise.fxml"));
-=======
-        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Tableau de bord", null));
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
         btnProduit.setOnAction(e -> handleMenuClick(btnProduit, "Gestion des Produits", null));
         btnCommande.setOnAction(e -> handleMenuClick(btnCommande, "Commandes", null));
         btnLigneCommande.setOnAction(e -> handleMenuClick(btnLigneCommande, "Lignes de Commande", null));
 
-        // Chemins mis à jour avec tes fichiers
+        // Modules Front-office (Charges, Fournisseurs, IA)
         btnFournisseur.setOnAction(e -> handleMenuClick(btnFournisseur, "Fournisseurs", "/afficherFrontFournisseur.fxml"));
         btnFranchises.setOnAction(e -> handleMenuClick(btnFranchises, "Franchises", null));
         btnAlertes.setOnAction(e -> handleMenuClick(btnAlertes, "Alertes", "/alerteIA.fxml"));
@@ -88,17 +85,12 @@ public class dashUserController {
 
         btnBilan.setOnAction(e -> handleMenuClick(btnBilan, "Bilan Financier", null));
         btnBudget.setOnAction(e -> handleMenuClick(btnBudget, "Budget Prévisionnel", null));
-
-        // Chemin mis à jour pour les charges
         btnCharge.setOnAction(e -> handleMenuClick(btnCharge, "Charges", "/afficherFrontCharge.fxml"));
-
         btnMensualite.setOnAction(e -> handleMenuClick(btnMensualite, "Mensualités", null));
         btnPret.setOnAction(e -> handleMenuClick(btnPret, "Prêts", null));
-<<<<<<< HEAD
+
+        // Historique des transactions
         btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Historique des transactions", "/JournalFranchise.fxml"));
-=======
-        btnTransaction.setOnAction(e -> handleMenuClick(btnTransaction, "Transactions", null));
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
 
         btnLogout.setOnAction(e -> handleLogout());
     }
@@ -155,7 +147,9 @@ public class dashUserController {
                 btn.getStyleClass().add("menu-button");
             }
         }
-        activeButton.getStyleClass().add("menu-button-active");
+        if (activeButton != null) {
+            activeButton.getStyleClass().add("menu-button-active");
+        }
     }
 
     private void handleLogout() {
