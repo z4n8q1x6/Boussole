@@ -15,20 +15,23 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.DoubleStringConverter;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.DoubleStringConverter;
 import tn.esprit.boussole.models.transaction;
-import tn.esprit.boussole.services.ServiceTransaction;
-import tn.esprit.boussole.services.ServiceExportExcel;
-import tn.esprit.boussole.Utilis.SessionManager;
+import tn.esprit.boussole.service.ServiceTransaction;
+import tn.esprit.boussole.service.ServiceExportExcel;
+
+import java.sql.SQLException;
+import java.util.prefs.Preferences;
+import tn.esprit.boussole.utils.MyBdConnexion;
 
 import java.io.File;
 
-import tn.esprit.boussole.Utilis.ThemeManager;
+import tn.esprit.boussole.utils.ThemeManagerS;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Date;
+import java.util.Date;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -57,7 +60,7 @@ public class JournalFranchiseController implements Initializable {
 
     @FXML private TableView<transaction> tableTransactions;
     @FXML private TableColumn<transaction, Date> colDate;
-    @FXML private TableColumn<transaction, String> colType;
+    @FXML private TableColumn<transaction, transaction.Type> colType;
     @FXML private TableColumn<transaction, String> colDescription;
     @FXML private TableColumn<transaction, Double> colMontant;
 
@@ -87,7 +90,8 @@ public class JournalFranchiseController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         serviceTransaction = new ServiceTransaction();
 
-        franchiseId = SessionManager.getInstance().getIdFranchise();
+        Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
+        franchiseId = fetchFranchiseId(prefs.get("email", ""));
         if (franchiseId == 0) franchiseId = 1; // Fallback
 
         // 1. Initialiser les filtres UI
@@ -117,8 +121,22 @@ public class JournalFranchiseController implements Initializable {
         // Mode sélection multiple activé
         tableTransactions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        // Configuration basic
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        // ── Suppression via touche DELETE ──
+        tableTransactions.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.DELETE) {
+                supprimerSelection();
+            }
+        });
+
+        // ── Suppression via clic droit (Context Menu) ──
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem menuSupprimer = new MenuItem("🗑️ Supprimer la sélection");
+        menuSupprimer.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
+        menuSupprimer.setOnAction(e -> supprimerSelection());
+        contextMenu.getItems().add(menuSupprimer);
+        tableTransactions.setContextMenu(contextMenu);
+
+        // Configuration basic colonnes
         colDate.setCellFactory(column -> new TableCell<transaction, Date>() {
             @Override
             protected void updateItem(Date item, boolean empty) {
@@ -136,16 +154,16 @@ public class JournalFranchiseController implements Initializable {
         colDescription.setCellFactory(TextFieldTableCell.forTableColumn()); // Editable text field styling handled in CSS now
 
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        colType.setCellFactory(column -> new TableCell<transaction, String>() {
+        colType.setCellFactory(column -> new TableCell<transaction, transaction.Type>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
+            protected void updateItem(transaction.Type item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
                     setStyle("");
                 } else {
-                    if ("RECETTE".equals(item)) {
+                    if (transaction.Type.RECETTE.equals(item)) {
                         setText(" RECETTE");
                         Label icon = new Label("✓");
                         icon.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
@@ -163,25 +181,6 @@ public class JournalFranchiseController implements Initializable {
         });
 
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
-        colMontant.setCellFactory(column -> new TableCell<transaction, Double>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(String.format("%.2f TND", item));
-                    // Récupérer le type pour la couleur
-                    transaction tx = getTableView().getItems().get(getIndex());
-                    if (tx != null && tx.getType() != null && "RECETTE".equals(tx.getType().name())) {
-                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
-                    } else {
-                        setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
-                    }
-                }
-            }
-        });
 
         // Édition : Sauvegarde auto lors de la modification
         tableTransactions.setEditable(true);
@@ -189,7 +188,11 @@ public class JournalFranchiseController implements Initializable {
             transaction t = event.getRowValue();
             if (t.getType() == transaction.Type.RECETTE) {
                 t.setDescription(event.getNewValue());
-                serviceTransaction.updateone(t);
+                try {
+                    serviceTransaction.updateone(t);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
                 tableTransactions.refresh();
@@ -201,7 +204,7 @@ public class JournalFranchiseController implements Initializable {
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null && event.getNewValue() > 0) {
                     t.setMontant(event.getNewValue());
-                    serviceTransaction.updateone(t);
+                    try { serviceTransaction.updateone(t); } catch (java.sql.SQLException e) { afficherErreur("Erreur", e.getMessage()); }
                     updatePredicate();
                 }
             } else {
@@ -215,40 +218,40 @@ public class JournalFranchiseController implements Initializable {
     // OBJECTIF 1 : LOGIQUE DE SUPPRESSION DE MASSE
     // =========================================================================
     private void supprimerSelection() {
-        List<transaction> selectedItems = tableTransactions.getSelectionModel().getSelectedItems();
+        List<transaction> selectedItems = new java.util.ArrayList<>(
+                tableTransactions.getSelectionModel().getSelectedItems());
 
-        if (selectedItems == null || selectedItems.isEmpty()) {
+        if (selectedItems.isEmpty()) {
+            afficherErreur("Sélection vide", "Veuillez sélectionner au moins une ligne.");
             return;
         }
 
         boolean containsDepense = selectedItems.stream()
             .anyMatch(t -> t.getType() == transaction.Type.DEPENSE);
-
         if (containsDepense) {
-            afficherErreur("Action Interdite", "Impossible de supprimer une DEPENSE validée par le siège.\nVeuillez désélectionner les dépenses.");
+            afficherErreur("Action Interdite",
+                "Impossible de supprimer une DÉPENSE validée par le siège.\nDésélectionnez les dépenses.");
             return;
         }
 
         int count = selectedItems.size();
-
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation de suppression");
+        alert.setTitle("Confirmation");
         alert.setHeaderText(null);
-        alert.setContentText("Voulez-vous vraiment supprimer ces " + count + " ligne(s) sélectionnée(s) ?");
-
+        alert.setContentText("Supprimer " + count + " transaction(s) ?");
         Optional<ButtonType> result = alert.showAndWait();
+
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 for (transaction t : selectedItems) {
                     serviceTransaction.deleteone(t);
                 }
-
                 masterData.removeAll(selectedItems);
-                calculerTotaux(tableTransactions.getItems());
+                tableTransactions.getSelectionModel().clearSelection();
+                updatePredicate();
                 afficherSucces("Suppression réussie", count + " transaction(s) supprimée(s).");
-
             } catch (Exception e) {
-                afficherErreur("Erreur", "Problème lors de la suppression : " + e.getMessage());
+                afficherErreur("Erreur", "Suppression échouée : " + e.getMessage());
             }
         }
     }
@@ -420,10 +423,11 @@ public class JournalFranchiseController implements Initializable {
     private void configurerColonnes() {
         colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-        colDate.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.StringConverter<Date>() {
-            @Override public String toString(Date object) { return object != null ? object.toString() : ""; }
-            @Override public Date fromString(String string) {
-                try { return Date.valueOf(string); } catch (Exception e) { return null; }
+        colDate.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.StringConverter<java.util.Date>() {
+            private final java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            @Override public String toString(java.util.Date object) { return object != null ? fmt.format(object) : ""; }
+            @Override public java.util.Date fromString(String string) {
+                try { return java.sql.Date.valueOf(string); } catch (Exception e) { return null; }
             }
         }));
 
@@ -432,7 +436,7 @@ public class JournalFranchiseController implements Initializable {
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null) {
                     t.setDate(event.getNewValue());
-                    serviceTransaction.updateone(t);
+                    try { serviceTransaction.updateone(t); } catch (java.sql.SQLException e) { afficherErreur("Erreur", e.getMessage()); }
                 }
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
@@ -440,9 +444,7 @@ public class JournalFranchiseController implements Initializable {
             }
         });
 
-        colType.setCellValueFactory(cellData -> new SimpleStringProperty(
-            cellData.getValue().getType() != null ? cellData.getValue().getType().toString() : ""
-        ));
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
 
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
@@ -455,20 +457,37 @@ public class JournalFranchiseController implements Initializable {
             transaction t = event.getRowValue();
             if (t.getType() == transaction.Type.RECETTE) {
                 t.setDescription(event.getNewValue());
-                serviceTransaction.updateone(t);
+                try { serviceTransaction.updateone(t); } catch (java.sql.SQLException e) { afficherErreur("Erreur", e.getMessage()); }
             } else {
                 afficherErreur("Interdit", "Modification interdite sur les Dépenses.");
                 tableTransactions.refresh();
             }
         });
 
-        colMontant.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colMontant.setCellFactory(column -> new TextFieldTableCell<transaction, Double>(new DoubleStringConverter()) {
+            @Override
+            public void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(String.format("%.2f TND", item));
+                transaction tx = getTableView().getItems().size() > getIndex() && getIndex() >= 0
+                        ? getTableView().getItems().get(getIndex()) : null;
+                boolean isRecette = tx != null && transaction.Type.RECETTE.equals(tx.getType());
+                String color = isRecette ? "#10B981" : "#EF4444";
+                setStyle("-fx-text-fill:" + color + "; -fx-font-weight:bold; -fx-alignment:CENTER-RIGHT;");
+            }
+        });
+
         colMontant.setOnEditCommit(event -> {
             transaction t = event.getRowValue();
             if (t.getType() == transaction.Type.RECETTE) {
                 if (event.getNewValue() != null && event.getNewValue() > 0) {
                     t.setMontant(event.getNewValue());
-                    serviceTransaction.updateone(t);
+                    try { serviceTransaction.updateone(t); } catch (java.sql.SQLException e) { afficherErreur("Erreur", e.getMessage()); }
                     updatePredicate();
                 }
             } else {
@@ -536,7 +555,7 @@ public class JournalFranchiseController implements Initializable {
     // =========================================================================
     @FXML
     void versDashboard(ActionEvent event) {
-        chargerScene(event, "/tn/esprit/boussole/gui/DashboardFranchise.fxml", "Tableau de Bord - Franchise");
+        chargerScene(event, "/DashboardFranchise.fxml", "Tableau de Bord - Franchise");
     }
 
     private void chargerScene(ActionEvent event, String fxmlPath, String title) {
@@ -546,12 +565,12 @@ public class JournalFranchiseController implements Initializable {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             try {
-                URL cssUrl = getClass().getResource("/tn/esprit/boussole/gui/styles.css");
+                URL cssUrl = getClass().getResource("/styles.css");
                 if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
             } catch (Exception ignored) {
             }
             stage.setScene(scene);
-            ThemeManager.getInstance().applyCurrentTheme(scene);
+            ThemeManagerS.getInstance().applyCurrentTheme(scene);
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
@@ -609,5 +628,23 @@ public class JournalFranchiseController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    // Helper to fetch true franchiseID using the email stored in preferences
+    private int fetchFranchiseId(String email) {
+        if (email == null || email.isEmpty()) return 0;
+        String sql = "SELECT id_franchise FROM utilisateur WHERE email = ? LIMIT 1";
+        try (java.sql.Connection conn = MyBdConnexion.getinstance().getCnx();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_franchise");
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

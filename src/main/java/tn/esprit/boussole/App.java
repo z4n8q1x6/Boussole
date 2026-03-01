@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import tn.esprit.boussole.Utilis.ThemeManager;
+import tn.esprit.boussole.utils.ThemeManagerS;
 
 import java.net.URL;
 
@@ -15,10 +15,10 @@ public class App extends Application {
     public void start(Stage primaryStage) {
         try {
             // Appliquer le thème par défaut (DARK) au démarrage
-            ThemeManager.getInstance().setTheme("DARK");
+            ThemeManagerS.getInstance().setTheme("DARK");
 
             // Chargement de l'écran de Login
-            URL fxmlUrl = getClass().getResource("/tn/esprit/boussole/gui/Login.fxml");
+            URL fxmlUrl = getClass().getResource("/login.fxml");
 
             if (fxmlUrl == null) {
                 System.err.println("!!! ERREUR CRITIQUE !!!");
@@ -30,10 +30,10 @@ public class App extends Application {
             Scene scene = new Scene(root);
 
             // Appliquer la classe de thème au démarrage
-            ThemeManager.getInstance().applyCurrentTheme(scene);
+            ThemeManagerS.getInstance().applyCurrentTheme(scene);
 
             // Charger la feuille CSS si elle existe
-            URL cssUrl = getClass().getResource("/tn/esprit/boussole/gui/styles.css");
+            URL cssUrl = getClass().getResource("/styles.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }

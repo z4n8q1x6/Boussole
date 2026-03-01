@@ -179,7 +179,7 @@ Parent root = FXMLLoader.load(fxmlUrl);
 Scene scene = new Scene(root);
 
 // Charger la feuille CSS
-String css = getClass().getResource("/tn/esprit/boussole/gui/styles.css").toExternalForm();
+String css = getClass().getResource("/styles.css").toExternalForm();
 scene.
 
 getStylesheets().
@@ -199,7 +199,7 @@ Scene scene = new Scene(root);
 
 // Charger la feuille CSS
 try{
-String css = getClass().getResource("/tn/esprit/boussole/gui/styles.css").toExternalForm();
+String css = getClass().getResource("/styles.css").toExternalForm();
     scene.
 
 getStylesheets().

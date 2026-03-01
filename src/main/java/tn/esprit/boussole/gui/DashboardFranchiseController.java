@@ -15,19 +15,20 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.geometry.Pos;
 import tn.esprit.boussole.models.budget_previsionnel;
 import tn.esprit.boussole.models.budget_previsionnel.TypeBudget;
 import tn.esprit.boussole.models.transaction;
-import tn.esprit.boussole.services.ServiceBudgetPrevisionnel;
-import tn.esprit.boussole.services.ServiceDevise;
-import tn.esprit.boussole.services.ServiceTransaction;
-import tn.esprit.boussole.Utilis.SessionManager;
-import tn.esprit.boussole.Utilis.NotificationManager;
+import tn.esprit.boussole.service.ServiceBudgetPrevisionnel;
+import tn.esprit.boussole.service.ServiceDevise;
+import tn.esprit.boussole.service.ServiceTransaction;
+
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Date;
+import java.util.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.controlsfx.control.PopOver;
-import tn.esprit.boussole.Utilis.ThemeManager;
+import tn.esprit.boussole.utils.ThemeManagerS;
+import tn.esprit.boussole.utils.NotificationManager;
+import java.util.prefs.Preferences;
 
 public class DashboardFranchiseController implements Initializable {
 
@@ -53,12 +55,10 @@ public class DashboardFranchiseController implements Initializable {
     private Label lblContreValeur; // Modification de lblSoldeEuro à lblContreValeur
 
     @FXML
-    private ComboBox<String> cbDevise; // Ajout de la ComboBox
+    private ComboBox<String> cbDevise;
 
-    @FXML
+    // Non présents dans le FXML actuel - sans @FXML
     private Label lblUserInfo;
-
-    @FXML
     private Pane paneKpi;
 
     @FXML
@@ -80,7 +80,7 @@ public class DashboardFranchiseController implements Initializable {
     private TableColumn<transaction, Date> colDate;
 
     @FXML
-    private TableColumn<transaction, String> colType;
+    private TableColumn<transaction, transaction.Type> colType;
 
     @FXML
     private TableColumn<transaction, String> colDescription;
@@ -88,21 +88,20 @@ public class DashboardFranchiseController implements Initializable {
     @FXML
     private TableColumn<transaction, Double> colMontant;
 
-    @FXML
+    // Non présents dans le FXML actuel - sans @FXML
     private TableView<budget_previsionnel> tableBudgets;
     @FXML
     private Label lblLimiteDepenses;
     @FXML
     private Label lblObjectifRevenu;
-    @FXML
     private Label lblDepensesMois;
-    @FXML private Button btnDashboard;
-    @FXML private Button btnHistorique;
+    private Button btnDashboard;
+    private Button btnHistorique;
 
-    // --- Nouveaux éléments pour Notifications ---
-    @FXML private StackPane paneNotificationBtn;
-    @FXML private Pane badgeNotification;
-    @FXML private Label lblNotifCount;
+    // --- Notifications (non présents dans le FXML actuel) ---
+    private StackPane paneNotificationBtn;
+    private StackPane badgeNotification;
+    private Label lblNotifCount;
 
     private List<String> notificationsList = new ArrayList<>();
     private int unreadNotifications = 0;
@@ -130,20 +129,12 @@ public class DashboardFranchiseController implements Initializable {
             }
 
             // Get franchise ID from session
-            try {
-                if (SessionManager.getInstance() != null) {
-                    franchiseId = SessionManager.getInstance().getIdFranchise();
-                } else {
-                    System.err.println("SessionManager instance is null");
-                }
-            } catch (Exception e) {
-                System.err.println("Error accessing SessionManager: " + e.getMessage());
-            }
-
-            if (franchiseId == 0) {
-                afficherMessageErreur("Session invalide : identifiant franchise manquant.");
-                // Continue execution but data loading might fail or show empty
-                // return; // Optional: stop here if critical
+            Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
+            franchiseId = fetchFranchiseId(prefs.get("email", ""));
+            // Fallback : si non trouvé en BDD, on utilise 1 par défaut
+            if (franchiseId <= 0) {
+                franchiseId = 1;
+                System.out.println("⚠️ franchiseId non trouvé → fallback à 1");
             }
 
             // Update user info label
@@ -157,43 +148,79 @@ public class DashboardFranchiseController implements Initializable {
             }
 
             // Configure table columns (LECTURE SEULE)
-            if (colDate != null) colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-            // if (colType != null) colType.setCellValueFactory(new PropertyValueFactory<>("type")); // CAUSED EXCEPTION
-            if (colType != null) {
-                // Fix ClassCastException: Convert Enum Type to String explicitly
-                colType.setCellValueFactory(cellData -> new SimpleStringProperty(
-                    cellData.getValue().getType() != null ? cellData.getValue().getType().toString() : ""
-                ));
-            }
-            if (colDescription != null) colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-            if (colMontant != null) colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
-
-            // CellFactory pour colType (Badge coloré) pour matcher le style
-            if (colType != null) {
-                colType.setCellFactory(column -> new TableCell<transaction, String>() {
+            if (colDate != null) {
+                colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+                // Format date yyyy-MM-dd, couleur #CBD5E1
+                colDate.setCellFactory(col -> new TableCell<transaction, Date>() {
+                    private final java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("yyyy-MM-dd");
                     @Override
-                    protected void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty || item == null) {
-                            setText(null);
-                            setGraphic(null);
-                            setStyle("");
-                        } else {
-                            if ("RECETTE".equals(item) || "REVENU".equals(item)) {
-                                setText(" RECETTE");
-                                Label icon = new Label("↗");
-                                icon.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
-                                setGraphic(icon);
-                                setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
-                            } else {
-                                setText(" DEPENSE");
-                                Label icon = new Label("↘");
-                                icon.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
-                                setGraphic(icon);
-                                setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
-                            }
+                    protected void updateItem(Date d, boolean empty) {
+                        super.updateItem(d, empty);
+                        if (empty || d == null) { setText(null); setStyle(""); }
+                        else {
+                            setText(fmt.format(d));
+                            setStyle("-fx-text-fill: #CBD5E1; -fx-font-size: 13px; -fx-padding: 0 0 0 20; -fx-alignment: CENTER-LEFT;");
                         }
                     }
+                });
+            }
+
+            // TYPE : flèche cyan + texte cyan bold
+            if (colType != null) {
+                colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+                colType.setCellFactory(col -> new TableCell<transaction, transaction.Type>() {
+                    @Override
+                    protected void updateItem(transaction.Type item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) { setText(null); setGraphic(null); setStyle(""); return; }
+                        boolean isRecette = transaction.Type.RECETTE.equals(item);
+                        String color  = isRecette ? "#22C55E" : "#EF4444";
+                        String arrow  = isRecette ? "↗" : "↘";
+                        String label  = isRecette ? "RECETTE" : "DÉPENSE";
+
+                        HBox box = new HBox(6);
+                        box.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                        Label iconLbl = new Label(arrow);
+                        iconLbl.setStyle("-fx-text-fill:" + color + "; -fx-font-size:12px; -fx-font-weight:bold;");
+                        Label txtLbl = new Label(label);
+                        txtLbl.setStyle("-fx-text-fill:" + color + "; -fx-font-size:13px; -fx-font-weight:bold;");
+                        box.getChildren().addAll(iconLbl, txtLbl);
+                        setText(null);
+                        setGraphic(box);
+                        setStyle("-fx-padding: 0 0 0 20;");
+                    }
+                });
+            }
+
+            if (colDescription != null) {
+                colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+                colDescription.setCellFactory(col -> new TableCell<transaction, String>() {
+                    @Override
+                    protected void updateItem(String s, boolean empty) {
+                        super.updateItem(s, empty);
+                        if (empty || s == null) { setText(null); setStyle(""); }
+                        else {
+                            setText(s);
+                            setStyle("-fx-text-fill: #CBD5E1; -fx-font-size: 13px; -fx-padding: 0 0 0 20; -fx-alignment: CENTER-LEFT;");
+                        }
+                    }
+                });
+            }
+
+            if (colMontant != null) {
+                colMontant.setCellValueFactory(new PropertyValueFactory<>("montant"));
+                // Montant aligné droite, cyan pour RECETTE, rouge pour DÉPENSE
+                colMontant.setCellFactory(col -> new TableCell<transaction, Double>() {
+                    @Override
+                    protected void updateItem(Double val, boolean empty) {
+                        super.updateItem(val, empty);
+                        if (empty || val == null) { setText(null); setStyle(""); return; }
+                        transaction tx = getTableView().getItems().get(getIndex());
+                        boolean isRecette = tx != null && transaction.Type.RECETTE.equals(tx.getType());
+                        String color = isRecette ? "#22C55E" : "#EF4444";
+                        setText(String.format("%.2f TND", val));
+                        setStyle("-fx-text-fill:" + color + "; -fx-font-weight:bold; -fx-font-size:13px;"
+                                + "-fx-alignment:CENTER-RIGHT; -fx-padding: 0 20 0 0;");                    }
                 });
             }
 
@@ -202,26 +229,21 @@ public class DashboardFranchiseController implements Initializable {
             tableMovements.setContextMenu(null);
 
             // Load initial data
-            if (franchiseId != 0) {
-                // Initialisation de la combo box devises
-                if (cbDevise != null) {
-                    cbDevise.getItems().addAll("EUR", "USD", "GBP", "CAD");
-                    cbDevise.setValue("EUR"); // Valeur par défaut
-                    cbDevise.setOnAction(e -> chargerSolde());
-                }
-
-                // Simulation d'une première notification au démarrage
-                ajouterNotification("Bienvenue sur votre Dashboard de Franchise.");
-                
-                chargerDonneesDashboard();
+            // Initialisation de la combo box devises
+            if (cbDevise != null) {
+                cbDevise.getItems().addAll("EUR", "USD", "GBP", "CAD");
+                cbDevise.setValue("EUR");
+                cbDevise.setOnAction(e -> chargerSolde());
             }
+
+            ajouterNotification("Bienvenue sur votre Dashboard de Franchise.");
+            chargerDonneesDashboard();
 
             // Wire button action
             if (btnValider != null) {
                 btnValider.setOnAction(this::validerRecette);
             }
 
-            appliquerCellFactoryMontant();
 
             // Cleaned up unused sorting/context menu code...
 
@@ -241,6 +263,7 @@ public class DashboardFranchiseController implements Initializable {
     }
 
     private void mettreAJourBadge() {
+        if (badgeNotification == null || lblNotifCount == null) return;
         if (unreadNotifications > 0) {
             badgeNotification.setVisible(true);
             lblNotifCount.setText(String.valueOf(unreadNotifications));
@@ -252,32 +275,36 @@ public class DashboardFranchiseController implements Initializable {
     @FXML
     private void afficherNotifications() {
         VBox contenu = new VBox(10);
-        contenu.setStyle("-fx-padding: 15;");
-        contenu.getStyleClass().add("kpi-card");
+        contenu.setStyle("-fx-padding: 15; -fx-background-color: #0D1117; -fx-background-radius: 12; " +
+                "-fx-border-color: rgba(255,255,255,0.08); -fx-border-radius: 12;");
         contenu.setPrefWidth(300);
-        contenu.setPrefHeight(250);
 
         Label titre = new Label("Centre de Notifications");
-        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        titre.getStyleClass().add("page-title");
+        titre.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
         contenu.getChildren().add(titre);
 
         if (notificationsList.isEmpty()) {
             Label emptyLbl = new Label("Aucune notification.");
-            emptyLbl.getStyleClass().add("page-subtitle");
+            emptyLbl.setStyle("-fx-text-fill: #64748B;");
             contenu.getChildren().add(emptyLbl);
         } else {
             for (String notif : notificationsList) {
-                Label lbl = new Label("- " + notif);
-                lbl.setStyle("-fx-wrap-text: true;");
+                Label lbl = new Label("• " + notif);
+                lbl.setStyle("-fx-wrap-text: true; -fx-text-fill: #E2E8F0;");
                 lbl.setMaxWidth(280);
                 contenu.getChildren().add(lbl);
             }
         }
 
-        PopOver popOver = new PopOver(contenu);
-        popOver.setArrowLocation(PopOver.ArrowLocation.TOP_RIGHT);
-        popOver.show(paneNotificationBtn);
+        javafx.stage.Popup popup = new javafx.stage.Popup();
+        popup.getContent().add(contenu);
+        popup.setAutoHide(true);
+
+        javafx.geometry.Bounds bounds = paneNotificationBtn.localToScreen(paneNotificationBtn.getBoundsInLocal());
+        if (bounds != null) {
+            popup.show(paneNotificationBtn.getScene().getWindow(),
+                    bounds.getMaxX() - 300, bounds.getMaxY() + 5);
+        }
 
         // Réinitialiser le compteur une fois ouvert
         unreadNotifications = 0;
@@ -291,40 +318,6 @@ public class DashboardFranchiseController implements Initializable {
         chargerBudgets();
     }
 
-    private void appliquerCellFactoryMontant() {
-        colMontant.setCellFactory(new Callback<TableColumn<transaction, Double>, TableCell<transaction, Double>>() {
-            @Override
-            public TableCell<transaction, Double> call(TableColumn<transaction, Double> column) {
-                return new TableCell<transaction, Double>() {
-                    @Override
-                    protected void updateItem(Double montant, boolean empty) {
-                        super.updateItem(montant, empty);
-                        if (empty || montant == null) {
-                            setText(null);
-                            setStyle("");
-                            return;
-                        }
-                        setText(String.format("%.2f TND", montant));
-
-                        // Check type from row object
-                        transaction tx = getTableView().getItems().get(getIndex());
-                        if (tx != null && tx.getType() != null) {
-                            String type = tx.getType().name();
-                            if ("RECETTE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
-                            } else if ("DEPENSE".equalsIgnoreCase(type)) {
-                                setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-alignment: CENTER-RIGHT;");
-                            } else {
-                                setStyle("-fx-text-fill: white; -fx-alignment: CENTER-RIGHT;");
-                            }
-                        } else {
-                            setStyle("-fx-text-fill: white; -fx-alignment: CENTER-RIGHT;");
-                        }
-                    }
-                };
-            }
-        });
-    }
 
     /**
      * Load and display solde from database
@@ -367,11 +360,9 @@ public class DashboardFranchiseController implements Initializable {
 
             // Change color based on solde (green if positive, red if negative)
             if (solde >= 0) {
-                lblSolde.setStyle("-fx-text-fill: #2e7d32; -fx-font-size: 48px; -fx-font-weight: bold;");
-                paneKpi.setStyle("-fx-background-color: #e8f5e9; -fx-border-radius: 10; -fx-background-radius: 10;");
+                lblSolde.setStyle("-fx-text-fill: #22C55E; -fx-font-size: 34px; -fx-font-weight: 900;");
             } else {
-                lblSolde.setStyle("-fx-text-fill: #c62828; -fx-font-size: 48px; -fx-font-weight: bold;");
-                paneKpi.setStyle("-fx-background-color: #ffebee; -fx-border-radius: 10; -fx-background-radius: 10;");
+                lblSolde.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 34px; -fx-font-weight: 900;");
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement du solde : " + e.getMessage());
@@ -413,28 +404,30 @@ public class DashboardFranchiseController implements Initializable {
                 tableBudgets.setItems(FXCollections.observableArrayList(budgets));
             }
 
-            // Calculer les TOTAUX de tous les budgets déclarés par le siège
+            // Calculer les TOTAUX de tous les budgets déclarés par le siège pour le mois courant
+            int currentMonth = LocalDate.now().getMonthValue();
+            int currentYear = LocalDate.now().getYear();
+
             double totalLimiteDepenses = 0;
             double totalObjectifRevenu = 0;
 
             for (budget_previsionnel b : budgets) {
-                if (b.getType_budget() == TypeBudget.LIMITE_DEPENSE) {
-                    totalLimiteDepenses += b.getMontantCible();
-                } else if (b.getType_budget() == TypeBudget.OBJECTIF_REVENU) {
-                    totalObjectifRevenu += b.getMontantCible();
+                // On prend uniquement le budget du mois et de l'année en cours
+                if (b.getMois() == currentMonth && b.getAnnee() == currentYear) {
+                    if (b.getType_budget() == TypeBudget.LIMITE_DEPENSE) {
+                        totalLimiteDepenses += b.getMontantCible();
+                    } else if (b.getType_budget() == TypeBudget.OBJECTIF_REVENU) {
+                        totalObjectifRevenu += b.getMontantCible();
+                    }
                 }
             }
 
-            // Mise à jour des KPI Labels
+            // Mise à jour des KPI Labels (afficher "0,00 TND" si non défini)
             if (lblLimiteDepenses != null) {
-                lblLimiteDepenses.setText(totalLimiteDepenses > 0
-                    ? String.format("%.2f TND", totalLimiteDepenses)
-                    : "— TND");
+                lblLimiteDepenses.setText(String.format("%.2f TND", totalLimiteDepenses));
             }
             if (lblObjectifRevenu != null) {
-                lblObjectifRevenu.setText(totalObjectifRevenu > 0
-                    ? String.format("%.2f TND", totalObjectifRevenu)
-                    : "— TND");
+                lblObjectifRevenu.setText(String.format("%.2f TND", totalObjectifRevenu));
             }
 
             // Calculer les dépenses totales réelles
@@ -466,48 +459,72 @@ public class DashboardFranchiseController implements Initializable {
      */
     @FXML
     void validerRecette(javafx.event.ActionEvent event) {
-        try {
-            // Validation des champs
-            if (tfMontant.getText().isEmpty() || tfDescription.getText().isEmpty()) {
-                afficherMessageErreur("Tous les champs doivent être remplis.");
-                return;
-            }
-
-            double montant = Double.parseDouble(tfMontant.getText());
-            if (montant <= 0) {
-                afficherMessageErreur("Le montant doit être supérieur à 0.");
-                return;
-            }
-
-            if (!tfDescription.getText().matches("[a-zA-Z\\s]+")) {
-                afficherMessageErreur("La description ne doit contenir que des lettres.");
-                return;
-            }
-
-            // Création de la transaction
-            transaction t = new transaction();
-            t.setDate(Date.valueOf(dpDate.getValue()));
-            t.setMontant(montant);
-            t.setDescription(tfDescription.getText());
-            t.setType(transaction.Type.RECETTE);
-            t.setFranchiseId(SessionManager.getInstance().getIdFranchise());
-
-            serviceTransaction.insertone(t);
-            afficherMessageSucces("Recette ajoutée avec succès.");
-
-            // Rafraîchir la table et le solde
-            refreshTable();
-            lblSolde.setText(String.format("%.2f TND", serviceTransaction.calculerSolde(SessionManager.getInstance().getIdFranchise())));
-        } catch (NumberFormatException e) {
-            afficherMessageErreur("Le montant doit être un nombre valide.");
-        } catch (Exception e) {
-            afficherMessageErreur("Erreur lors de l'ajout de la recette : " + e.getMessage());
+        // 1. Champs vides
+        if (tfMontant == null || tfMontant.getText().trim().isEmpty()) {
+            afficherMessageErreur("Le montant est obligatoire.");
+            return;
         }
-    }
+        if (tfDescription == null || tfDescription.getText().trim().isEmpty()) {
+            afficherMessageErreur("La description est obligatoire.");
+            return;
+        }
+        // 2. Montant numérique > 0
+        double montant;
+        try {
+            montant = Double.parseDouble(tfMontant.getText().trim().replace(",", "."));
+        } catch (NumberFormatException e) {
+            afficherMessageErreur("Montant invalide (ex: 150.00).");
+            return;
+        }
+        if (montant <= 0) {
+            afficherMessageErreur("Le montant doit être > 0.");
+            return;
+        }
+        // 3. Date
+        if (dpDate == null || dpDate.getValue() == null) {
+            afficherMessageErreur("Veuillez sélectionner une date.");
+            return;
+        }
 
-    // Correction de la méthode refreshTable
-    private void refreshTable() {
+        // 4. Build transaction
+        int fid = (franchiseId > 0) ? franchiseId : 1;
+        transaction t = new transaction();
+        t.setDate(java.sql.Date.valueOf(dpDate.getValue()));
+        t.setMontant(montant);
+        t.setDescription(tfDescription.getText().trim());
+        t.setType(transaction.Type.RECETTE);
+        t.setFranchiseId(fid);
+
+        System.out.println("🚀 INSERT transaction : montant=" + montant
+                + ", desc='" + t.getDescription()
+                + "', date=" + t.getDate()
+                + ", franchiseId=" + fid);
+
+        // 5. Insertion
+        try {
+            serviceTransaction.insertone(t);
+            System.out.println("✅ Insertion réussie, id=" + t.getId());
+        } catch (java.sql.SQLException sqle) {
+            System.err.println("❌ SQL : " + sqle.getMessage());
+            sqle.printStackTrace();
+            afficherMessageErreur("Erreur SQL : " + sqle.getMessage());
+            return;
+        } catch (Exception ex) {
+            System.err.println("❌ Exception : " + ex.getMessage());
+            ex.printStackTrace();
+            afficherMessageErreur("Erreur : " + ex.getMessage());
+            return;
+        }
+
+        // 6. Reset champs
+        tfMontant.clear();
+        tfDescription.clear();
+        dpDate.setValue(LocalDate.now());
+
+        // 7. Refresh
         chargerDerniersMouvements();
+        chargerSolde();
+        afficherMessageSucces("Recette ajoutée avec succès !");
     }
 
     // Ajout des méthodes manquantes pour gérer les messages d'erreur et de succès
@@ -528,7 +545,7 @@ public class DashboardFranchiseController implements Initializable {
      */
     @FXML
     void versHistorique(javafx.event.ActionEvent event) {
-        changerScene(event, "/tn/esprit/boussole/gui/JournalFranchise.fxml", "Journal des Opérations");
+        changerScene(event, "/JournalFranchise.fxml", "Journal des Opérations");
     }
 
     private void changerScene(javafx.event.ActionEvent event, String fxmlPath, String title) {
@@ -537,7 +554,7 @@ public class DashboardFranchiseController implements Initializable {
             Parent root = loader.load();
             javafx.stage.Stage stage = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             stage.setScene(new javafx.scene.Scene(root));
-            ThemeManager.getInstance().applyCurrentTheme(stage.getScene());
+            ThemeManagerS.getInstance().applyCurrentTheme(stage.getScene());
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
@@ -547,13 +564,31 @@ public class DashboardFranchiseController implements Initializable {
     }
 
     // --- Theme Toggle ---
-    @FXML private ToggleButton btnTheme;
+    private ToggleButton btnTheme;
 
     @FXML
     private void toggleTheme() {
-        ThemeManager.getInstance().toggleTheme(btnTheme.getScene());
+        ThemeManagerS.getInstance().toggleTheme(btnTheme.getScene());
         if (btnTheme != null) {
-            btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
+            btnTheme.setText(ThemeManagerS.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }
+    }
+
+    // Helper to fetch true franchiseID using the email stored in preferences
+    private int fetchFranchiseId(String email) {
+        if (email == null || email.isEmpty()) return 0;
+        String sql = "SELECT id_franchise FROM utilisateur WHERE email = ? LIMIT 1";
+        try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_franchise");
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

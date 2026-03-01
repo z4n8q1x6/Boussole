@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.CustomMenuItem?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.boussole.gui.JournalFranchiseController"
+            fx:id="contentPane"
+            stylesheets="@styles.css"
+            style="-fx-background-color: #0A0E1A;">
+
+    <center>
+        <VBox spacing="28" style="-fx-background-color: #0A0E1A;">
+            <padding><Insets top="20" right="40" bottom="30" left="40"/></padding>
+
+            <!-- BARRE DE FILTRES -->
+            <VBox styleClass="dash-card" spacing="0" style="-fx-padding: 20 26 20 26;">
+                <HBox spacing="20" alignment="CENTER_LEFT">
+
+                    <!-- Période -->
+                    <VBox spacing="6">
+                        <Label text="Période" style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <MenuButton fx:id="btnPeriode" text="📅 Période : Ce Mois"
+                                    prefWidth="210" prefHeight="40"
+                                    style="-fx-background-color: transparent;
+                                           -fx-border-color: #0ea5e9; -fx-border-width: 1.5;
+                                           -fx-border-radius: 22; -fx-background-radius: 22;
+                                           -fx-text-fill: white; -fx-font-size: 13px;
+                                           -fx-padding: 0 14 0 14; -fx-cursor: hand;">
+                            <items>
+                                <MenuItem fx:id="miCeMois"      text="Ce Mois"/>
+                                <MenuItem fx:id="miMoisDernier" text="Mois Dernier"/>
+                                <MenuItem fx:id="miCetteAnnee"  text="Cette Année"/>
+                                <MenuItem text="Tout"/>
+                                <SeparatorMenuItem/>
+                                <CustomMenuItem hideOnClick="false">
+                                    <content>
+                                        <VBox spacing="8" style="-fx-padding: 10;">
+                                            <Label text="Plage personnalisée"
+                                                   style="-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:#8892A4;"/>
+                                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                                <DatePicker fx:id="dpPeriodeDu" promptText="Du..." prefWidth="120"/>
+                                                <DatePicker fx:id="dpPeriodeAu" promptText="Au..." prefWidth="120"/>
+                                                <Button fx:id="btnPeriodeOk" text="OK"
+                                                        style="-fx-background-color: #0ea5e9; -fx-text-fill: black;
+                                                               -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 16;"/>
+                                            </HBox>
+                                        </VBox>
+                                    </content>
+                                </CustomMenuItem>
+                            </items>
+                        </MenuButton>
+                    </VBox>
+
+                    <!-- Type -->
+                    <VBox spacing="6">
+                        <Label text="Type" style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbTypeFiltre" promptText="TOUT"
+                                  prefWidth="160" prefHeight="40"
+                                  style="-fx-background-color: #1C2537; -fx-text-fill: white;
+                                         -fx-border-color: rgba(255,255,255,0.12);
+                                         -fx-border-radius: 22; -fx-background-radius: 22;
+                                         -fx-padding: 0 14 0 14;"/>
+                    </VBox>
+
+                    <Pane HBox.hgrow="ALWAYS"/>
+
+                    <!-- Recherche -->
+                    <TextField fx:id="txtRechercheGlobal"
+                               promptText="🔍 Rechercher dans la description..."
+                               prefWidth="270" prefHeight="40"
+                               style="-fx-background-color: #1C2537; -fx-text-fill: white;
+                                      -fx-prompt-text-fill: #475569;
+                                      -fx-border-color: rgba(255,255,255,0.10);
+                                      -fx-border-radius: 22; -fx-background-radius: 22;
+                                      -fx-padding: 0 16 0 16;"/>
+
+                    <!-- Réinitialiser -->
+                    <Button fx:id="btnReinitialiser" text="Réinitialiser"
+                            onAction="#reinitialiserFiltres" prefHeight="40"
+                            style="-fx-background-color: transparent; -fx-text-fill: #CBD5E1;
+                                   -fx-font-size: 13px; -fx-cursor: hand; -fx-padding: 0 16 0 16;"/>
+
+                    <!-- Exporter -->
+                    <Button fx:id="btnExporter" text="Exporter ..."
+                            onAction="#exporter" prefHeight="40"
+                            style="-fx-background-color: #0a84ff; -fx-text-fill: black;
+                                   -fx-font-weight: 900; -fx-font-size: 13px;
+                                   -fx-background-radius: 22; -fx-cursor: hand;
+                                   -fx-padding: 0 22 0 22;
+                                   -fx-effect: dropshadow(gaussian,rgba(10,132,255,0.5),14,0,0,0);"/>
+                </HBox>
+            </VBox>
+
+            <!-- TABLEAU -->
+            <VBox VBox.vgrow="ALWAYS"
+                  style="-fx-background-color: #0D1421;
+                         -fx-background-radius: 14;
+                         -fx-border-color: rgba(255,255,255,0.07);
+                         -fx-border-radius: 14; -fx-border-width: 1;
+                         -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.5),16,0,0,4);">
+                <TableView fx:id="tableTransactions" VBox.vgrow="ALWAYS"
+                           styleClass="journal-table-view"
+                           style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0;">
+                    <columns>
+                        <TableColumn fx:id="colDate"        text="DATE"          prefWidth="180"/>
+                        <TableColumn fx:id="colType"        text="TYPE"          prefWidth="160"/>
+                        <TableColumn fx:id="colDescription" text="DESCRIPTION"   prefWidth="250"/>
+                        <TableColumn fx:id="colMontant"     text="MONTANT (TND)" prefWidth="200"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="Aucune transaction trouvée"
+                               style="-fx-text-fill: #64748B; -fx-font-size: 14px;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- KPI BAS -->
+            <HBox spacing="16">
+
+                <VBox HBox.hgrow="ALWAYS" spacing="10"
+                      style="-fx-background-color: #111827; -fx-background-radius: 14;
+                             -fx-border-color: rgba(255,255,255,0.07); -fx-border-radius: 14;
+                             -fx-border-width: 1; -fx-padding: 18 22 18 22;">
+                    <Label text="Nombre Transactions"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblNombreTransactions" text="--"
+                           style="-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: #0ea5e9;"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" spacing="10"
+                      style="-fx-background-color: #111827; -fx-background-radius: 14;
+                             -fx-border-color: rgba(255,255,255,0.07); -fx-border-radius: 14;
+                             -fx-border-width: 1; -fx-padding: 18 22 18 22;">
+                    <Label text="Total Recettes"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblTotalRecettes" text="-- TND"
+                           style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #22C55E;"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" spacing="10"
+                      style="-fx-background-color: #111827; -fx-background-radius: 14;
+                             -fx-border-color: rgba(255,255,255,0.07); -fx-border-radius: 14;
+                             -fx-border-width: 1; -fx-padding: 18 22 18 22;">
+                    <Label text="Total Charges"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblTotalCharges" text="-- TND"
+                           style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #EF4444;"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" spacing="10"
+                      style="-fx-background-color: #111827; -fx-background-radius: 14;
+                             -fx-border-color: rgba(255,255,255,0.07); -fx-border-radius: 14;
+                             -fx-border-width: 1; -fx-padding: 18 22 18 22;">
+                    <Label text="Solde Filtré"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblSoldeFiltre" text="-- TND"
+                           style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #0ea5e9;"/>
+                </VBox>
+
+            </HBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>
+

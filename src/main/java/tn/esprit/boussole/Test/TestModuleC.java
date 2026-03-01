@@ -3,16 +3,17 @@ package tn.esprit.boussole.Test;
 import tn.esprit.boussole.models.transaction;
 import tn.esprit.boussole.models.transaction.Type;
 import tn.esprit.boussole.models.budget_previsionnel;
-import tn.esprit.boussole.services.ServiceTransaction;
-import tn.esprit.boussole.services.ServiceBudgetPrevisionnel;
-import tn.esprit.boussole.services.ServiceBilan;
+import tn.esprit.boussole.service.ServiceTransaction;
+import tn.esprit.boussole.service.ServiceBudgetPrevisionnel;
+import tn.esprit.boussole.service.ServiceBilan;
 
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public class TestModuleC {
-    public static void main (String[] args) {
+    public static void main (String[] args) throws SQLException {
 
         System.out.println("--- ETAPE 1: INITIALISATION ---");
         ServiceTransaction serviceTransaction = new ServiceTransaction();

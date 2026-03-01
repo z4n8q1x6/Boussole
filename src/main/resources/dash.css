@@ -1,0 +1,98 @@
+/* src/main/resources/styles/dash.css */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #CBD5F5;
+    -fx-font-size: 14px;
+    -fx-background-radius: 8;
+    -fx-padding: 0 0 0 20;
+}
+.menu-button:hover {
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+.menu-button-active {
+    -fx-background-color: #0EA5E9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+/* Sidebar buttons */
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E8EDF5;
+    -fx-background-radius: 10;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #00E5CC;
+}
+
+/* Logout button */
+.logout-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #F43F5E;
+    -fx-background-radius: 10;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.logout-button:hover {
+    -fx-background-color: rgba(244,63,94,0.2);
+    -fx-text-fill: #F43F5E;
+}
+/* style/table_dark.css */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* En-tête de la table */
+.table-view .column-header-background {
+    -fx-background-color: #0C0F1A;
+    -fx-padding: 5;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 40;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #8892A4;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Cellules et Lignes */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 10;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255,255,255,0.01);
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(255,255,255,0.04);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(0, 229, 204, 0.08);
+}
+
+.table-cell {
+    -fx-text-fill: #E8EDF5;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+}
+
+/* Cacher la barre de défilement horizontale vide */
+.table-view .virtual-flow .scroll-bar:horizontal {
+    -fx-opacity: 0;
+}

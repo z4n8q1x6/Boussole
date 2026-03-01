@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
+      style="-fx-background-color: #06080F;"
+      stylesheets="@styles/ChargesdepensesDash.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.boussole.gui.afficherFrontChargeController">
+
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <VBox HBox.hgrow="ALWAYS">
+            <Label text="Nos Charges &amp; Dépenses" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="26.0" /></font>
+            </Label>
+            <Label text="Aperçu des dépenses et analyse statistique" textFill="#8892A4">
+                <font><Font size="13.0" /></font>
+            </Label>
+        </VBox>
+        <Button fx:id="btnIA" text="✨ Conseils" style="-fx-background-color: #8B5CF6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
+        <Button fx:id="btnAjouter" text="+ Ajouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" />
+    </HBox>
+
+    <HBox spacing="20.0" prefHeight="220.0">
+        <VBox spacing="15.0" alignment="CENTER_LEFT">
+            <TextField fx:id="txtRecherche" prefHeight="42.0" prefWidth="250.0"
+                       promptText="🔍 Rechercher par titre..."
+                       style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15;" />
+            <ComboBox fx:id="comboTri" prefHeight="42.0" prefWidth="250.0" promptText="Trier par"
+                      style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10;" />
+        </VBox>
+
+        <StackPane fx:id="chartContainer" HBox.hgrow="ALWAYS"
+                   style="-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15; -fx-padding: 5;" />
+    </HBox>
+
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+        <content>
+            <VBox alignment="CENTER" style="-fx-background-color: transparent;">
+                <GridPane fx:id="gridCharges" alignment="CENTER" hgap="30.0" vgap="30.0">
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <HBox alignment="CENTER" spacing="20.0" style="-fx-background-color: #0C0F1A; -fx-background-radius: 30; -fx-padding: 10;">
+        <Button fx:id="btnPrecedent" text="&lt; Précédent" style="-fx-background-color: transparent; -fx-text-fill: #E8EDF5; -fx-font-weight: bold; -fx-cursor: hand;" />
+        <Label fx:id="lblPageInfo" text="Page 1 / 1" textFill="#8892A4">
+            <font><Font name="System Bold" size="14.0" /></font>
+        </Label>
+        <Button fx:id="btnSuivant" text="Suivant &gt;" style="-fx-background-color: transparent; -fx-text-fill: #E8EDF5; -fx-font-weight: bold; -fx-cursor: hand;" />
+    </HBox>
+</VBox>

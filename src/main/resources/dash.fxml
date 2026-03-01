@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+
+<HBox prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.dashController">
+
+    <VBox prefWidth="260.0" minWidth="260.0" style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 1 0 0;">
+
+        <HBox alignment="CENTER_LEFT" spacing="13" style="-fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 0 0 1 0; -fx-padding: 26 22 22 22;">
+            <Label text="🧭" style="-fx-background-color: #06080F; -fx-border-color: #00E5CC; -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 7 8 7 8; -fx-effect: dropshadow(gaussian, rgba(0,229,204,0.5), 18, 0, 0, 0);">
+                <font><Font size="17"/></font>
+            </Label>
+            <VBox spacing="1">
+                <Label text="Boussole" textFill="#E8EDF5"><font><Font name="System Bold" size="17"/></font></Label>
+                <Label text="MANAGEMENT" textFill="#00E5CC"><font><Font name="System Bold" size="9"/></font></Label>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="5" VBox.vgrow="ALWAYS">
+            <padding><Insets top="18" right="12" left="12"/></padding>
+
+            <Label text="PRINCIPAL" textFill="#3A4258" style="-fx-font-weight: bold;">
+                <font><Font size="9"/></font>
+                <VBox.margin><Insets left="12" bottom="5"/></VBox.margin>
+            </Label>
+
+            <Button fx:id="btnDashboard" text="⊞   Vue d'ensemble" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnUsers" text="👥   Utilisateurs" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnEntreprises" text="🏢   Entreprises" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <Label text="OUTILS" textFill="#3A4258" style="-fx-font-weight: bold;">
+                <font><Font size="9"/></font>
+                <VBox.margin><Insets top="15" left="12" bottom="5"/></VBox.margin>
+            </Label>
+
+            <!-- Boutons Ajoutés -->
+            <Button fx:id="btnCharges" text="💸   Charges" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnFournisseurs" text="🚚   Fournisseurs" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnAlertesIA" text="🤖   Alertes IA" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnReports" text="📊   Bilans" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+            <Button fx:id="btnSettings" text="💰  Budgets" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox style="-fx-border-color: rgba(255,255,255,0.06); -fx-border-width: 1 0 0 0;">
+            <padding><Insets top="14" right="12" bottom="18" left="12"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="11" style="-fx-background-color: #1C2138; -fx-background-radius: 10; -fx-padding: 10;">
+                <Label fx:id="lblAvatar" text="AD" style="-fx-background-color: linear-gradient(to bottom right, #00E5CC, #0099FF); -fx-background-radius: 8; -fx-padding: 7 9;"/>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblUsername" text="Admin" textFill="WHITE" style="-fx-font-weight: bold;"/>
+                    <Label text="● En ligne" textFill="#10B981" style="-fx-font-size: 10;"/>
+                </VBox>
+            </HBox>
+            <Button fx:id="btnLogout" text="🚪   Déconnexion" maxWidth="Infinity" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #F43F5E; -fx-cursor: hand;">
+                <VBox.margin><Insets top="8"/></VBox.margin>
+            </Button>
+        </VBox>
+    </VBox>
+
+    <StackPane fx:id="contentArea" HBox.hgrow="ALWAYS" style="-fx-background-color: #06080F;">
+    </StackPane>
+
+</HBox>

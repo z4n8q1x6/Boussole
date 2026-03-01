@@ -73,9 +73,9 @@ public void initialize(URL location, ResourceBundle resources) {
     // ... autres initialisations ...
 
     // Configurer les boutons de navigation
-    btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml"));
-    btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBudgets.fxml"));
-    btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBilans.fxml"));
+    btnDashboard.setOnAction(event -> changerPage(event, "/DashboardSiege.fxml"));
+    btnBudgets.setOnAction(event -> changerPage(event, "/GestionBudgets.fxml"));
+    btnBilans.setOnAction(event -> changerPage(event, "/GestionBilans.fxml"));
 }
 ```
 
@@ -92,7 +92,7 @@ public void initialize(URL location, ResourceBundle resources) {
 
 @FXML
 public void allerAuDashboard(ActionEvent event) {
-    changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml");
+    changerPage(event, "/DashboardSiege.fxml");
 }
 ```
 
@@ -107,7 +107,7 @@ private void sauvegarderEtRetourner(Button sourceButton) {
 
         // Créer un événement ActionEvent simulé et naviguer
         ActionEvent event = new ActionEvent(sourceButton, sourceButton);
-        changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml");
+        changerPage(event, "/DashboardSiege.fxml");
     } catch (Exception e) {
         System.out.println("Erreur : " + e.getMessage());
     }
@@ -237,9 +237,9 @@ public class MonNouveauControleur implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Configurer les boutons de navigation
-        btnDashboard.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/DashboardSiege.fxml"));
-        btnBudgets.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBudgets.fxml"));
-        btnBilans.setOnAction(event -> changerPage(event, "/tn/esprit/boussole/gui/GestionBilans.fxml"));
+        btnDashboard.setOnAction(event -> changerPage(event, "/DashboardSiege.fxml"));
+        btnBudgets.setOnAction(event -> changerPage(event, "/GestionBudgets.fxml"));
+        btnBilans.setOnAction(event -> changerPage(event, "/GestionBilans.fxml"));
     }
 
     /**

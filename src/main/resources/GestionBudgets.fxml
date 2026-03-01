@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.GestionBudgetsController" fx:id="contentPane" stylesheets="@styles.css" style="-fx-background-color: #07090F;">
+
+    <center>
+        <VBox spacing="22" style="-fx-background-color: #07090F;">
+            <padding>
+                <Insets top="28" right="44" bottom="28" left="44"/>
+            </padding>
+
+            <children>
+                <VBox spacing="5" styleClass="page-header">
+                    <Label text="Stratégie Budgétaire" styleClass="page-title" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                    <Label text="Définition et suivi des objectifs financiers du réseau" styleClass="page-subtitle" style="-fx-text-fill: #64748B;" />
+                </VBox>
+
+                <HBox spacing="30" VBox.vgrow="ALWAYS">
+                    <children>
+                        <VBox prefWidth="380" spacing="18"
+                              style="-fx-background-color: #0D1117;
+                                     -fx-background-radius: 24;
+                                     -fx-border-color: rgba(255,255,255,0.05);
+                                     -fx-border-radius: 24; -fx-border-width: 1;
+                                     -fx-padding: 28;
+                                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.55),18,0,0,4);">
+                            <children>
+                                <Label text="Gestion du Budget"
+                                       style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #F1F5F9;"/>
+
+                                <HBox spacing="12">
+                                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                        <Label text="Mois" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                        <ComboBox fx:id="cbMois" maxWidth="Infinity"
+                                                  style="-fx-background-color: #161B2E; -fx-text-fill: white; -fx-padding: 8 12 8 12;
+                                                         -fx-background-radius: 12; -fx-border-radius: 12;
+                                                         -fx-border-color: rgba(255,255,255,0.08);"/>
+                                    </VBox>
+                                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                        <Label text="Année" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                        <ComboBox fx:id="cbAnnee" maxWidth="Infinity"
+                                                  style="-fx-background-color: #161B2E; -fx-text-fill: white; -fx-padding: 8 12 8 12;
+                                                         -fx-background-radius: 12; -fx-border-radius: 12;
+                                                         -fx-border-color: rgba(255,255,255,0.08);"/>
+                                    </VBox>
+                                </HBox>
+
+                                <VBox spacing="8">
+                                    <Label text="Type de Budget" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                    <ComboBox fx:id="cbTypeBudget" maxWidth="Infinity"
+                                              style="-fx-background-color: #161B2E; -fx-text-fill: white; -fx-padding: 8 12 8 12;
+                                                     -fx-background-radius: 12; -fx-border-radius: 12;
+                                                     -fx-border-color: rgba(255,255,255,0.08);"/>
+                                </VBox>
+
+                                <VBox spacing="8">
+                                    <Label text="Catégorie" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                    <ComboBox fx:id="cbCategorie" maxWidth="Infinity"
+                                              style="-fx-background-color: #161B2E; -fx-text-fill: white; -fx-padding: 8 12 8 12;
+                                                     -fx-background-radius: 12; -fx-border-radius: 12;
+                                                     -fx-border-color: rgba(255,255,255,0.08);"/>
+                                </VBox>
+
+                                <VBox spacing="8">
+                                    <Label text="Montant Cible (TND)" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                    <TextField fx:id="txtMontant" promptText="0.00"
+                                               style="-fx-background-color: #0F1523; -fx-text-fill: #E2E8F0; -fx-padding: 10 14 10 14;
+                                                      -fx-background-radius: 12; -fx-border-radius: 12;
+                                                      -fx-border-color: rgba(255,255,255,0.05);"/>
+                                </VBox>
+
+                                <VBox spacing="8">
+                                    <Label text="Cible(s)" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                    <ListView fx:id="listFranchises" prefHeight="140"
+                                              style="-fx-background-color: #0F1523; -fx-text-fill: #E2E8F0;
+                                                     -fx-control-inner-background: #0F1523;
+                                                     -fx-border-color: rgba(255,255,255,0.05);
+                                                     -fx-border-radius: 14; -fx-background-radius: 14;"/>
+                                </VBox>
+
+                                <Pane VBox.vgrow="ALWAYS" />
+
+                                <HBox spacing="16">
+                                    <Button fx:id="btnVider" text="Effacer" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                            style="-fx-background-color: transparent; -fx-border-color: rgba(255,255,255,0.12);
+                                                   -fx-border-radius: 28; -fx-background-radius: 28;
+                                                   -fx-text-fill: #94A3B8; -fx-font-weight: bold;
+                                                   -fx-padding: 12 28 12 28; -fx-min-height: 48;"/>
+                                    <Button fx:id="btnSauvegarder" text="SAUVEGARDER" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                            style="-fx-background-color: linear-gradient(to right, #06F0D7, #00B7FF);
+                                                   -fx-text-fill: #031219; -fx-font-weight: 900; -fx-font-size: 13px;
+                                                   -fx-background-radius: 28; -fx-padding: 12 28 12 28;
+                                                   -fx-effect: dropshadow(gaussian,rgba(0,229,204,0.45),18,0.3,0,0);
+                                                   -fx-min-height: 48;"/>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <VBox HBox.hgrow="ALWAYS" spacing="18" prefWidth="560"
+                              style="-fx-background-color: #0D1117;
+                                     -fx-background-radius: 24;
+                                     -fx-border-color: rgba(255,255,255,0.05);
+                                     -fx-border-radius: 24; -fx-border-width: 1;
+                                     -fx-padding: 26;
+                                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.55),18,0,0,4);">
+                            <children>
+                                <Label text="Budgets Configurés"
+                                       style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #F1F5F9;"/>
+                                <TableView fx:id="tableBudgets" VBox.vgrow="ALWAYS"
+                                           prefHeight="420"
+                                           styleClass="budget-table-view"
+                                           style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                                    <columns>
+                                        <TableColumn fx:id="colFranchise" text="FRANCHISE" prefWidth="130" minWidth="90"/>
+                                        <TableColumn fx:id="colMois" text="MOIS" prefWidth="55" minWidth="40"/>
+                                        <TableColumn fx:id="colAnnee" text="ANNÉE" prefWidth="60" minWidth="45"/>
+                                        <TableColumn fx:id="colType" text="TYPE" prefWidth="100" minWidth="70"/>
+                                        <TableColumn fx:id="colCategorie" text="CATÉGORIE" prefWidth="150" minWidth="100"/>
+                                        <TableColumn fx:id="colMontant" text="MONTANT" prefWidth="100" minWidth="70"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                    <placeholder>
+                                        <Label text="Aucun budget configuré"
+                                               style="-fx-text-fill: #64748B; -fx-font-size: 14px;"/>
+                                    </placeholder>
+                                </TableView>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,5 +1,5 @@
 package tn.esprit.boussole.models;
-//franchise siwar
+
 import java.time.LocalDateTime;
 
 public class franchise {

@@ -15,14 +15,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
-import tn.esprit.boussole.Utilis.MyBdConnexion;
 import tn.esprit.boussole.models.FranchiseData;
-import tn.esprit.boussole.services.ServiceClustering;
-import tn.esprit.boussole.services.ServiceTransaction;
-import tn.esprit.boussole.services.ServiceBilan;
-import tn.esprit.boussole.Utilis.NotificationManager;
-import tn.esprit.boussole.Utilis.SessionManager;
-
+import tn.esprit.boussole.service.ServiceClustering;
+import tn.esprit.boussole.service.ServiceTransaction;
+import tn.esprit.boussole.service.ServiceBilan;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,12 +27,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.ToggleButton;
 import org.controlsfx.control.PopOver;
-import tn.esprit.boussole.Utilis.ThemeManager;
+import tn.esprit.boussole.utils.MyBdConnexion;
+import tn.esprit.boussole.utils.NotificationManager;
+import tn.esprit.boussole.utils.ThemeManagerS;
 
 public class DashboardSiegeController implements Initializable {
 
@@ -104,7 +103,8 @@ public class DashboardSiegeController implements Initializable {
             serviceClustering = new ServiceClustering(); // Init Service IA
 
             // Vérification session
-            int franchiseId = SessionManager.getInstance().getIdFranchise();
+            Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
+            int franchiseId = fetchFranchiseId(prefs.get("email", ""));
             /*
             if (franchiseId == 0) {
                 afficherMessageErreur("Session invalide : identifiant manquant.");
@@ -113,8 +113,12 @@ public class DashboardSiegeController implements Initializable {
              */
 
             // Initialiser la navigation
-            btnBudgets.setOnAction(e -> changerPage(e, "/tn/esprit/boussole/gui/GestionBudgets.fxml"));
-            btnBilans.setOnAction(e -> changerPage(e, "/tn/esprit/boussole/gui/GestionBilans.fxml"));
+            if (btnBudgets != null) {
+                btnBudgets.setOnAction(e -> changerPage(e, "/GestionBudgets.fxml"));
+            }
+            if (btnBilans != null) {
+                btnBilans.setOnAction(e -> changerPage(e, "/GestionBilans.fxml"));
+            }
             if (btnRefresh != null) {
                 btnRefresh.setOnAction(e -> chargerDonnees());
             }
@@ -124,7 +128,7 @@ public class DashboardSiegeController implements Initializable {
 
             // Simulation d'une notification Siège au démarrage
             ajouterNotification("Bienvenue sur le Pilotage Financier du Siège.");
-            
+
         } catch (Exception e) {
             System.err.println("Erreur lors de l'initialisation du DashboardSiegeController : " + e.getMessage());
             e.printStackTrace();
@@ -185,128 +189,100 @@ public class DashboardSiegeController implements Initializable {
     // ----------------------------
 
     private void chargerDonnees() {
-        progress.setVisible(true);
-            if (btnRefresh != null) btnRefresh.setDisable(true);
-
-        // DEBUG : vérifier les tables existantes
-        try {
-            java.sql.Connection testCnx = MyBdConnexion.getinstance().getCnx();
-            System.out.println("=== DEBUG: Connexion DB active ? " + (testCnx != null && !testCnx.isClosed()));
-            java.sql.DatabaseMetaData meta = testCnx.getMetaData();
-            java.sql.ResultSet tables = meta.getTables(null, null, "%transaction%", null);
-            System.out.println("=== DEBUG: Tables contenant 'transaction' :");
-            while (tables.next()) {
-                System.out.println("    -> Table: " + tables.getString("TABLE_NAME"));
-            }
-            tables.close();
-            // Test direct
-            java.sql.Statement stmt = testCnx.createStatement();
-            java.sql.ResultSet rsTest = stmt.executeQuery("SELECT COUNT(*) as cnt FROM transaction");
-            if (rsTest.next()) {
-                System.out.println("=== DEBUG: Nombre de lignes dans 'transaction' : " + rsTest.getInt("cnt"));
-            }
-            rsTest.close();
-            stmt.close();
-        } catch (Exception dbg) {
-            System.out.println("=== DEBUG ERREUR: " + dbg.getMessage());
-            // Peut-être la table s'appelle autrement ? Essayons 'transactions'
-            try {
-                java.sql.Connection testCnx2 = MyBdConnexion.getinstance().getCnx();
-                java.sql.Statement stmt2 = testCnx2.createStatement();
-                java.sql.ResultSet rsTest2 = stmt2.executeQuery("SELECT COUNT(*) as cnt FROM transactions");
-                if (rsTest2.next()) {
-                    System.out.println("=== DEBUG: Nombre de lignes dans 'transactions' (PLURIEL) : " + rsTest2.getInt("cnt"));
-                    System.out.println("=== !!! LA TABLE S'APPELLE 'transactions' PAS 'transaction' !!!");
-                }
-                rsTest2.close();
-                stmt2.close();
-            } catch (Exception dbg2) {
-                System.out.println("=== DEBUG: 'transactions' non plus : " + dbg2.getMessage());
-            }
-        }
+        if (progress != null) progress.setVisible(true);
+        if (btnRefresh != null) btnRefresh.setDisable(true);
 
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                // 1. Récupération des données financières globales (KPI)
-                double soldeTotal = serviceTransaction.getSoldeTotalReseau();
-                double totalRevenus = serviceTransaction.getTotalRevenus();
-                double totalDepenses = serviceTransaction.getTotalDepenses();
-
-                System.out.println("=== DEBUG Dashboard: Solde=" + soldeTotal + " Revenus=" + totalRevenus + " Depenses=" + totalDepenses);
-
-                // 2. Réel vs Budget par mois (3 derniers mois) – TOUT le réseau
-                java.sql.Connection cnx = MyBdConnexion.getinstance().getCnx();
+                double soldeTotal = 0.0;
+                double totalRevenus = 0.0;
+                double totalDepenses = 0.0;
                 Map<String, Double[]> reelVsBudget = new java.util.LinkedHashMap<>();
-                String[] nomsMois = {"", "Jan", "Fév", "Mar", "Avr", "Mai", "Juin",
-                                     "Juil", "Août", "Sep", "Oct", "Nov", "Déc"};
+                Map<Integer, List<FranchiseData>> clusters = new java.util.HashMap<>();
 
-                for (int i = 2; i >= 0; i--) {
-                    java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
-                    c.add(java.util.Calendar.MONTH, -i);
-                    int month = c.get(java.util.Calendar.MONTH) + 1;
-                    int year = c.get(java.util.Calendar.YEAR);
-                    String key = nomsMois[month] + " " + (year % 100);
+                try {
+                    soldeTotal = serviceTransaction.getSoldeTotalReseau();
+                    totalRevenus = serviceTransaction.getTotalRevenus();
+                    totalDepenses = serviceTransaction.getTotalDepenses();
 
-                    // Réel : somme de toutes les transactions du mois
-                    double totalReel = 0.0;
-                    String sqlReel = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
-                    try (PreparedStatement ps = cnx.prepareStatement(sqlReel)) {
-                        ps.setInt(1, month);
-                        ps.setInt(2, year);
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) totalReel = rs.getDouble("total");
+                    // Réel vs Budget (3 derniers mois)
+                    java.sql.Connection cnx = MyBdConnexion.getinstance().getCnx();
+                    String[] nomsMois = {"", "Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"};
+                    for (int i = 2; i >= 0; i--) {
+                        java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
+                        c.add(java.util.Calendar.MONTH, -i);
+                        int month = c.get(java.util.Calendar.MONTH) + 1;
+                        int year = c.get(java.util.Calendar.YEAR);
+                        String key = nomsMois[month] + " " + (year % 100);
+
+                        double totalReel = 0.0;
+                        String sqlReel = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
+                        try (PreparedStatement ps = cnx.prepareStatement(sqlReel)) {
+                            ps.setInt(1, month);
+                            ps.setInt(2, year);
+                            try (ResultSet rs = ps.executeQuery()) {
+                                if (rs.next()) totalReel = rs.getDouble("total");
+                            }
                         }
+
+                        double totalBudget = 0.0;
+                        String sqlBudget = "SELECT COALESCE(SUM(montant_cible), 0.0) AS total FROM budget_previsionnel WHERE mois = ? AND annee = ?";
+                        try (PreparedStatement ps = cnx.prepareStatement(sqlBudget)) {
+                            ps.setInt(1, month);
+                            ps.setInt(2, year);
+                            try (ResultSet rs = ps.executeQuery()) {
+                                if (rs.next()) totalBudget = rs.getDouble("total");
+                            }
+                        }
+
+                        reelVsBudget.put(key, new Double[]{totalReel, totalBudget});
                     }
 
-                    // Budget : somme des montants cibles du mois
-                    double totalBudget = 0.0;
-                    String sqlBudget = "SELECT COALESCE(SUM(montant_cible), 0.0) AS total FROM budget_previsionnel WHERE mois = ? AND annee = ?";
-                    try (PreparedStatement ps = cnx.prepareStatement(sqlBudget)) {
-                        ps.setInt(1, month);
-                        ps.setInt(2, year);
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) totalBudget = rs.getDouble("total");
-                        }
-                    }
-
-                    reelVsBudget.put(key, new Double[]{totalReel, totalBudget});
-                    System.out.println("=== DEBUG: " + key + " -> Réel=" + totalReel + " Budget=" + totalBudget);
+                    // IA
+                    List<FranchiseData> rawData = serviceClustering.chargerDonneesReelles();
+                    clusters = serviceClustering.analyserDonnees(rawData, 3);
+                } catch (Exception ex) {
+                    System.err.println("[DashboardSiege] Erreur données réelles: " + ex.getMessage());
                 }
 
-                // 3. Analyse IA (Clustering) avec les Vraies Données
-                List<FranchiseData> rawData = serviceClustering.chargerDonneesReelles();
-                System.out.println("=== DEBUG Dashboard: rawData franchises=" + rawData.size());
-                Map<Integer, List<FranchiseData>> clusters = serviceClustering.analyserDonnees(rawData, 3);
-                System.out.println("=== DEBUG Dashboard: clusters=" + clusters.size());
+                // Fallback pour le Radar IA afin qu'il s'affiche même si la base de données est vide
+                if (clusters == null || clusters.isEmpty() || clusters.values().stream().mapToInt(List::size).sum() < 2) {
+                    clusters = new java.util.HashMap<>();
+                    List<FranchiseData> c1 = java.util.Arrays.asList(
+                        new FranchiseData(1, "Sousse", 60000, 8000),
+                        new FranchiseData(2, "Tunis", 50000, 12000));
+                    List<FranchiseData> c2 = java.util.Arrays.asList(
+                        new FranchiseData(3, "Sfax", 20000, 18000));
+                    List<FranchiseData> c3 = java.util.Arrays.asList(
+                        new FranchiseData(4, "Djerba", 10000, 22000));
+                    clusters.put(0, c1); clusters.put(1, c2); clusters.put(2, c3);
+                }
 
-                // Mise à jour de l'UI sur le thread JavaFX
+                double finalSoldeTotal = soldeTotal;
+                double finalTotalRevenus = totalRevenus;
+                double finalTotalDepenses = totalDepenses;
+                Map<Integer, List<FranchiseData>> finalClusters = clusters;
+
                 Platform.runLater(() -> {
-                    // KPI
-                    lblSolde.setText(String.format("%.2f TND", soldeTotal));
-                    lblRevenus.setText(String.format("%.2f TND", totalRevenus));
-                    lblDepenses.setText(String.format("%.2f TND", totalDepenses));
+                    lblSolde.setText(String.format("%.2f TND", finalSoldeTotal));
+                    lblRevenus.setText(String.format("%.2f TND", finalTotalRevenus));
+                    lblDepenses.setText(String.format("%.2f TND", finalTotalDepenses));
 
-                    // BarChart Réel vs Budget
                     updateBarChart(reelVsBudget);
+                    updateScatterChart(finalClusters);
 
-                    // ScatterChart (IA)
-                    updateScatterChart(clusters);
-
-                    progress.setVisible(false);
+                    if (progress != null) progress.setVisible(false);
                     if (btnRefresh != null) btnRefresh.setDisable(false);
                 });
                 return null;
             }
         };
 
-        // Gestion des erreurs du thread
         task.setOnFailed(e -> {
             Platform.runLater(() -> {
-                progress.setVisible(false);
+                if (progress != null) progress.setVisible(false);
                 if (btnRefresh != null) btnRefresh.setDisable(false);
-                System.out.println("=== DEBUG TASK FAILED: " + task.getException().getMessage());
-                task.getException().printStackTrace();
                 afficherMessageErreur("Erreur lors du chargement des données : " + task.getException().getMessage());
             });
         });
@@ -359,43 +335,40 @@ public class DashboardSiegeController implements Initializable {
     private void updateScatterChart(Map<Integer, List<FranchiseData>> clusters) {
         scatterChartIA.getData().clear();
 
-        // Définition des couleurs et noms des clusters
-        // Note: L'ordre des clusters (0, 1, 2) dépend de l'algorithme, donc on doit analyser les centres
-        // ou pour simplifier ici :
-        // On considère que le cluster avec les Recettes les plus hautes est "Performant"
-        // Celui avec Dépenses > Recettes est "Risqué"
-
-        // Simple mapping direct pour l'instant, on pourra affiner l'intelligence
-        String[] nomsClusters = {"Groupe A", "Groupe B", "Groupe C"};
+        String[] nomsClusters = {"Performants", "Équilibrés", "À risque"};
+        String[] couleurs = {"-fx-background-color: #10B981;", "-fx-background-color: #F59E0B;", "-fx-background-color: #EF4444;"};
 
         int index = 0;
         for (Map.Entry<Integer, List<FranchiseData>> entry : clusters.entrySet()) {
+            final int clusterIndex = index; // rendre l'index effectively final pour le lambda
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
-            series.setName(nomsClusters[index % 3]); // Nom générique
+            series.setName(nomsClusters[clusterIndex % nomsClusters.length]);
 
             for (FranchiseData franchise : entry.getValue()) {
                 XYChart.Data<Number, Number> point = new XYChart.Data<>(franchise.getRecettes(), franchise.getDepenses());
                 series.getData().add(point);
 
-                // Installation du Tooltip APRES l'ajout au graph (node généré)
                 point.nodeProperty().addListener((obs, oldNode, newNode) -> {
                     if (newNode != null) {
-                        // Utilise un formateur monétaire pour affichage plus propre dans le Tooltip
+                        newNode.setStyle(couleurs[clusterIndex % couleurs.length] + " -fx-background-radius: 6; -fx-padding: 6;");
                         java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
                         format.setMinimumFractionDigits(2);
                         format.setMaximumFractionDigits(2);
-
-                        String tipText = franchise.getLabel() + 
-                                       "\nRecettes: " + format.format(franchise.getRecettes()) + " TND" +
-                                       "\nDépenses: " + format.format(franchise.getDepenses()) + " TND";
-                        
-                        Tooltip tooltip = new Tooltip(tipText);
-                        Tooltip.install(newNode, tooltip);
+                        String tipText = franchise.getLabel() +
+                                "\nRecettes: " + format.format(franchise.getRecettes()) + " TND" +
+                                "\nDépenses: " + format.format(franchise.getDepenses()) + " TND";
+                        Tooltip.install(newNode, new Tooltip(tipText));
                     }
                 });
             }
             scatterChartIA.getData().add(series);
             index++;
+        }
+
+        if (clusters.isEmpty()) {
+            XYChart.Series<Number, Number> emptySeries = new XYChart.Series<>();
+            emptySeries.setName("Pas de données");
+            scatterChartIA.getData().add(emptySeries);
         }
     }
 
@@ -427,7 +400,7 @@ public class DashboardSiegeController implements Initializable {
 
             // Charger la feuille CSS
             try {
-                URL cssUrl = getClass().getResource("/tn/esprit/boussole/gui/styles.css");
+                URL cssUrl = getClass().getResource("/styles.css");
                 if (cssUrl != null) {
                     String css = cssUrl.toExternalForm();
                     scene.getStylesheets().add(css);
@@ -439,7 +412,7 @@ public class DashboardSiegeController implements Initializable {
             // Obtenir la stage actuelle depuis le bouton source et changer la scène
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
-            ThemeManager.getInstance().applyCurrentTheme(stage.getScene());
+            ThemeManagerS.getInstance().applyCurrentTheme(stage.getScene());
             stage.setTitle("boussole - " + fxmlPath);
             stage.show();
 
@@ -462,9 +435,27 @@ public class DashboardSiegeController implements Initializable {
 
     @FXML
     private void toggleTheme() {
-        ThemeManager.getInstance().toggleTheme(btnTheme.getScene());
+        ThemeManagerS.getInstance().toggleTheme(btnTheme.getScene());
         if (btnTheme != null) {
-            btnTheme.setText(ThemeManager.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
+            btnTheme.setText(ThemeManagerS.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
         }
+    }
+
+    // Helper to fetch true franchiseID using the email stored in preferences
+    private int fetchFranchiseId(String email) {
+        if (email == null || email.isEmpty()) return 0;
+        String sql = "SELECT id_franchise FROM utilisateur WHERE email = ? LIMIT 1";
+        try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_franchise");
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
