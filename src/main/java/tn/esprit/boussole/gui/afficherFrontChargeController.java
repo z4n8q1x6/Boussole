@@ -343,15 +343,36 @@ public class afficherFrontChargeController {
         HBox actionBox = new HBox(8);
         actionBox.setAlignment(Pos.CENTER);
         Button btnMod = new Button("✎");
-        btnMod.setStyle("-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-background-radius: 8;");
+    btnMod.setStyle(
+      "-fx-background-color: rgba(0, 200, 180, 0.15);" +
+      "-fx-text-fill: #00C4B4;" +
+      "-fx-cursor: hand;" +
+      "-fx-background-radius: 6;" +
+      "-fx-font-size: 14px;" +
+      "-fx-padding: 4 10 4 10;");
         btnMod.setOnAction(e -> openModifierForm(charge));
 
-        Button btnSup = new Button("🗑");
-        btnSup.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 8;");
+        Button btnSup = new Button("⊖");
+      btnSup.setStyle(
+    "-fx-background-color: rgba(231, 76, 60, 0.15);" +
+    "-fx-text-fill: #E74C3C;" +
+    "-fx-cursor: hand;" +
+    "-fx-background-radius: 6;" +
+    "-fx-font-size: 14px;" +
+    "-fx-padding: 4 10 4 10;");  
         btnSup.setOnAction(e -> supprimerCharge(charge));
 
         Button btnPdf = new Button("PDF");
-        btnPdf.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-background-radius: 8;");
+btnPdf.setStyle(
+    "-fx-background-color: rgba(220, 38, 38, 0.15);" +
+    "-fx-text-fill: #FF4444;" +
+    "-fx-cursor: hand;" +
+    "-fx-background-radius: 6;" +
+    "-fx-font-size: 13px;" +
+    "-fx-padding: 6 14 6 14;" +
+    "-fx-border-color: #FF4444;" +
+    "-fx-border-radius: 6;" +
+    "-fx-border-width: 1;");
         btnPdf.setOnAction(e -> genererFicheChargePDF(charge));
 
         actionBox.getChildren().addAll(btnMod, btnSup, btnPdf);

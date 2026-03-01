@@ -12,73 +12,100 @@
 <?import javafx.scene.text.Font?>
 
 <VBox prefHeight="700.0" prefWidth="950.0" spacing="25.0"
-      style="-fx-background-color: #06080F;"
-      stylesheets="@styles/ChargesdepensesDash.css"
-      xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="tn.esprit.boussole.gui.afficherBackChargeController">
+  style="-fx-background-color: #06080F;"
+  stylesheets="@styles/ChargesdepensesDash.css"
+  xmlns="http://javafx.com/javafx/17"
+  xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="tn.esprit.boussole.gui.afficherBackChargeController">
 
-    <padding>
-        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-    </padding>
+  <padding>
+    <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+  </padding>
 
-    <HBox alignment="CENTER_LEFT">
-        <VBox HBox.hgrow="ALWAYS">
-            <Label text="Gestion des Charges" textFill="#E8EDF5">
-                <font><Font name="System Bold" size="26.0" /></font>
-            </Label>
-            <Label text="Visualisation et gestion des dépenses enregistrées" textFill="#8892A4">
-                <font><Font size="13.0" /></font>
-            </Label>
-        </VBox>
-        <HBox spacing="10">
-            <Button fx:id="btnAjouter" style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" text="+ Ajouter" />
-        </HBox>
+  <HBox alignment="CENTER_LEFT">
+    <VBox HBox.hgrow="ALWAYS">
+      <Label text="Gestion des Charges" textFill="#E8EDF5">
+        <font>
+          <Font name="System Bold" size="26.0" />
+        </font>
+      </Label>
+      <Label text="Visualisation et gestion des dépenses enregistrées" textFill="#8892A4">
+        <font>
+          <Font size="13.0" />
+        </font>
+      </Label>
+    </VBox>
+    <HBox spacing="10">
+      <Button fx:id="btnAjouter"
+        prefHeight="40"
+        prefWidth="140"
+        style="
+                    -fx-background-color: #00E5CC;
+                    -fx-text-fill: #06080F;
+                    -fx-font-weight: bold;
+                    -fx-background-radius: 8;
+                    -fx-padding: 0 18;
+                    -fx-cursor: hand;"
+        text="+ Ajouter" />
     </HBox>
+  </HBox>
 
-    <HBox spacing="15.0">
-        <TextField fx:id="txtRecherche" prefHeight="42.0" prefWidth="380.0" promptText="🔍 Rechercher une charge (titre...)" style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15 0 15;" />
-        <ComboBox fx:id="comboTri" prefHeight="42.0" promptText="Trier par" style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
-    </HBox>
+  <HBox spacing="15.0">
+    <TextField fx:id="txtRecherche" prefHeight="42.0" prefWidth="380.0"
+      promptText="Rechercher une charge (titre...)"
+      style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15 0 15;" />
+    <ComboBox fx:id="comboTri" prefHeight="42.0" promptText="Trier par"
+      style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
+  </HBox>
 
-    <TableView fx:id="tableCharges" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colTitre" prefWidth="130.0" text="TITRE" />
-            <TableColumn fx:id="colMontant" prefWidth="92.0" text="MONTANT (TND)" />
-            <TableColumn fx:id="colDate" prefWidth="127.0" text="DATE" />
-            <TableColumn fx:id="colType" prefWidth="160.0" text="TYPE" />
-            <TableColumn fx:id="colStatus" prefWidth="100.0" text="STATUT" />
-            <TableColumn fx:id="colFranchiseId" prefWidth="130.0" text="NOM FRANCHISE" />
-            <TableColumn fx:id="colModifier" prefWidth="100.0" text="MODIFIER" />
-            <TableColumn fx:id="colSupprimer" prefWidth="100.0" text="SUPPRIMER" />
-        </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-        </columnResizePolicy>
-    </TableView>
+  <TableView fx:id="tableCharges" VBox.vgrow="ALWAYS">
+    <columns>
+      <TableColumn fx:id="colTitre" prefWidth="130.0" text="TITRE" />
+      <TableColumn fx:id="colMontant" prefWidth="92.0" text="MONTANT (TND)" />
+      <TableColumn fx:id="colDate" prefWidth="127.0" text="DATE" />
+      <TableColumn fx:id="colType" prefWidth="160.0" text="TYPE" />
+      <TableColumn fx:id="colStatus" prefWidth="100.0" text="STATUT" />
+      <TableColumn fx:id="colFranchiseId" prefWidth="130.0" text="NOM FRANCHISE" />
+      <TableColumn fx:id="colModifier" prefWidth="100.0" text="MODIFIER" />
+      <TableColumn fx:id="colSupprimer" prefWidth="100.0" text="SUPPRIMER" />
+    </columns>
+    <columnResizePolicy>
+      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+    </columnResizePolicy>
+  </TableView>
 
-    <HBox spacing="20.0" alignment="CENTER_LEFT" style="-fx-background-color: #0C0F1A; -fx-padding: 20; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15;">
-        <VBox spacing="5">
-            <Label text="TOTAL EN TND" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
-            <Label fx:id="lblTotal" text="0.00 DT" textFill="#E8EDF5">
-                <font><Font name="System Bold" size="20.0" /></font>
-            </Label>
-        </VBox>
+  <HBox spacing="20.0" alignment="CENTER_LEFT"
+    style="-fx-background-color: #0C0F1A; -fx-padding: 20; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15;">
+    <VBox spacing="5">
+      <Label text="TOTAL EN TND" textFill="#8892A4"
+        style="-fx-font-size: 11; -fx-font-weight: bold;" />
+      <Label fx:id="lblTotal" text="0.00 DT" textFill="#E8EDF5">
+        <font>
+          <Font name="System Bold" size="20.0" />
+        </font>
+      </Label>
+    </VBox>
 
-        <VBox prefWidth="1" style="-fx-background-color: rgba(255,255,255,0.1);" />
+    <VBox prefWidth="1" style="-fx-background-color: rgba(255,255,255,0.1);" />
 
-        <VBox spacing="5">
-            <Label text="TAUX DE CHANGE" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
-            <Label fx:id="lblTaux" text="Chargement du taux..." textFill="#0EA5E9">
-                <font><Font name="System Bold" size="14.0" /></font>
-            </Label>
-        </VBox>
+    <VBox spacing="5">
+      <Label text="TAUX DE CHANGE" textFill="#8892A4"
+        style="-fx-font-size: 11; -fx-font-weight: bold;" />
+      <Label fx:id="lblTaux" text="Chargement du taux..." textFill="#0EA5E9">
+        <font>
+          <Font name="System Bold" size="14.0" />
+        </font>
+      </Label>
+    </VBox>
 
-        <VBox spacing="5" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
-            <Label text="ÉQUIVALENT EN EURO" textFill="#8892A4" style="-fx-font-size: 11; -fx-font-weight: bold;"/>
-            <Label fx:id="lblTotalEur" text="0.00 €" textFill="#27ae60">
-                <font><Font name="System Bold" size="22.0" /></font>
-            </Label>
-        </VBox>
-    </HBox>
+    <VBox spacing="5" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+      <Label text="ÉQUIVALENT EN EURO" textFill="#8892A4"
+        style="-fx-font-size: 11; -fx-font-weight: bold;" />
+      <Label fx:id="lblTotalEur" text="0.00 €" textFill="#27ae60">
+        <font>
+          <Font name="System Bold" size="22.0" />
+        </font>
+      </Label>
+    </VBox>
+  </HBox>
 </VBox>

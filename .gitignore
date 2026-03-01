@@ -1,112 +1,65 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
+# --- Build Artifacts ---
 target/
+build/
+dist/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# --- Maven ---
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-<<<<<<< HEAD
-=======
-.kotlin
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
-
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-<<<<<<< HEAD
-*.iws
-*.iml
-*.ipr
-=======
-<<<<<<< HEAD
-.idea/
-*.iws
-*.iml
-*.ipr
-=======
-.idea
-*.iws
-*.iml
-*.ipr
-.env
-/tokens/
-src/main/resources/credentials.json
->>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-<<<<<<< HEAD
-.DS_Store
-=======
-<<<<<<< HEAD
-.DS_Store
-=======
-.DS_Store
-=======
-# --- Build Artifacts ---
-target/
-*.class
-*.log
 
 # --- IDEs ---
-# IntelliJ
 .idea/
 *.iml
 *.iws
-
-# Eclipse
+*.ipr
+.idea/modules.xml
+.idea/jarRepositaries.xml
+.idea/compiler.xml
+.idea/libraries/
+.vscode/
 .settings/
 .classpath
 .project
 .factorypath
-
-# VS Code
-.vscode/
-bin/
+.springBeans
+.sts4-cache
+.apt_generated
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+.kotlin/
 
 # --- OS Specific ---
 .DS_Store
 Thumbs.db
 *.tmp
+*.swp
+*~
 
-# --- Secrets & Notes ---
+# --- Secrets & Config ---
 .env
+.env.*
 temp_key.txt
-*.properties
+/tokens/
+src/main/resources/credentials.json
+
+# --- Misc Useless ---
 *.md
-
-# --- Project Specific ---
-# Ignore the generated-sources folder if you use one
-src/main/generated/
-
->>>>>>> e94015978ac89d427a5800471b51c55ad3927b46
->>>>>>> a7c3076cb51fa9272596a9b82ece34c276b5631d
->>>>>>> 2118e9cc01de212c47c7cbfda8004c4fa0bea0f9
+*.txt
+*.log
+*.bak
+*.orig
+*.rej
+*.patch
+README*
+CHANGELOG*
+LICENCE*
+LICENSE*
