@@ -8,6 +8,7 @@ import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.service.AlerteIAService;
 import tn.esprit.boussole.utils.AlertUtil;
 import tn.esprit.boussole.utils.Gemini;
+import tn.esprit.boussole.utils.UserManager;
 
 public class AlerteIAController {
   AlerteIAService service = new AlerteIAService();
@@ -21,10 +22,11 @@ public class AlerteIAController {
 
   @FXML private TextArea messageArea;
 
-  // temp
-  private int franchise_id = 2;
+  private int franchise_id = -1;
+
 
   public void initialize() {
+    this.franchise_id = UserManager.getCurrentUserFranchiseId();
     colType.setCellValueFactory(new PropertyValueFactory<>("type_alerte"));
     colScore.setCellValueFactory(new PropertyValueFactory<>("score_gravite"));
     colDate.setCellValueFactory(new PropertyValueFactory<>("date_detection"));

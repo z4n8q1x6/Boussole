@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.siege.GestionCatalogueController">
+    <content>
+        <VBox spacing="20" style="-fx-background-color: #06080F;" prefWidth="1100">  <!-- CHANGED: direct style instead of styleClass -->
+            <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
+
+            <!-- En-tête -->
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <ImageView fitHeight="28" fitWidth="28" preserveRatio="true">
+                    <Image url="@/images/products.png" />
+                </ImageView>
+                <Label style="-fx-text-fill: #E8EDF5; -fx-font-size: 26px; -fx-font-weight: bold;" text="Gestion du catalogue" />  <!-- CHANGED: direct style -->
+            </HBox>
+
+            <!-- Statistiques -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox style="-fx-background-color: #0F1523; -fx-background-radius: 15; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15; -fx-padding: 20;">  <!-- CHANGED: Project 2 stat card style -->
+                    <Label style="-fx-text-fill: #64748B; -fx-font-size: 11px; -fx-font-weight: bold;" text="TOTAL PRODUITS" />
+                    <Label fx:id="totalProduitsLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
+                </VBox>
+                <VBox style="-fx-background-color: #0F1523; -fx-background-radius: 15; -fx-border-color: #10B981; -fx-border-radius: 15; -fx-padding: 20;">
+                    <Label style="-fx-text-fill: #10B981; -fx-font-size: 11px; -fx-font-weight: bold;" text="EN STOCK" />
+                    <Label fx:id="enStockLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
+                </VBox>
+                <VBox style="-fx-background-color: #0F1523; -fx-background-radius: 15; -fx-border-color: #EF4444; -fx-border-radius: 15; -fx-padding: 20;">
+                    <Label style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" text="RUPTURE" />
+                    <Label fx:id="ruptureLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
+                </VBox>
+                <VBox style="-fx-background-color: #0F1523; -fx-background-radius: 15; -fx-border-color: #0EA5E9; -fx-border-radius: 15; -fx-padding: 20;">
+                    <Label style="-fx-text-fill: #0EA5E9; -fx-font-size: 11px; -fx-font-weight: bold;" text="VALEUR STOCK" />
+                    <Label fx:id="valeurStockLabel" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" text="0 DT" />
+                </VBox>
+            </HBox>
+
+            <!-- Filtres -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField" promptText="Rechercher un produit..." HBox.hgrow="ALWAYS" prefHeight="38"
+                           style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-prompt-text-fill: #64748B; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 15;"/>
+                <ComboBox fx:id="filterStockCombo" prefWidth="180" prefHeight="38" promptText="Filtrer par stock"
+                          style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 10; -fx-background-radius: 10;" />
+                <Button onAction="#handleRefresh"
+                        style="-fx-background-color: #0C0F1A; -fx-text-fill: #00E5CC; -fx-font-weight: bold; -fx-border-color: #00E5CC; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand;"
+                        text="Rafraîchir" prefHeight="38"/>
+            </HBox>
+
+            <!-- Tableau des produits -->
+            <TableView fx:id="produitTable" VBox.vgrow="ALWAYS" prefHeight="350"
+                       style="-fx-background-color: transparent; -fx-control-inner-background: #0C0F1A; -fx-border-color: rgba(255,255,255,0.06); -fx-border-radius: 12; -fx-background-radius: 12;">
+                <columns>
+                    <TableColumn fx:id="colNom" prefWidth="200" text="PRODUIT" />
+                    <TableColumn fx:id="colReference" prefWidth="150" text="RÉFÉRENCE" />
+                    <TableColumn fx:id="colPrix" prefWidth="120" text="PRIX (DT)" />
+                    <TableColumn fx:id="colStock" prefWidth="100" text="STOCK" />
+                    <TableColumn fx:id="colImage" prefWidth="100" text="IMAGE" />
+                    <TableColumn fx:id="colActions" prefWidth="200" text="ACTIONS" />
+                </columns>
+            </TableView>
+
+            <!-- Formulaire d'ajout -->
+            <VBox spacing="20" style="-fx-background-color: #0F1523; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 25;">
+                <Label text="➕ AJOUTER UN NOUVEAU PRODUIT"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #00E5CC; -fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 0 0 1 0; -fx-padding: 0 0 15 0;"/>
+
+                <GridPane hgap="20" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" minWidth="100" />
+                        <ColumnConstraints minWidth="300" />
+                        <ColumnConstraints halignment="RIGHT" minWidth="100" />
+                        <ColumnConstraints minWidth="300" />
+                    </columnConstraints>
+
+                    <!-- Ligne 1 -->
+                    <Label style="-fx-text-fill: #8892A4;" text="Nom:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                    <TextField fx:id="nomField" promptText="Nom du produit" GridPane.rowIndex="0" GridPane.columnIndex="1" prefHeight="35"
+                               style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8;"/>
+
+                    <Label style="-fx-text-fill: #8892A4;" text="Référence:" GridPane.rowIndex="0" GridPane.columnIndex="2" />
+                    <TextField fx:id="referenceField" promptText="Référence unique" GridPane.rowIndex="0" GridPane.columnIndex="3" prefHeight="35"
+                               style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8;"/>
+
+                    <!-- Ligne 2 -->
+                    <Label style="-fx-text-fill: #8892A4;" text="Prix (DT):" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                    <TextField fx:id="prixField" promptText="0.00" GridPane.rowIndex="1" GridPane.columnIndex="1" prefHeight="35"
+                               style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8;"/>
+
+                    <Label style="-fx-text-fill: #8892A4;" text="Stock:" GridPane.rowIndex="1" GridPane.columnIndex="2" />
+                    <TextField fx:id="stockField" promptText="0" GridPane.rowIndex="1" GridPane.columnIndex="3" prefHeight="35"
+                               style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8;"/>
+
+                    <!-- Ligne 3 - Image -->
+                    <Label style="-fx-text-fill: #8892A4;" text="Image:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                    <HBox spacing="10" GridPane.columnSpan="3" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                        <TextField fx:id="imageField" promptText="URL ou chemin de l'image" HBox.hgrow="ALWAYS" prefHeight="35"
+                                   style="-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8;"/>
+                        <Button fx:id="btnParcourir" onAction="#handleParcourirImage"
+                                style="-fx-background-color: #0C0F1A; -fx-text-fill: #00E5CC; -fx-font-weight: bold; -fx-border-color: #00E5CC; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;"
+                                text="Parcourir" prefHeight="35" prefWidth="100"/>
+                    </HBox>
+
+                    <!-- Ligne 4 - Aperçu -->
+                    <Label style="-fx-text-fill: #8892A4;" text="Aperçu:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                    <ImageView fx:id="apercuImage" fitHeight="80" fitWidth="80" preserveRatio="true"
+                               style="-fx-background-color: #0C0F1A; -fx-background-radius: 5; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 5;"
+                               GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                </GridPane>
+
+                <!-- Boutons d'action -->
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button onAction="#handleEffacer"
+                            style="-fx-background-color: #3D1A1A; -fx-text-fill: #F43F5E; -fx-font-weight: bold; -fx-border-color: rgba(244,63,94,0.3); -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 15; -fx-cursor: hand;"
+                            text="🗑️ Effacer" prefHeight="38" prefWidth="100"/>
+                    <Button onAction="#handleAjouter"
+                            style="-fx-background-color: #00E5CC; -fx-text-fill: #06080F; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 15; -fx-cursor: hand;"
+                            text="➕ Ajouter" prefHeight="38" prefWidth="150"/>
+                </HBox>
+            </VBox>
+
+            <Region prefHeight="20" />
+        </VBox>
+    </content>
+</ScrollPane>
