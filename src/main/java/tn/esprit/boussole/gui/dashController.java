@@ -15,9 +15,14 @@ import javafx.stage.Stage;
 
 public class dashController {
 
+    // Original buttons
     @FXML private Button btnDashboard, btnUsers, btnEntreprises, btnSettings, btnReports, btnLogout;
     @FXML private Button btnReclamations, btnAlertesIA;
     @FXML private Button btnCharges, btnFournisseurs;
+
+    // NEW buttons from second controller
+    @FXML private Button btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises;
+
     @FXML private Label lblUsername;
     @FXML private StackPane contentArea;
 
@@ -33,18 +38,18 @@ public class dashController {
         Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
-        // 2. Actions des boutons (Fusion des chemins FXML actifs)
+        // 2. Actions des boutons principaux
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "/DashboardSiege.fxml"));
         btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
         btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
         btnReports.setOnAction(e -> handleMenuClick(btnReports, "/GestionBilans.fxml"));
         btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "/GestionBudgets.fxml"));
 
-        // Modules spécifiques
+        // 3. Modules de réclamation et alertes
         btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
         btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
 
-        // Modules Charges et Fournisseurs
+        // 4. Modules Charges et Fournisseurs
         if (btnCharges != null) {
             btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
         }
@@ -52,12 +57,31 @@ public class dashController {
             btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
         }
 
+        // 5. NOUVEAUX BOUTONS (Projet 1)
+        if (btnGestionCatalogue != null) {
+            btnGestionCatalogue.setOnAction(e -> handleMenuClick(btnGestionCatalogue, "/GestionCatalogueView.fxml"));
+        } else {
+            System.err.println("⚠️ btnGestionCatalogue est null - vérifiez le fx:id dans dash.fxml");
+        }
+
+        if (btnCommandesRecues != null) {
+            btnCommandesRecues.setOnAction(e -> handleMenuClick(btnCommandesRecues, "/CommandesRecuesView.fxml"));
+        } else {
+            System.err.println("⚠️ btnCommandesRecues est null - vérifiez le fx:id dans dash.fxml");
+        }
+
+        if (btnCarteFranchises != null) {
+            btnCarteFranchises.setOnAction(e -> handleMenuClick(btnCarteFranchises, "/CarteFranchisesView.fxml"));
+        } else {
+            System.err.println("⚠️ btnCarteFranchises est null - vérifiez le fx:id dans dash.fxml");
+        }
+
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 3. Effets visuels au survol
+        // 6. Effets visuels au survol
         setupHoverEffects();
 
-        // 4. Page par défaut au chargement
+        // 7. Page par défaut au chargement
         handleMenuClick(btnUsers, "/users.fxml");
     }
 
@@ -74,7 +98,7 @@ public class dashController {
         try {
             var resource = getClass().getResource(fxmlPath);
             if (resource == null) {
-                System.err.println("Erreur: Fichier " + fxmlPath + " introuvable.");
+                System.err.println("❌ Erreur: Fichier " + fxmlPath + " introuvable dans resources.");
                 showPlaceholder("Fichier introuvable: " + fxmlPath);
                 return;
             }
@@ -92,7 +116,8 @@ public class dashController {
     private void updateButtonStyle(Button activeButton) {
         Button[] allButtons = {
                 btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
-                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs,
+                btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises
         };
         for (Button b : allButtons) {
             if (b != null) {
@@ -102,7 +127,9 @@ public class dashController {
     }
 
     private void handleLogout() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous vous déconnecter ?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Voulez-vous vous déconnecter ?",
+                ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
                 try {
@@ -132,7 +159,8 @@ public class dashController {
     private void setupHoverEffects() {
         Button[] allButtons = {
                 btnDashboard, btnUsers, btnEntreprises, btnReports, btnSettings,
-                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs
+                btnReclamations, btnAlertesIA, btnCharges, btnFournisseurs,
+                btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises
         };
         for (Button b : allButtons) {
             if (b != null) {

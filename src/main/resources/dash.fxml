@@ -35,17 +35,26 @@
             <Button fx:id="btnUsers" text="👥   Utilisateurs" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnEntreprises" text="🏢   Entreprises" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
 
+            <!-- NEW: Catalogue Management -->
+            <Button fx:id="btnGestionCatalogue" text="📋   Gestion catalogue" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <!-- NEW: Orders Management -->
+            <Button fx:id="btnCommandesRecues" text="📥   Commandes reçues" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
             <Label text="OUTILS" textFill="#3A4258" style="-fx-font-weight: bold;">
                 <font><Font size="9"/></font>
                 <VBox.margin><Insets top="15" left="12" bottom="5"/></VBox.margin>
             </Label>
 
-            <!-- Boutons Ajoutés -->
+            <!-- Existing buttons from first navbar -->
             <Button fx:id="btnCharges" text="💸   Charges" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnFournisseurs" text="🚚   Fournisseurs" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
-
             <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnAlertesIA" text="🤖   Alertes IA" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <!-- NEW: Franchise Map -->
+            <Button fx:id="btnCarteFranchises" text="🗺️   Carte franchises" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
             <Button fx:id="btnReports" text="📊   Bilans" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnSettings" text="💰  Budgets" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
 

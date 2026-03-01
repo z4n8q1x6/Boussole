@@ -37,21 +37,20 @@
                     <!-- SECTION PRINCIPAL -->
                     <Label text="PRINCIPAL" styleClass="section-label"/>
                     <Button fx:id="btnDashboard" text="📊   Tableau de bord" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnProduit" text="📦   Produit" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnCommande" text="🛒   Commande" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnLigneCommande" text="📝   Ligne commande" maxWidth="Infinity" styleClass="nav-button"/>
+
+                    <!-- Marketplace & Shopping -->
+                    <Button fx:id="btnCatalogue" text="🛍️   Marketplace" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnPanier" text="🛒   Mon panier" maxWidth="Infinity" styleClass="nav-button"/>
+                    <Button fx:id="btnMesCommandes" text="📦   Mes commandes" maxWidth="Infinity" styleClass="nav-button"/>
 
                     <!-- SECTION GESTION -->
                     <Label text="GESTION" styleClass="section-label"/>
                     <Button fx:id="btnFournisseur" text="🚚   Fournisseur" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnFranchises" text="🏢   Franchises" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnAlertes" text="⚠️   Alertes" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnReclamations" text="📢   Réclamations" maxWidth="Infinity" styleClass="nav-button"/>
 
                     <!-- SECTION FINANCES -->
                     <Label text="FINANCES" styleClass="section-label"/>
-                    <Button fx:id="btnBilan" text="📈   Bilan" maxWidth="Infinity" styleClass="nav-button"/>
-                    <Button fx:id="btnBudget" text="💰   Budget" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnCharge" text="💸   Charge" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnMensualite" text="📅   Mensualité" maxWidth="Infinity" styleClass="nav-button"/>
                     <Button fx:id="btnPret" text="🏦   Prêt" maxWidth="Infinity" styleClass="nav-button"/>
