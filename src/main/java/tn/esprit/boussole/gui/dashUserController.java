@@ -50,14 +50,15 @@ public class dashUserController {
 
     private List<Button> menuButtons;
     private Object currentController; // Référence au contrôleur de la vue chargée
+    private VBox sidebarMenuBox; // Référence au conteneur des boutons sidebar
 
     @FXML
     public void initialize() {
         // Initialiser la liste des boutons de menu pour le style "Active"
         menuButtons = new ArrayList<>();
         if (btnDashboard != null && btnDashboard.getParent() instanceof VBox) {
-            VBox menuBox = (VBox) btnDashboard.getParent();
-            for (Node node : menuBox.getChildrenUnmodifiable()) {
+            sidebarMenuBox = (VBox) btnDashboard.getParent();
+            for (Node node : sidebarMenuBox.getChildrenUnmodifiable()) {
                 if (node instanceof Button && node != btnLogout) {
                     menuButtons.add((Button) node);
                 }
@@ -71,12 +72,10 @@ public class dashUserController {
             lblUsername.setText(email);
         }
 
-        // Configuration de la recherche globale
+        // Configuration de la recherche sur la sidebar
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-                if (currentController instanceof Searchable) {
-                    ((Searchable) currentController).onSearch(newVal);
-                }
+                filterSidebar(newVal);
             });
         }
 
@@ -85,6 +84,56 @@ public class dashUserController {
 
         // Vue par défaut : On charge le Dashboard réel
         handleMenuClick(btnDashboard, "Tableau de bord", "/DashboardFranchise.fxml");
+    }
+
+    /**
+     * Filtre les boutons de la sidebar en fonction du mot-clé saisi.
+     * Les boutons dont le texte ne correspond pas sont masqués.
+     * Les labels de section sont masqués si tous leurs boutons enfants sont masqués.
+     */
+    private void filterSidebar(String keyword) {
+        if (sidebarMenuBox == null) return;
+
+        String lower = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim().toLowerCase();
+
+        List<Node> children = sidebarMenuBox.getChildren();
+        Label currentSectionLabel = null;
+        List<Button> currentSectionButtons = new ArrayList<>();
+
+        for (Node node : children) {
+            if (node instanceof Label) {
+                // Traiter la section précédente
+                finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+                // Nouvelle section
+                currentSectionLabel = (Label) node;
+                currentSectionButtons = new ArrayList<>();
+            } else if (node instanceof Button && node != btnLogout) {
+                Button btn = (Button) node;
+                if (lower.isEmpty()) {
+                    btn.setVisible(true);
+                    btn.setManaged(true);
+                } else {
+                    // Extraire le texte sans les emojis pour une recherche plus souple
+                    String btnText = btn.getText().replaceAll("[^\\p{L}\\p{N}\\s]", "").trim().toLowerCase();
+                    boolean matches = btnText.contains(lower);
+                    btn.setVisible(matches);
+                    btn.setManaged(matches);
+                }
+                currentSectionButtons.add(btn);
+            }
+        }
+        // Traiter la dernière section
+        finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+    }
+
+    /**
+     * Masque le label de section si aucun de ses boutons n'est visible.
+     */
+    private void finalizeSectionVisibility(Label sectionLabel, List<Button> buttons) {
+        if (sectionLabel == null) return;
+        boolean anyVisible = buttons.stream().anyMatch(Button::isVisible);
+        sectionLabel.setVisible(anyVisible);
+        sectionLabel.setManaged(anyVisible);
     }
 
     private void setupMenuActions() {

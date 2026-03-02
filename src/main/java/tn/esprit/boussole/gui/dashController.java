@@ -1,9 +1,12 @@
 package tn.esprit.boussole.gui;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -12,6 +15,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class dashController {
@@ -30,6 +34,7 @@ public class dashController {
     @FXML private StackPane contentArea;
 
     private Object currentController; // Référence au contrôleur de la vue chargée
+    private VBox sidebarMenuBox; // Référence au conteneur des boutons sidebar
 
     private final String ACTIVE_STYLE =
             "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
@@ -42,6 +47,11 @@ public class dashController {
         // 1. Session : Récupération de l'email de l'utilisateur connecté
         Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
         lblUsername.setText(prefs.get("email", "Administrateur"));
+
+        // Stocker la référence au conteneur sidebar
+        if (btnDashboard != null && btnDashboard.getParent() instanceof VBox) {
+            sidebarMenuBox = (VBox) btnDashboard.getParent();
+        }
 
         // 2. Actions des boutons principaux
         btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml"));
@@ -77,12 +87,10 @@ public class dashController {
 
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 6. Recherche globale
+        // 6. Recherche sur la sidebar
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-                if (currentController instanceof Searchable) {
-                    ((Searchable) currentController).onSearch(newVal);
-                }
+                filterSidebar(newVal);
             });
         }
 
@@ -91,6 +99,56 @@ public class dashController {
 
         // 8. Page par défaut au chargement
         handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml");
+    }
+
+    /**
+     * Filtre les boutons de la sidebar en fonction du mot-clé saisi.
+     * Les boutons dont le texte ne correspond pas sont masqués.
+     * Les labels de section sont masqués si tous leurs boutons enfants sont masqués.
+     */
+    private void filterSidebar(String keyword) {
+        if (sidebarMenuBox == null) return;
+
+        String lower = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim().toLowerCase();
+
+        List<Node> children = sidebarMenuBox.getChildren();
+        Label currentSectionLabel = null;
+        List<Button> currentSectionButtons = new ArrayList<>();
+
+        for (Node node : children) {
+            if (node instanceof Label) {
+                // Traiter la section précédente
+                finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+                // Nouvelle section
+                currentSectionLabel = (Label) node;
+                currentSectionButtons = new ArrayList<>();
+            } else if (node instanceof Button && node != btnLogout) {
+                Button btn = (Button) node;
+                if (lower.isEmpty()) {
+                    btn.setVisible(true);
+                    btn.setManaged(true);
+                } else {
+                    // Extraire le texte sans les emojis pour une recherche plus souple
+                    String btnText = btn.getText().replaceAll("[^\\p{L}\\p{N}\\s]", "").trim().toLowerCase();
+                    boolean matches = btnText.contains(lower);
+                    btn.setVisible(matches);
+                    btn.setManaged(matches);
+                }
+                currentSectionButtons.add(btn);
+            }
+        }
+        // Traiter la dernière section
+        finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+    }
+
+    /**
+     * Masque le label de section si aucun de ses boutons n'est visible.
+     */
+    private void finalizeSectionVisibility(Label sectionLabel, List<Button> buttons) {
+        if (sectionLabel == null) return;
+        boolean anyVisible = buttons.stream().anyMatch(Button::isVisible);
+        sectionLabel.setVisible(anyVisible);
+        sectionLabel.setManaged(anyVisible);
     }
 
     private void handleMenuClick(Button button, String fxmlPath) {
