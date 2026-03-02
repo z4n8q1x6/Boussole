@@ -25,40 +25,6 @@
         <VBox spacing="20" style="-fx-background-color: #07090F;">
             <padding><Insets top="24" right="44" bottom="24" left="44"/></padding>
 
-            <!-- ═══ HEADER ═══ -->
-            <HBox alignment="CENTER_LEFT">
-                <VBox HBox.hgrow="ALWAYS" spacing="4">
-                    <Label text="Pilotage Financier"
-                           style="-fx-font-size: 30px; -fx-font-weight: 900; -fx-text-fill: white;"/>
-                    <Label text="Suivi de la performance globale du réseau"
-                           style="-fx-font-size: 13px; -fx-text-fill: #64748B;"/>
-                </VBox>
-                <StackPane fx:id="paneNotificationBtn" style="-fx-cursor: hand;" onMouseClicked="#afficherNotifications"
-                           prefWidth="42" prefHeight="42">
-                    <!-- Modern glass container -->
-                    <StackPane style="-fx-background-color: rgba(255,255,255,0.06);
-                                      -fx-background-radius: 14;
-                                      -fx-border-color: rgba(255,255,255,0.1);
-                                      -fx-border-radius: 14; -fx-border-width: 1;
-                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);"
-                               prefWidth="42" prefHeight="42" alignment="CENTER">
-                        <Label text="🔔" style="-fx-font-size: 20px; -fx-text-fill: #94A3B8; -fx-effect: dropshadow(gaussian, rgba(0,229,204,0.3), 6, 0, 0, 0);"/>
-                    </StackPane>
-                    <!-- Animated badge -->
-                    <StackPane fx:id="badgeNotification" visible="false"
-                               style="-fx-background-color: linear-gradient(to bottom right, #FF4757, #FF6B81);
-                                      -fx-background-radius: 50%;
-                                      -fx-min-width: 20; -fx-min-height: 20;
-                                      -fx-max-width: 20; -fx-max-height: 20;
-                                      -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.7), 8, 0.4, 0, 0);"
-                               StackPane.alignment="TOP_RIGHT"
-                               translateX="4" translateY="-4">
-                        <Label fx:id="lblNotifCount" text="0"
-                               style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: 900;"
-                               alignment="CENTER"/>
-                    </StackPane>
-                </StackPane>
-            </HBox>
 
             <!-- ═══ KPI CARDS ═══ -->
             <HBox spacing="16">

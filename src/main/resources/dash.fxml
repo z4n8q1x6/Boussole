@@ -3,11 +3,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
+<?import java.net.URL?>
 
 <HBox prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.dashController">
 
@@ -76,7 +78,28 @@
         </VBox>
     </VBox>
 
-    <StackPane fx:id="contentArea" HBox.hgrow="ALWAYS" style="-fx-background-color: #06080F;">
-    </StackPane>
+    <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: #06080F;">
+        <!-- HEADER PAGE -->
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20 30 10 30;">
+            <VBox>
+                <Label fx:id="lblPageTitle" text="Vue d'ensemble" style="-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #F8FAFC;"/>
+                <Label text="Bienvenue sur votre espace d'administration" style="-fx-font-size: 13px; -fx-text-fill: #64748B;"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox alignment="CENTER" spacing="15">
+                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #0F1523; -fx-background-radius: 20; -fx-border-color: rgba(255,255,255,0.08); -fx-border-radius: 20; -fx-padding: 5 15 5 15;">
+                    <Label text="🔍" textFill="#64748B" style="-fx-padding: 0 5 0 0;"/>
+                    <TextField fx:id="searchField" promptText="Rechercher..." prefWidth="220"
+                               style="-fx-background-color: transparent; -fx-text-fill: white; -fx-prompt-text-fill: #475569; -fx-font-size: 13px;"/>
+                </HBox>
+            </HBox>
+        </HBox>
+        <!-- DYNAMIC CONTENT -->
+        <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <stylesheets>
+        <URL value="@/styles/dash.css" />
+    </stylesheets>
 
 </HBox>

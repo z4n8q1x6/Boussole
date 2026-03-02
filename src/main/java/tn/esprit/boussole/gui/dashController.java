@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -24,7 +25,11 @@ public class dashController {
     @FXML private Button btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises;
 
     @FXML private Label lblUsername;
+    @FXML private Label lblPageTitle;
+    @FXML private TextField searchField;
     @FXML private StackPane contentArea;
+
+    private Object currentController; // Référence au contrôleur de la vue chargée
 
     private final String ACTIVE_STYLE =
             "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
@@ -39,54 +44,64 @@ public class dashController {
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
         // 2. Actions des boutons principaux
-        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "/DashboardSiege.fxml"));
-        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
-        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
-        btnReports.setOnAction(e -> handleMenuClick(btnReports, "/GestionBilans.fxml"));
-        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "/GestionBudgets.fxml"));
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml"));
+        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "Utilisateurs", "/users.fxml"));
+        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "Entreprises", "/entreprise.fxml"));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, "Bilans", "/GestionBilans.fxml"));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "Budgets", "/GestionBudgets.fxml"));
 
         // 3. Modules de réclamation et alertes
-        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
-        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
+        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "Réclamations", "/adminReclamation.fxml"));
+        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "Alertes IA", "/adminAlerteIA.fxml"));
 
         // 4. Modules Charges et Fournisseurs
         if (btnCharges != null) {
-            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
+            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "Charges", "/afficherBackCharge.fxml"));
         }
         if (btnFournisseurs != null) {
-            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
+            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "Fournisseurs", "/afficherBackFournisseur.fxml"));
         }
 
         // 5. NOUVEAUX BOUTONS (Projet 1)
         if (btnGestionCatalogue != null) {
-            btnGestionCatalogue.setOnAction(e -> handleMenuClick(btnGestionCatalogue, "/GestionCatalogueView.fxml"));
-        } else {
-            System.err.println("⚠️ btnGestionCatalogue est null - vérifiez le fx:id dans dash.fxml");
+            btnGestionCatalogue.setOnAction(e -> handleMenuClick(btnGestionCatalogue, "Gestion catalogue", "/GestionCatalogueView.fxml"));
         }
 
         if (btnCommandesRecues != null) {
-            btnCommandesRecues.setOnAction(e -> handleMenuClick(btnCommandesRecues, "/CommandesRecuesView.fxml"));
-        } else {
-            System.err.println("⚠️ btnCommandesRecues est null - vérifiez le fx:id dans dash.fxml");
+            btnCommandesRecues.setOnAction(e -> handleMenuClick(btnCommandesRecues, "Commandes reçues", "/CommandesRecuesView.fxml"));
         }
 
         if (btnCarteFranchises != null) {
-            btnCarteFranchises.setOnAction(e -> handleMenuClick(btnCarteFranchises, "/CarteFranchisesView.fxml"));
-        } else {
-            System.err.println("⚠️ btnCarteFranchises est null - vérifiez le fx:id dans dash.fxml");
+            btnCarteFranchises.setOnAction(e -> handleMenuClick(btnCarteFranchises, "Carte franchises", "/CarteFranchisesView.fxml"));
         }
 
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 6. Effets visuels au survol
+        // 6. Recherche globale
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                if (currentController instanceof Searchable) {
+                    ((Searchable) currentController).onSearch(newVal);
+                }
+            });
+        }
+
+        // 7. Effets visuels au survol
         setupHoverEffects();
 
-        // 7. Page par défaut au chargement
-        handleMenuClick(btnUsers, "/users.fxml");
+        // 8. Page par défaut au chargement
+        handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml");
     }
 
     private void handleMenuClick(Button button, String fxmlPath) {
+        handleMenuClick(button, null, fxmlPath);
+    }
+
+    private void handleMenuClick(Button button, String title, String fxmlPath) {
         updateButtonStyle(button);
+        if (lblPageTitle != null && title != null) {
+            lblPageTitle.setText(title);
+        }
         if (fxmlPath != null) {
             loadView(fxmlPath);
         } else {
@@ -105,7 +120,13 @@ public class dashController {
 
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
+            currentController = loader.getController();
             contentArea.getChildren().setAll(view);
+
+            // Réinitialiser le champ de recherche à chaque changement de page
+            if (searchField != null) {
+                searchField.clear();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

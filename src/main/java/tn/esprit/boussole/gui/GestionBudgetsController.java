@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 
-public class GestionBudgetsController implements Initializable {
+public class GestionBudgetsController implements Initializable, Searchable {
 
     // Éléments de navigation (Sécurisés)
     @FXML private Button btnDashboard;
@@ -373,6 +373,33 @@ public class GestionBudgetsController implements Initializable {
             if (rs.next()) return rs.getInt("id_franchise");
         } catch (Exception e) { e.printStackTrace(); }
         return 0;
+    }
+
+    // --- Implémentation Searchable (recherche depuis le header global) ---
+    @Override
+    public void onSearch(String keyword) {
+        if (tableBudgets == null) return;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            rafraichirTable();
+            return;
+        }
+        String lower = keyword.toLowerCase();
+        // Recharger les données complètes puis filtrer
+        try {
+            List<budget_previsionnel> budgets = serviceBudget.getTousBudgets();
+            List<budget_previsionnel> filtered = budgets.stream()
+                .filter(b -> {
+                    if (b.getCategorie() != null && b.getCategorie().toLowerCase().contains(lower)) return true;
+                    if (String.valueOf(b.getMontantCible()).contains(lower)) return true;
+                    if (String.valueOf(b.getMois()).contains(lower)) return true;
+                    if (String.valueOf(b.getAnnee()).contains(lower)) return true;
+                    return false;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            tableBudgets.setItems(FXCollections.observableArrayList(filtered));
+        } catch (Exception e) {
+            System.err.println("Erreur recherche budgets: " + e.getMessage());
+        }
     }
 }
 

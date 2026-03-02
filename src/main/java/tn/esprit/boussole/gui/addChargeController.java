@@ -8,10 +8,12 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.Charge;
 import tn.esprit.boussole.service.ChargeService;
+import tn.esprit.boussole.utils.MyBdConnexion;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.prefs.Preferences;
 
 public class addChargeController {
 
@@ -30,7 +32,6 @@ public class addChargeController {
 
     @FXML
     public void initialize() {
-        // --- DESIGN DES CHAMPS (CONSERVÉ) ---
         String fieldStyle = "-fx-background-color: #0C0F1A; -fx-text-fill: white; -fx-border-color: #1E293B; -fx-border-radius: 5;";
         titreInput.setStyle(fieldStyle);
         montantInput.setStyle(fieldStyle);
@@ -48,7 +49,30 @@ public class addChargeController {
             if (!newValue.matches("\\d*(\\.\\d*)?")) montantInput.setText(old);
         });
 
-        // Action du bouton annuler/liste : on ferme simplement
+        // ─── Pré-remplir automatiquement le nom de la franchise de l'utilisateur connecté ───
+        try {
+            Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
+            String email = prefs.get("email", "");
+            if (!email.isEmpty()) {
+                String sqlFranchise = "SELECT f.nom FROM franchises f "
+                        + "JOIN utilisateur u ON u.id_franchise = f.id "
+                        + "WHERE u.email = ? LIMIT 1";
+                try (java.sql.Connection conn = MyBdConnexion.getinstance().getCnx();
+                     java.sql.PreparedStatement ps = conn.prepareStatement(sqlFranchise)) {
+                    ps.setString(1, email);
+                    try (java.sql.ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            String nomFranchise = rs.getString("nom");
+                            franchiseIdInput.setText(nomFranchise);
+                            franchiseIdInput.setEditable(false); // Empêcher la modification manuelle
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Impossible de pré-remplir la franchise : " + e.getMessage());
+        }
+
         if (btnListe != null) {
             btnListe.setOnAction(e -> closeWindow());
         }

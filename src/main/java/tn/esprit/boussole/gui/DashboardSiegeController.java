@@ -28,13 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.ToggleButton;
-import org.controlsfx.control.PopOver;
 import tn.esprit.boussole.utils.MyBdConnexion;
-import tn.esprit.boussole.utils.NotificationManager;
 import tn.esprit.boussole.utils.ThemeManagerS;
 
 public class DashboardSiegeController implements Initializable {
@@ -72,13 +66,6 @@ public class DashboardSiegeController implements Initializable {
     @FXML
     private ProgressIndicator progress;
 
-    // --- Nouveaux éléments pour Notifications ---
-    @FXML private StackPane paneNotificationBtn;
-    @FXML private Pane badgeNotification;
-    @FXML private Label lblNotifCount;
-
-    private List<String> notificationsList = new ArrayList<>();
-    private int unreadNotifications = 0;
 
     // services
     private ServiceTransaction serviceTransaction;
@@ -126,8 +113,6 @@ public class DashboardSiegeController implements Initializable {
             // Chargement initial
             chargerDonnees();
 
-            // Simulation d'une notification Siège au démarrage
-            ajouterNotification("Bienvenue sur le Pilotage Financier du Siège.");
 
         } catch (Exception e) {
             System.err.println("Erreur lors de l'initialisation du DashboardSiegeController : " + e.getMessage());
@@ -135,58 +120,6 @@ public class DashboardSiegeController implements Initializable {
         }
     }
 
-    // --- Logique Notifications ---
-    public void ajouterNotification(String message) {
-        notificationsList.add(0, message); // Ajout au début
-        unreadNotifications++;
-        mettreAJourBadge();
-        NotificationManager.showInfo("Nouvelle Alerte Siège", message);
-    }
-
-    private void mettreAJourBadge() {
-        if (unreadNotifications > 0) {
-            badgeNotification.setVisible(true);
-            lblNotifCount.setText(String.valueOf(unreadNotifications));
-        } else {
-            badgeNotification.setVisible(false);
-        }
-    }
-
-    @FXML
-    private void afficherNotifications() {
-        VBox contenu = new VBox(10);
-        contenu.setStyle("-fx-padding: 15;");
-        contenu.getStyleClass().add("kpi-card");
-        contenu.setPrefWidth(300);
-        contenu.setPrefHeight(250);
-
-        Label titre = new Label("Centre de Notifications (Siège)");
-        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        titre.getStyleClass().add("page-title");
-        contenu.getChildren().add(titre);
-
-        if (notificationsList.isEmpty()) {
-            Label emptyLbl = new Label("Aucune notification.");
-            emptyLbl.getStyleClass().add("page-subtitle");
-            contenu.getChildren().add(emptyLbl);
-        } else {
-            for (String notif : notificationsList) {
-                Label lbl = new Label("- " + notif);
-                lbl.setStyle("-fx-wrap-text: true;");
-                lbl.setMaxWidth(280);
-                contenu.getChildren().add(lbl);
-            }
-        }
-
-        PopOver popOver = new PopOver(contenu);
-        popOver.setArrowLocation(PopOver.ArrowLocation.TOP_RIGHT);
-        popOver.show(paneNotificationBtn);
-
-        // Réinitialiser le compteur une fois ouvert
-        unreadNotifications = 0;
-        mettreAJourBadge();
-    }
-    // ----------------------------
 
     private void chargerDonnees() {
         if (progress != null) progress.setVisible(true);
@@ -430,16 +363,6 @@ public class DashboardSiegeController implements Initializable {
         }
     }
 
-    // --- Theme Toggle ---
-    @FXML private ToggleButton btnTheme;
-
-    @FXML
-    private void toggleTheme() {
-        ThemeManagerS.getInstance().toggleTheme(btnTheme.getScene());
-        if (btnTheme != null) {
-            btnTheme.setText(ThemeManagerS.getInstance().isDark() ? "🌞 Mode Clair" : "🌙 Mode Sombre");
-        }
-    }
 
     // Helper to fetch true franchiseID using the email stored in preferences
     private int fetchFranchiseId(String email) {

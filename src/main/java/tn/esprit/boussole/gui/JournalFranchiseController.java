@@ -19,8 +19,10 @@ import javafx.util.converter.DoubleStringConverter;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.boussole.models.transaction;
+import tn.esprit.boussole.models.Charge;
 import tn.esprit.boussole.service.ServiceTransaction;
 import tn.esprit.boussole.service.ServiceExportExcel;
+import tn.esprit.boussole.service.ChargeService;
 
 import java.sql.SQLException;
 import java.util.prefs.Preferences;
@@ -31,6 +33,7 @@ import java.io.File;
 import tn.esprit.boussole.utils.ThemeManagerS;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -41,7 +44,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur "Pro" Journal Complet
  */
-public class JournalFranchiseController implements Initializable {
+public class JournalFranchiseController implements Initializable, Searchable {
 
     // --- FXML Bindings ---
     @FXML private MenuButton btnPeriode;
@@ -72,6 +75,7 @@ public class JournalFranchiseController implements Initializable {
 
     // --- Data ---
     private ServiceTransaction serviceTransaction;
+    private ChargeService serviceCharge;
     private int franchiseId;
 
     // Listes pour le filtrage avancé
@@ -89,6 +93,7 @@ public class JournalFranchiseController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         serviceTransaction = new ServiceTransaction();
+        serviceCharge = new ChargeService();
 
         Preferences prefs = Preferences.userRoot().node(loginController.class.getName());
         franchiseId = fetchFranchiseId(prefs.get("email", ""));
@@ -112,6 +117,22 @@ public class JournalFranchiseController implements Initializable {
 
         // 6. Mise en place du Filtrage "Smart Filter"
         setupFilters();
+
+        // ─── AUTO-REFRESH : recharger quand la fenêtre reprend le focus ───
+        tableTransactions.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.focusedProperty().addListener((obs3, wasFocused, isFocused) -> {
+                            if (isFocused) {
+                                chargerTransactions();
+                                updatePredicate();
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     // =========================================================================
@@ -502,7 +523,29 @@ public class JournalFranchiseController implements Initializable {
     // =========================================================================
     private void chargerTransactions() {
         try {
-            List<transaction> list = serviceTransaction.getAllByFranchise(franchiseId);
+            // 1. Transactions de la franchise
+            List<transaction> list = new ArrayList<>(serviceTransaction.getAllByFranchise(franchiseId));
+
+            // 2. Convertir les charges en pseudo-transactions DÉPENSE
+            List<Charge> charges = serviceCharge.getChargesByFranchise(franchiseId);
+            for (Charge charge : charges) {
+                transaction t = new transaction();
+                t.setDate(java.sql.Date.valueOf(charge.getDateCharge()));
+                t.setMontant(charge.getMontant());
+                t.setType(transaction.Type.DEPENSE);
+                t.setDescription(charge.getTitre() != null ? charge.getTitre() : "Charge");
+                t.setFranchiseId(charge.getFranchiseId());
+                list.add(t);
+            }
+
+            // 3. Trier par date décroissante
+            list.sort((a, b) -> {
+                if (a.getDate() == null && b.getDate() == null) return 0;
+                if (a.getDate() == null) return 1;
+                if (b.getDate() == null) return -1;
+                return b.getDate().compareTo(a.getDate());
+            });
+
             masterData.setAll(list);
 
             if (sortedData != null) {
@@ -646,5 +689,13 @@ public class JournalFranchiseController implements Initializable {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // --- Implémentation Searchable (recherche depuis le header global) ---
+    @Override
+    public void onSearch(String keyword) {
+        if (txtRechercheGlobal != null) {
+            txtRechercheGlobal.setText(keyword != null ? keyword : "");
+        }
     }
 }
