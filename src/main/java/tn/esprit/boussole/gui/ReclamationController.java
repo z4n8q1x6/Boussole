@@ -1,6 +1,8 @@
 package tn.esprit.boussole.gui;
 
 import java.io.IOException;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,6 +27,8 @@ public class ReclamationController {
 
   // --- ID DE LA FRANCHISE (Dynamique) ---
   private int franchise_id = -1;
+
+  @FXML private TextField searchSujetField;
 
   public void initialize() {
     // --- RÉCUPÉRER L'ID DE LA FRANCHISE DE L'UTILISATEUR CONNECTÉ ---
@@ -70,7 +74,32 @@ public class ReclamationController {
           };
         });
 
-    display();
+    setupSearchFilter();
+  }
+
+  private void setupSearchFilter() {
+    var fullList = service.getByFranchise(franchise_id);
+    FilteredList<Reclamation> filteredList = new FilteredList<>(fullList, p -> true);
+    SortedList<Reclamation> sortedList = new SortedList<>(filteredList);
+    sortedList.comparatorProperty().bind(table.comparatorProperty());
+    table.setItems(sortedList);
+
+    searchSujetField
+        .textProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              filteredList.setPredicate(
+                  reclamation -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                      return true;
+                    }
+                    String sujet = reclamation.getSujet();
+                    if (sujet == null) {
+                      return false;
+                    }
+                    return sujet.toLowerCase().contains(newValue.toLowerCase());
+                  });
+            });
   }
 
   @FXML
@@ -91,11 +120,7 @@ public class ReclamationController {
       System.err.println("Error loading FXML:");
       e.printStackTrace();
     }
-    display();
-  }
-
-  public void display() {
-    table.setItems(service.getByFranchise(franchise_id));
+    setupSearchFilter();
   }
 
   @FXML
@@ -108,7 +133,7 @@ public class ReclamationController {
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
-          display();
+          setupSearchFilter();
           System.out.println("Reclamation deleted successfully.");
         }
       }

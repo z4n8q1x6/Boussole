@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -78,6 +79,18 @@
                -fx-border-color: rgba(255,255,255,0.06);
                -fx-border-radius: 12;
                -fx-padding: 15;">
+        
+        <!-- Search bar -->
+        <TextField fx:id="searchTypeField"
+          promptText="🔍 Filtrer par type d'alerte..."
+          style="-fx-background-color: #0A0D15;
+                 -fx-text-fill: #E8EDF5;
+                 -fx-prompt-text-fill: #8892A4;
+                 -fx-border-color: rgba(0,229,204,0.3);
+                 -fx-border-radius: 6;
+                 -fx-padding: 8 12;
+                 -fx-font-size: 11;" />
+        
         <TableView fx:id="table"
           VBox.vgrow="ALWAYS"
           style="-fx-background-color: transparent;

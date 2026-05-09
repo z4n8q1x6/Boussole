@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -29,6 +31,8 @@ public class AdminAlerteIAController {
 
   @FXML private TextArea messageArea;
   @FXML private Button pdfButton;
+
+  @FXML private TextField searchTypeField;
 
   public void initialize() {
     colType.setCellValueFactory(new PropertyValueFactory<>("type_alerte"));
@@ -62,7 +66,45 @@ public class AdminAlerteIAController {
               }
             });
 
-    display();
+    setupSearchFilter();
+  }
+
+  private void setupSearchFilter() {
+    // Get the initial data
+    ObservableList<AlerteIA> fullList = service.getAll();
+
+    // Wrap in FilteredList
+    FilteredList<AlerteIA> filteredList = new FilteredList<>(fullList, p -> true);
+
+    // Wrap in SortedList to maintain sorting
+    SortedList<AlerteIA> sortedList = new SortedList<>(filteredList);
+    sortedList.comparatorProperty().bind(table.comparatorProperty());
+
+    // Bind filtered list to table
+    table.setItems(sortedList);
+
+    // Add listener to search TextField
+    searchTypeField
+        .textProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              filteredList.setPredicate(
+                  alerte -> {
+                    // If search field is empty, show all
+                    if (newValue == null || newValue.isEmpty()) {
+                      return true;
+                    }
+
+                    // Get the type_alerte and convert to lowercase for case-insensitive search
+                    String typeAlerte = alerte.getType_alerte();
+                    if (typeAlerte == null) {
+                      return false;
+                    }
+
+                    // Check if type_alerte contains the search text (case-insensitive)
+                    return typeAlerte.toLowerCase().contains(newValue.toLowerCase());
+                  });
+            });
   }
 
   @FXML
@@ -74,17 +116,13 @@ public class AdminAlerteIAController {
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
-          display();
+          setupSearchFilter();
           System.out.println("Alerte deleted successfully.");
         }
       }
     } else {
       AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner une alerte à supprimer.");
     }
-  }
-
-  void display() {
-    table.setItems(service.getAll());
   }
 
   @FXML

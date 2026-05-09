@@ -1,6 +1,8 @@
 package tn.esprit.boussole.gui;
 
 import java.util.Optional;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -24,6 +26,7 @@ public class AlerteIAController {
 
   private int franchise_id = -1;
 
+  @FXML private TextField searchTypeField;
 
   public void initialize() {
     this.franchise_id = UserManager.getCurrentUserFranchiseId();
@@ -44,7 +47,32 @@ public class AlerteIAController {
               }
             });
 
-    display();
+    setupSearchFilter();
+  }
+
+  private void setupSearchFilter() {
+    var fullList = service.getByFranchise(franchise_id);
+    FilteredList<AlerteIA> filteredList = new FilteredList<>(fullList, p -> true);
+    SortedList<AlerteIA> sortedList = new SortedList<>(filteredList);
+    sortedList.comparatorProperty().bind(table.comparatorProperty());
+    table.setItems(sortedList);
+
+    searchTypeField
+        .textProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              filteredList.setPredicate(
+                  alerte -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                      return true;
+                    }
+                    String typeAlerte = alerte.getType_alerte();
+                    if (typeAlerte == null) {
+                      return false;
+                    }
+                    return typeAlerte.toLowerCase().contains(newValue.toLowerCase());
+                  });
+            });
   }
 
   @FXML
@@ -54,7 +82,7 @@ public class AlerteIAController {
       AlerteIA alerteIA = result.get();
       alerteIA.setFranchiseId(franchise_id);
       if (service.add(alerteIA)) {
-        display();
+        setupSearchFilter();
         System.out.println("Alerte added successfully.");
       } else {
         System.out.println("Failed to add reclamation.");
@@ -73,16 +101,12 @@ public class AlerteIAController {
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
-          display();
+          setupSearchFilter();
           System.out.println("Alerte deleted successfully.");
         }
       }
     } else {
       AlertUtil.showWarning("Aucune séléction", "Veuillez sélectionner une alerte à supprimer.");
     }
-  }
-
-  void display() {
-    table.setItems(service.getByFranchise(franchise_id));
   }
 }

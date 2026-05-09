@@ -18,12 +18,18 @@ public class ReclamationService {
   }
 
   public boolean add(Reclamation reclamation) {
-    String sql = "INSERT INTO reclamations (sujet, description, franchise_id) VALUES (?, ?, ?)";
+    String sql =
+        "INSERT INTO reclamations (sujet, description, franchise_id, statut, date_creation) VALUES"
+            + " (?, ?, ?, ?, ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, reclamation.getSujet());
       preparedStatement.setString(2, reclamation.getDescription());
       preparedStatement.setInt(3, reclamation.getFranchiseId());
+      preparedStatement.setString(4, StatutReclamation.EN_ATTENTE.name());
+      preparedStatement.setString(4, StatutReclamation.EN_ATTENTE.name());
+      java.sql.Timestamp currentTime = new java.sql.Timestamp(System.currentTimeMillis());
+      preparedStatement.setTimestamp(5, currentTime);
       preparedStatement.executeUpdate();
       return true;
     } catch (SQLException e) {
