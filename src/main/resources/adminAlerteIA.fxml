@@ -35,6 +35,20 @@
         textFill="#8e9aaf" />
     </VBox>
 
+    <Button text="Archives"
+      onAction="#viewArchives"
+      prefHeight="40"
+      prefWidth="140"
+      style="-fx-background-color: rgba(168,85,247,0.15);
+         -fx-text-fill: #D8B4FE;
+         -fx-font-weight: bold;
+         -fx-background-radius: 8;
+         -fx-border-color: rgba(168,85,247,0.4);
+         -fx-border-radius: 8;
+         -fx-padding: 0 18;
+         -fx-cursor: hand;
+         -fx-alignment: center;" />
+
     <Button text="Priorités"
       onAction="#escalationAdvisor"
       prefHeight="40"
@@ -79,7 +93,7 @@
                -fx-border-color: rgba(255,255,255,0.06);
                -fx-border-radius: 12;
                -fx-padding: 15;">
-        
+
         <!-- Search bar -->
         <TextField fx:id="searchTypeField"
           promptText="🔍 Filtrer par type d'alerte..."
@@ -90,7 +104,7 @@
                  -fx-border-radius: 6;
                  -fx-padding: 8 12;
                  -fx-font-size: 11;" />
-        
+
         <TableView fx:id="table"
           VBox.vgrow="ALWAYS"
           style="-fx-background-color: transparent;
