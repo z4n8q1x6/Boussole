@@ -22,15 +22,15 @@ public class AuthService {
 
     static {
 
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-
-        SECRET = dotenv.get("JWT_SECRET");
-        if (SECRET == null || SECRET.length() < 32) {
-            throw new RuntimeException(
-                    "JWT_SECRET non défini ou trop court ! Définissez une clé sécurisée (≥32 caractères) dans le .env"
-            );
+        String secret = dotenv.get("JWT_SECRET");
+        if (secret == null || secret.length() < 32) {
+            secret = "boussole_development_secret_key_please_change_123456";
+            System.err.println("⚠️ JWT_SECRET non défini ou trop court. Utilisation d'une clé de développement par défaut.");
         }
+
+        SECRET = secret;
 
         // Récupère la durée du token depuis .env ou valeur par défaut 1h
         String expStr = dotenv.get("JWT_EXP_MS", "3600000");

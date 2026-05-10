@@ -13,10 +13,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+// Imports pour Gestion des Prêts
+import tn.esprit.boussole.models.Pret;
+import tn.esprit.boussole.service.PretService;
+import tn.esprit.boussole.service.PdfService;
+import java.util.List;
 
 public class dashController {
 
@@ -28,11 +35,17 @@ public class dashController {
     // NEW buttons from second controller
     @FXML private Button btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises;
 
+    // NEW: Gestion des Prêts MenuButton
+    @FXML private MenuButton btnGestionPrets;
+
     @FXML private Label lblUsername;
     @FXML private Label lblPageTitle;
     @FXML private TextField searchField;
     @FXML private StackPane contentArea;
 
+    // Services pour Gestion des Prêts
+    private final PretService pretService = new PretService();
+    private final PdfService pdfService = new PdfService();
     private Object currentController; // Référence au contrôleur de la vue chargée
     private VBox sidebarMenuBox; // Référence au conteneur des boutons sidebar
 
@@ -248,6 +261,79 @@ public class dashController {
                 });
                 b.setOnMouseExited(e -> b.setOpacity(1.0));
             }
+        }
+
+        // Hover pour MenuButton Gestion des Prêts
+        if (btnGestionPrets != null) {
+            btnGestionPrets.setOnMouseEntered(e -> {
+                if(!btnGestionPrets.getStyle().contains("0.12")) btnGestionPrets.setOpacity(0.7);
+            });
+            btnGestionPrets.setOnMouseExited(e -> btnGestionPrets.setOpacity(1.0));
+        }
+    }
+
+    // --- HANDLERS POUR GESTION DES PRÊTS ---
+
+    @FXML
+    private void handleListePrets() {
+        try {
+            var resource = getClass().getResource("/view/ListePrets.fxml");
+            if (resource == null) {
+                showAlert("Erreur", "Fichier ListePrets.fxml introuvable.");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent view = loader.load();
+            contentArea.getChildren().setAll(view);
+        } catch (Exception e) {
+            showAlert("Erreur de chargement", "Impossible d'ouvrir la liste des prêts: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleNouvelleDemande() {
+        try {
+            var resource = getClass().getResource("/view/DemandePret.fxml");
+            if (resource == null) {
+                showAlert("Erreur", "Fichier DemandePret.fxml introuvable.");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent view = loader.load();
+            contentArea.getChildren().setAll(view);
+        } catch (Exception e) {
+            showAlert("Erreur de chargement", "Impossible d'ouvrir le formulaire de demande: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleDashboardRisque() {
+        try {
+            var resource = getClass().getResource("/view/DashboardRisque.fxml");
+            if (resource == null) {
+                showAlert("Erreur", "Fichier DashboardRisque.fxml introuvable.");
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent view = loader.load();
+            contentArea.getChildren().setAll(view);
+        } catch (Exception e) {
+            showAlert("Erreur de chargement", "Impossible d'ouvrir le dashboard risque: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleExportPDF() {
+        try {
+            List<Pret> prets = pretService.selectAll();
+            if (prets == null || prets.isEmpty()) {
+                showAlert("Info", "Aucun prêt à exporter.");
+                return;
+            }
+            pdfService.genererRapportPrets(prets);
+            showAlert("Succès", "PDF généré avec succès sur le bureau !");
+        } catch (Exception e) {
+            showAlert("Erreur", "Erreur lors de la génération du PDF: " + e.getMessage());
         }
     }
 }

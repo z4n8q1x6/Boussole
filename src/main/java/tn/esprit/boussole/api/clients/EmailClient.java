@@ -19,9 +19,12 @@ public class EmailClient {
 
     private EmailClient() {
         // Load from .env file (Project 2 style)
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
         this.username = dotenv.get("EMAIL_USER");
         this.password = dotenv.get("EMAIL_PASSWORD");
+        if (this.username == null || this.username.isEmpty() || this.password == null || this.password.isEmpty()) {
+            System.err.println("⚠️ EmailClient: EMAIL_USER ou EMAIL_PASSWORD introuvable dans .env. Le service email ne fonctionnera pas correctement.");
+        }
         this.debug = false;
 
         this.properties = new Properties();

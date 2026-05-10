@@ -25,8 +25,8 @@ public class Gemini {
     Calendar cal = Calendar.getInstance();
     int month = cal.get(Calendar.MONTH) + 1;
     int year = cal.get(Calendar.YEAR);
-    
-    Dotenv dotenv = Dotenv.load();
+
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     String apiKey = dotenv.get("GEMINI_API_KEY");
 
     if (apiKey == null || apiKey.isEmpty()) {
@@ -110,7 +110,7 @@ public class Gemini {
   }
 
   public static Optional<String> generateAdvice(String prompt) {
-    Dotenv dotenv = Dotenv.load();
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     String apiKey = dotenv.get("GEMINI_API_KEY");
 
     if (apiKey == null || apiKey.isEmpty()) {

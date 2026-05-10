@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox prefHeight="720.0" prefWidth="1080.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.DemandePretController">
+
+    <VBox alignment="TOP_CENTER" prefWidth="240.0" spacing="20" styleClass="sidebar">
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20 0 10 0;">
+            <ImageView fitHeight="55.0" fitWidth="55.0" pickOnBounds="true" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, #00E5CC, 15, 0, 0, 0);">
+                <Image url="@boussole.png" />
+            </ImageView>
+            <Label styleClass="sidebar-title" text="BOUSSOLE" />
+        </VBox>
+
+        <Separator opacity="0.1" />
+
+        <Button maxWidth="Infinity" styleClass="sidebar-button-active" text="➕ Nouvelle Demande" />
+        <Button maxWidth="Infinity" onAction="#ouvrirListe" styleClass="sidebar-button" text="📋 Liste des Prêts" />
+        
+        <Button maxWidth="Infinity" onAction="#ouvrirChatbot" styleClass="sidebar-button" text="🤖 Assistant IA" style="-fx-text-fill: #00E5CC;" />
+    </VBox>
+
+    <VBox alignment="CENTER" spacing="30" styleClass="main-container" HBox.hgrow="ALWAYS">
+        <padding>
+            <Insets bottom="40" left="40" right="40" top="40" />
+        </padding>
+
+        <Label styleClass="app-title" text="Nouvelle Demande de Prêt" />
+
+        <VBox maxWidth="480.0" spacing="25" styleClass="form-card">
+            <Label styleClass="form-header" text="Informations du prêt" />
+
+            <VBox spacing="15">
+                <VBox spacing="5">
+                    <Label text="Montant du prêt (DT) :" styleClass="field-label" />
+                    <TextField fx:id="txtMontant" promptText="Ex: 5000" styleClass="custom-field" />
+                </VBox>
+                <VBox spacing="5">
+                    <Label text="Durée (mois) :" styleClass="field-label" />
+                    <TextField fx:id="txtDuree" promptText="Ex: 12" styleClass="custom-field" />
+                </VBox>
+                <VBox spacing="5">
+                    <Label text="Taux (%) :" styleClass="field-label" />
+                    <TextField fx:id="txtTaux" promptText="Ex: 5.5" styleClass="custom-field" />
+                </VBox>
+                <VBox spacing="5">
+                    <Label text="Motif du prêt :" styleClass="field-label" />
+                    <TextField fx:id="txtMotif" promptText="Décrivez l'objet du prêt" styleClass="custom-field" />
+                </VBox>
+            </VBox>
+
+            <Button maxWidth="Infinity" onAction="#ajouterPret" prefHeight="45.0" styleClass="login-button" text="Valider la demande" />
+            <Label fx:id="lblMessage" alignment="CENTER" maxWidth="Infinity" styleClass="message-label" />
+        </VBox>
+    </VBox>
+</HBox>

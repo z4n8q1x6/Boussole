@@ -8,7 +8,7 @@ out/
 *.war
 *.ear
 *.log
-
+src/main/java/tn/esprit/boussole/utils/MyBdConnexion.java
 # --- Maven ---
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

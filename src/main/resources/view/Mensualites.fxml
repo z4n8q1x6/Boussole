@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.Font?>
+
+<HBox prefHeight="720.0" prefWidth="1100.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.MensualiteController">
+
+    <VBox spacing="20" styleClass="sidebar" prefWidth="240.0" alignment="TOP_CENTER">
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20 0 10 0;">
+             <ImageView fitHeight="55.0" fitWidth="55.0" pickOnBounds="true" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, #00E5CC, 15, 0, 0, 0);">
+                <Image url="@boussole.png" />
+            </ImageView>
+            <Label text="BOUSSOLE" styleClass="sidebar-title"/>
+        </VBox>
+        <Separator opacity="0.1"/>
+
+        <Button text="⬅ Retour à la Liste" onAction="#retourListe" styleClass="sidebar-button" maxWidth="Infinity"/>
+    </VBox>
+
+    <VBox spacing="25" alignment="TOP_CENTER" styleClass="main-container" HBox.hgrow="ALWAYS">
+        <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+        <VBox spacing="5" alignment="CENTER_LEFT">
+             <Label fx:id="lblTitre" text="Échéancier de Remboursement" styleClass="app-title" />
+             <Label text="Suivi détaillé des mensualités et recouvrement" textFill="#94A3B8" style="-fx-font-size: 14;" />
+        </VBox>
+
+        <HBox spacing="20" alignment="CENTER_LEFT" styleClass="form-card" prefHeight="70">
+            <padding><Insets left="20" right="20" /></padding>
+            <Label text="STATUT GLOBAL :" textFill="#94A3B8" style="-fx-font-weight: bold;" />
+            <Label fx:id="lblStatusPret" text="EN COURS" textFill="#00E5CC" style="-fx-font-weight: 900;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="RESTE À PAYER :" textFill="#94A3B8" style="-fx-font-weight: bold;" />
+            <Label fx:id="lblResteAPayer" text="0.00 DT" textFill="#F87171" style="-fx-font-weight: 900; -fx-font-size: 18;" />
+        </HBox>
+
+        <TableView fx:id="tableMensualites" VBox.vgrow="ALWAYS" styleClass="form-card">
+            <columns>
+                <TableColumn fx:id="colDate" text="DATE D'ÉCHÉANCE" prefWidth="200" />
+                <TableColumn fx:id="colMontant" text="MONTANT DÛ (DT)" prefWidth="180" />
+                <TableColumn fx:id="colStatus" text="ÉTAT" prefWidth="150" />
+                <TableColumn fx:id="colAction" text="ACTION (RECOUVREMENT)" prefWidth="220" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+
+        <HBox alignment="CENTER_LEFT">
+            <Button mnemonicParsing="false" onAction="#retourListe" prefHeight="40" prefWidth="150"
+                    style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2); -fx-cursor: hand;"
+                    text="← Retour" />
+        </HBox>
+    </VBox>
+</HBox>

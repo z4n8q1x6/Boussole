@@ -8,7 +8,7 @@ import java.util.Properties;
 
 public class EmailService {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     private static final String USERNAME = dotenv.get("EMAIL_USER");
     private static final String PASSWORD = dotenv.get("EMAIL_PASSWORD");
 

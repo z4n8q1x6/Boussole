@@ -136,8 +136,14 @@ public class loginController {
         }
 
         AuthInfo info = fetchAuthInfo(email);
-        if (info == null || !verifyPassword(password, info.storedPassword)) {
-            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur de connexion", "Email ou mot de passe incorrect.");
+        if (info == null) {
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Email inconnu", "Aucun compte trouvé pour cet email.");
+            passwordField.clear();
+            return;
+        }
+
+        if (!verifyPassword(password, info.storedPassword)) {
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Mot de passe incorrect", "Le mot de passe que vous avez saisi est incorrect.");
             passwordField.clear();
             return;
         }
@@ -321,7 +327,12 @@ public class loginController {
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return new AuthInfo(email, rs.getString(1), rs.getString(2), rs.getString(3), rs.getBoolean(4));
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (rootPane != null && rootPane.getScene() != null) {
+                NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur base de données", "Impossible de vérifier l'email/mot de passe. Vérifiez la connexion à la base de données.");
+            }
+        }
         return null;
     }
 

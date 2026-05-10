@@ -248,6 +248,10 @@ public class userService implements crud<user> {
     // ----------------- INITIALIZE ADMIN -----------------
     public void initializeAdmin() {
         System.out.println("Début de l'initialisation de l'admin...");
+        if (cnx == null) {
+            System.err.println("Impossible d'initialiser l'admin : connexion à la base de données non établie.");
+            return;
+        }
         String checkReq = "SELECT COUNT(*) FROM utilisateur WHERE role = 'SIEGE'";
 
         try (Statement st = cnx.createStatement(); ResultSet rs = st.executeQuery(checkReq)) {

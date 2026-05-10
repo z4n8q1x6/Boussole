@@ -10,7 +10,7 @@ import java.util.Base64;
 
 public class FacePlusPlusService {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     private static final String API_KEY = dotenv.get("FACEPP_API_KEY");
     private static final String API_SECRET = dotenv.get("FACEPP_API_SECRET");
     private static final String FACESET_TOKEN = "boussole_users_faceset";

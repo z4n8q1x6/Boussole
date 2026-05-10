@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -59,6 +61,15 @@
 
             <Button fx:id="btnReports" text="📊   Bilans" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
             <Button fx:id="btnSettings" text="💰  Budgets" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button"/>
+
+            <MenuButton fx:id="btnGestionPrets" text="💰 Gestion des Prêts" maxWidth="Infinity" alignment="BASELINE_LEFT" styleClass="nav-button">
+                <items>
+                    <MenuItem text="📋 Liste des Prêts" onAction="#handleListePrets"/>
+                    <MenuItem text="➕ Nouvelle Demande" onAction="#handleNouvelleDemande"/>
+                    <MenuItem text="📊 Dashboard Risque" onAction="#handleDashboardRisque"/>
+                    <MenuItem text="📄 Exporter PDF" onAction="#handleExportPDF"/>
+                </items>
+            </MenuButton>
 
             <Region VBox.vgrow="ALWAYS"/>
         </VBox>
