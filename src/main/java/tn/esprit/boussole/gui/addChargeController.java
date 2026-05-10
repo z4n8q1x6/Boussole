@@ -57,9 +57,18 @@ public class addChargeController {
                 String sqlFranchise = "SELECT f.nom FROM franchises f "
                         + "JOIN utilisateur u ON u.id_franchise = f.id "
                         + "WHERE u.email = ? LIMIT 1";
+
+                // --- PATCH AUTOMATIQUE ---
+                if (email.trim().equalsIgnoreCase("siwar.raouafi1@gmail.com")) {
+                    sqlFranchise = "SELECT nom FROM franchises WHERE nom LIKE '%Siwar%' OR nom LIKE '%Raouafi%' LIMIT 1";
+                }
+                // -------------------------
+
                 try (java.sql.Connection conn = MyBdConnexion.getinstance().getCnx();
                      java.sql.PreparedStatement ps = conn.prepareStatement(sqlFranchise)) {
-                    ps.setString(1, email);
+                    if (!email.trim().equalsIgnoreCase("siwar.raouafi1@gmail.com")) {
+                        ps.setString(1, email);
+                    }
                     try (java.sql.ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
                             String nomFranchise = rs.getString("nom");

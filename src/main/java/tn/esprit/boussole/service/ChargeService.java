@@ -22,18 +22,30 @@ public class ChargeService implements crud<Charge> {
 
     @Override
     public void insertone(Charge charge) throws SQLException {
-        String req = "INSERT INTO `charge` (`titre`, `montant`, `date_charge`, `type`, `preuve_image`, `status_validation`, `franchise_id`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Générer l'ID manuellement (contournement si AUTO_INCREMENT manquant)
+        int nextId = 1;
+        String maxSql = "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `charge`";
+        try (PreparedStatement psMax = getConn().prepareStatement(maxSql);
+             ResultSet rs = psMax.executeQuery()) {
+            if (rs.next()) {
+                nextId = rs.getInt("next_id");
+            }
+        }
+
+        String req = "INSERT INTO `charge` (`id`, `titre`, `montant`, `date_charge`, `type`, `preuve_image`, `status_validation`, `franchise_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = getConn().prepareStatement(req);
-        ps.setString(1, charge.getTitre());
-        ps.setDouble(2, charge.getMontant());
-        ps.setDate(3, Date.valueOf(charge.getDateCharge()));
-        ps.setString(4, charge.getType().name());
-        ps.setString(5, charge.getPreuveImage());
-        ps.setString(6, charge.getStatusValidation().name());
-        ps.setInt(7, charge.getFranchiseId());
+        ps.setInt(1, nextId);
+        ps.setString(2, charge.getTitre());
+        ps.setDouble(3, charge.getMontant());
+        ps.setDate(4, Date.valueOf(charge.getDateCharge()));
+        ps.setString(5, charge.getType().name());
+        ps.setString(6, charge.getPreuveImage());
+        ps.setString(7, charge.getStatusValidation().name());
+        ps.setInt(8, charge.getFranchiseId());
 
         ps.executeUpdate();
-        System.out.println("Charge ajoutée avec succès !");
+        charge.setId(nextId);
+        System.out.println("Charge ajoutée avec succès ! ID=" + nextId);
     }
 
     @Override
