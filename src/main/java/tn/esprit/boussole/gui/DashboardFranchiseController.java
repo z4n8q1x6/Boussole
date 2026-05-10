@@ -571,6 +571,12 @@ public class DashboardFranchiseController implements Initializable, Searchable {
         try {
             serviceTransaction.insertone(t);
             System.out.println("✅ Insertion réussie, id=" + t.getId());
+            
+            // 🔥 NOUVEAU: Mettre à jour le solde_actuel de la franchise dynamiquement
+            tn.esprit.boussole.service.franchiseService fService = new tn.esprit.boussole.service.franchiseService();
+            fService.updateSolde(fid, montant);
+            System.out.println("✅ Solde dynamique mis à jour (+ " + montant + ")");
+            
         } catch (java.sql.SQLException sqle) {
             System.err.println("❌ SQL : " + sqle.getMessage());
             sqle.printStackTrace();
