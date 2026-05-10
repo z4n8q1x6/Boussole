@@ -53,13 +53,14 @@ src/main/resources/credentials.json
 
 # --- Misc Useless ---
 *.md
+!README.md
 *.txt
 *.log
 *.bak
 *.orig
 *.rej
 *.patch
-README*
+CHANGELOG*
 CHANGELOG*
 LICENCE*
 LICENSE*

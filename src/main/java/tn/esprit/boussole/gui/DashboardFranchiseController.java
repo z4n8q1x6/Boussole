@@ -341,18 +341,26 @@ public class DashboardFranchiseController implements Initializable, Searchable {
 
 
     /**
-     * Load and display solde from database
-     * Solde = Recettes (transactions) - Dépenses (transactions) - Charges déclarées
+     * Load and display solde directly from the franchises table in the database.
+     * Utilise la colonne solde_actuel de la table franchises comme source de vérité.
      */
     private void chargerSolde() {
         try {
-            // Solde depuis les transactions (recettes - dépenses de la table transaction)
-            double soldeTransactions = serviceTransaction.calculerSolde(franchiseId);
-            // Total des charges déclarées pour cette franchise
-            double totalCharges = serviceCharge.getTotalChargesByFranchise(franchiseId);
-            // Solde final = solde transactions - charges
-            double solde = soldeTransactions - totalCharges;
+            double solde = 0.0;
 
+            // Lire directement depuis la table franchises
+            String sql = "SELECT solde_actuel FROM franchises WHERE id = ?";
+            try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, franchiseId);
+                try (java.sql.ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        solde = rs.getDouble("solde_actuel");
+                    }
+                }
+            }
+
+            System.out.println("💰 Solde franchise " + franchiseId + " (depuis franchises.solde_actuel) = " + solde);
             lblSolde.setText(String.format("%.2f TND", solde));
 
             // Conversion dynamique
@@ -445,45 +453,28 @@ public class DashboardFranchiseController implements Initializable, Searchable {
     }
 
     /**
-     * Load budgets declared by Siege for this franchise and update KPIs
+     * Load budgets declared by Siege for this franchise and update KPIs.
+     * Récupère les budgets de toute l'année en cours pour la franchise connectée
+     * ET les budgets globaux (franchise_id IS NULL).
      */
     private void chargerBudgets() {
         try {
-            int currentMonth = LocalDate.now().getMonthValue();
             int currentYear = LocalDate.now().getYear();
 
             double totalLimiteDepenses = 0;
             double totalObjectifRevenu = 0;
 
-            // Étape 1 : Récupérer le nom de la franchise connectée
-            String nomFranchise = "";
-            String sqlNom = "SELECT nom FROM franchise WHERE id = ?";
-            try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
-                 java.sql.PreparedStatement ps = conn.prepareStatement(sqlNom)) {
-                ps.setInt(1, franchiseId);
-                try (java.sql.ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        nomFranchise = rs.getString("nom");
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("Erreur fetch nom franchise: " + e.getMessage());
-            }
-
-            // Étape 2 : Récupérer les budgets par ID ou par nom de franchise
+            // Requête SQL : uniquement les budgets de cette franchise
             String sql = "SELECT " +
                          "COALESCE(SUM(CASE WHEN type_budget='LIMITE_DEPENSE' THEN montant_cible ELSE 0 END), 0) as limite_totale, " +
                          "COALESCE(SUM(CASE WHEN type_budget='OBJECTIF_REVENU' THEN montant_cible ELSE 0 END), 0) as objectif_total " +
-                         "FROM budget_previsionnel b " +
-                         "JOIN franchise f ON b.franchise_id = f.id " +
-                         "WHERE (f.id = ? OR f.nom = ?) AND b.mois = ? AND b.annee = ?";
+                         "FROM budget_previsionnel " +
+                         "WHERE franchise_id = ? AND annee = ?";
 
             try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
                  java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, franchiseId);
-                ps.setString(2, nomFranchise != null ? nomFranchise : "");
-                ps.setInt(3, currentMonth);
-                ps.setInt(4, currentYear);
+                ps.setInt(2, currentYear);
                 
                 try (java.sql.ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -495,7 +486,9 @@ public class DashboardFranchiseController implements Initializable, Searchable {
                 System.err.println("Erreur SQL Budgets: " + e.getMessage());
             }
 
-            // Étape 3 : Mettre à jour les labels
+            System.out.println("📊 Budget franchise " + franchiseId + " (année " + currentYear + ") → Limite: " + totalLimiteDepenses + " | Objectif: " + totalObjectifRevenu);
+
+            // Mettre à jour les labels
             if (lblLimiteDepenses != null) {
                 lblLimiteDepenses.setText(String.format("%.2f TND", totalLimiteDepenses));
             }
@@ -504,6 +497,7 @@ public class DashboardFranchiseController implements Initializable, Searchable {
             }
 
             if (lblDepensesMois != null) {
+                // Total des dépenses réelles (transactions + charges)
                 List<transaction> allTransactions = serviceTransaction.getAllByFranchise(franchiseId);
                 double totalDepenses = 0;
                 for (transaction t : allTransactions) {
@@ -511,6 +505,8 @@ public class DashboardFranchiseController implements Initializable, Searchable {
                         totalDepenses += t.getMontant();
                     }
                 }
+                double totalCharges = serviceCharge.getTotalChargesByFranchise(franchiseId);
+                totalDepenses += totalCharges;
                 lblDepensesMois.setText(String.format("%.2f TND", totalDepenses));
 
                 if (totalLimiteDepenses > 0 && totalDepenses > totalLimiteDepenses) {
