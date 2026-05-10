@@ -82,13 +82,8 @@
 
     <!-- MAIN CONTENT AREA -->
     <VBox HBox.hgrow="ALWAYS" styleClass="content-area">
-        <!-- HEADER PAGE -->
+        <!-- HEADER PAGE (Titre supprimé à la demande, barre de recherche conservée) -->
         <HBox alignment="CENTER_LEFT" spacing="20" styleClass="page-header">
-            <VBox>
-                <Label fx:id="lblPageTitle" text="Tableau de bord" styleClass="page-title"/>
-                <Label text="Bienvenue sur votre espace de gestion" styleClass="page-subtitle"/>
-            </VBox>
-
             <Region HBox.hgrow="ALWAYS"/>
 
             <!-- SEARCH BAR -->

@@ -125,18 +125,18 @@
                                      -fx-border-radius: 0 16 16 16;
                                      -fx-border-width: 1;
                                      -fx-padding: 28;">
-                            <Label text="Radar de Performance IA – Clustering des Franchises"
+                            <Label text="🤖 Analyse IA : Typologie des franchises"
                                    style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #F1F5F9;"/>
-                            <Label text="Analyse par Intelligence Artificielle (K-Means)"
+                            <Label text="L'Intelligence Artificielle (K-Means) regroupe automatiquement vos franchises selon leurs équilibres financiers."
                                    style="-fx-font-size: 12px; -fx-text-fill: #64748B;"/>
                             <ScatterChart fx:id="scatterChartIA" VBox.vgrow="ALWAYS" prefHeight="380"
-                                          style="-fx-background-color: transparent;">
+                                          style="-fx-background-color: transparent;" legendSide="TOP">
                                 <xAxis>
-                                    <NumberAxis fx:id="xAxisIA" label="Total Recettes"
+                                    <NumberAxis fx:id="xAxisIA" label="Total Recettes (TND)"
                                                 tickLabelFill="#94A3B8"/>
                                 </xAxis>
                                 <yAxis>
-                                    <NumberAxis fx:id="yAxisIA" label="Total Dépenses"
+                                    <NumberAxis fx:id="yAxisIA" label="Total Dépenses (TND)"
                                                 tickLabelFill="#94A3B8"/>
                                 </yAxis>
                             </ScatterChart>
