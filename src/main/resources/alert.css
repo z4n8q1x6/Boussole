@@ -1,0 +1,61 @@
+/* Alert dialog background */
+.dialog-pane {
+  -fx-background-color: #0c0f1a;
+  -fx-border-color: rgba(0, 229, 204, 0.3);
+  -fx-border-radius: 12;
+  -fx-background-radius: 12;
+  -fx-border-width: 1;
+}
+
+/* Alert header */
+.dialog-pane .header-panel {
+  -fx-background-color: #06080f;
+  -fx-background-radius: 12 12 0 0;
+}
+
+.dialog-pane .header-panel .label {
+  -fx-text-fill: #e8edf5;
+  -fx-font-weight: bold;
+  -fx-font-size: 16px;
+}
+
+/* Alert content text */
+.dialog-pane .content.label {
+  -fx-text-fill: #8892a4;
+  -fx-font-size: 13px;
+}
+
+/* Alert graphic (icon area) */
+.dialog-pane .graphic-container {
+  -fx-background-color: transparent;
+}
+
+/* Button bar */
+.dialog-pane .button-bar .container {
+  -fx-background-color: transparent;
+}
+
+/* Alert buttons */
+.dialog-pane .button {
+  -fx-background-color: transparent;
+  -fx-text-fill: #00e5cc;
+  -fx-font-weight: bold;
+  -fx-border-color: rgba(0, 229, 204, 0.4);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+  -fx-cursor: hand;
+  -fx-padding: 8 20;
+}
+
+/* Cancel / NO button */
+.dialog-pane .button:cancel {
+  -fx-text-fill: #8892a4;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Confirm / YES button */
+.dialog-pane .button:default {
+  -fx-background-color: #00e5cc;
+  -fx-text-fill: #06080f;
+  -fx-border-color: transparent;
+}

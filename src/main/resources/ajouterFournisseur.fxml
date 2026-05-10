@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="600.0" spacing="20.0"
+      style="-fx-background-color: #06080F;"
+      stylesheets="@styles/ChargesdepensesDash.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.boussole.gui.ajouterFournisseurController">
+
+    <padding>
+        <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <Button fx:id="btnListe" text="← Retour"
+                style="-fx-background-color: transparent; -fx-text-fill: #8892A4; -fx-font-size: 14px; -fx-cursor: hand;" />
+        <VBox HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnVersCharge" onAction="#handleVersCharge" text="Ajouter Charge →"
+                style="-fx-background-color: #1E293B; -fx-text-fill: #00E5CC; -fx-background-radius: 8; -fx-padding: 8 15; -fx-cursor: hand;" />
+    </HBox>
+
+    <HBox spacing="15.0" alignment="CENTER_LEFT">
+        <ImageView fitHeight="50.0" fitWidth="50.0" preserveRatio="true">
+            <image>
+                <Image url="@images/boussolenouvlogo.jpg" />
+            </image>
+        </ImageView>
+        <VBox>
+            <Label text="Ajouter un Fournisseur" textFill="#E8EDF5">
+                <font><Font name="System Bold" size="24.0" /></font>
+            </Label>
+            <Label text="Remplissez les informations ci-dessous." textFill="#8892A4">
+                <font><Font size="13.0" /></font>
+            </Label>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="15.0" style="-fx-background-color: #0C0F1A; -fx-background-radius: 15; -fx-padding: 25;">
+        <VBox spacing="8.0">
+            <Label text="Nom" textFill="#CBD5F5" />
+            <TextField fx:id="nomInput" promptText="Ex: Société ABC"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+        </VBox>
+
+        <VBox spacing="8.0">
+            <Label text="Matricule Fiscal" textFill="#CBD5F5" />
+            <TextField fx:id="matriculeInput" promptText="Ex: 1234567/A/M/000"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+        </VBox>
+
+        <VBox spacing="8.0">
+            <Label text="Téléphone" textFill="#CBD5F5" />
+            <TextField fx:id="telephoneInput" promptText="Ex: 71 123 456"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+        </VBox>
+
+        <VBox spacing="8.0">
+            <Label text="Franchise" textFill="#CBD5F5" />
+            <TextField fx:id="franchiseIdInput" promptText="Ex: Nom de la franchise"
+                       style="-fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10;" />
+        </VBox>
+
+        <Button fx:id="btnValider" maxWidth="1.7976931348623157E308" onAction="#handleAjouter" text="✓ Enregistrer"
+                style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 12; -fx-cursor: hand; -fx-font-size: 14px;">
+            <VBox.margin>
+                <Insets top="10.0" />
+            </VBox.margin>
+        </Button>
+    </VBox>
+</VBox>

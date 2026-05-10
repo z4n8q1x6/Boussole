@@ -5,8 +5,9 @@ public class Pret {
     private double montantDemande;
     private int dureeMois;
     private float taux;
-    private StatutPret statut; // Maintenant reconnu car dans le même package
+    private StatutPret statut;
     private String motif;
+    private Integer franchiseId; // ← AJOUTÉ
 
     public Pret() {}
 
@@ -26,6 +27,7 @@ public class Pret {
     public float getTaux() { return taux; }
     public StatutPret getStatut() { return statut; }
     public String getMotif() { return motif; }
+    public Integer getFranchiseId() { return franchiseId; } // ← AJOUTÉ
 
     // --- SETTERS ---
     public void setId(int id) { this.id = id; }
@@ -34,6 +36,7 @@ public class Pret {
     public void setTaux(float taux) { this.taux = taux; }
     public void setStatut(StatutPret statut) { this.statut = statut; }
     public void setMotif(String motif) { this.motif = motif; }
+    public void setFranchiseId(Integer franchiseId) { this.franchiseId = franchiseId; } // ← AJOUTÉ
 
     @Override
     public String toString() {

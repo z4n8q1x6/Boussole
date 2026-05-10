@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="20.0" style="-fx-background-color: #06080F;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.boussole.gui.franchise.PanierController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <children>
+        <!-- En-tête avec image du panier -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <children>
+                <!-- Image du panier -->
+                <ImageView fitHeight="40.0" fitWidth="40.0" preserveRatio="true">
+                    <Image url="@/images/cart.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #E8EDF5;" text="Mon Panier" />
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- Compteur d'articles avec image -->
+                <HBox spacing="10.0" alignment="CENTER">
+                    <children>
+                        <Label fx:id="nbArticlesLabel" style="-fx-background-color: #00E5CC; -fx-background-radius: 15; -fx-text-fill: #06080F; -fx-font-weight: bold; -fx-padding: 5 15;" text="0" />
+                    </children>
+                </HBox>
+            </children>
+        </HBox>
+
+        <!-- Liste des articles -->
+        <ListView fx:id="panierList" prefHeight="400.0" style="-fx-background-color: transparent; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 8;" VBox.vgrow="ALWAYS" />
+
+        <!-- Récapitulatif et actions -->
+        <VBox spacing="15.0" style="-fx-background-color: #0C0F1A; -fx-border-color: rgba(255,255,255,0.06); -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20;">
+            <children>
+                <!-- Total -->
+                <HBox alignment="CENTER_LEFT">
+                    <children>
+                        <Label style="-fx-text-fill: #8892A4; -fx-font-size: 16px;" text="Total :" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="totalLabel" style="-fx-text-fill: #00E5CC; -fx-font-size: 24px; -fx-font-weight: bold;" text="0.00 DT" />
+                    </children>
+                </HBox>
+
+                <Separator style="-fx-background-color: rgba(255,255,255,0.1);" />
+
+                <!-- Boutons d'action avec images -->
+                <HBox spacing="15.0" alignment="CENTER_RIGHT">
+                    <children>
+                        <!-- Bouton Vider le panier avec image -->
+                        <Button fx:id="viderPanierBtn" onAction="#handleViderPanier"
+                                style="-fx-background-color: #3D1A1A; -fx-text-fill: #F43F5E; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 8; -fx-border-color: rgba(244,63,94,0.3); -fx-border-radius: 8; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" preserveRatio="true">
+                                    <Image url="@/images/delete.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Vider le panier</text>
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Button>
+
+                        <!-- Bouton Valider la commande avec image -->
+                        <Button fx:id="validerCommandeBtn" onAction="#handleValiderCommande"
+                                style="-fx-background-color: #00E5CC; -fx-text-fill: #06080F; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 8; -fx-cursor: hand;">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" preserveRatio="true">
+                                    <Image url="@/images/validate.png" />
+                                </ImageView>
+                            </graphic>
+                            <text>  Valider la commande</text>
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </HBox>
+
+                <!-- Message d'information -->
+                <Label style="-fx-text-fill: #64748B; -fx-font-size: 12px;" text="Les prix sont garantis au moment de l'ajout au panier" />
+            </children>
+        </VBox>
+    </children>
+</VBox>

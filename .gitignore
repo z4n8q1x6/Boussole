@@ -1,7 +1,65 @@
-.idea/
-*.iml
+# --- Build Artifacts ---
 target/
+build/
+dist/
 out/
 *.class
+*.jar
+*.war
+*.ear
+*.log
+src/main/java/tn/esprit/boussole/utils/MyBdConnexion.java
+# --- Maven ---
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# --- IDEs ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea/modules.xml
+.idea/jarRepositaries.xml
+.idea/compiler.xml
+.idea/libraries/
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+.springBeans
+.sts4-cache
+.apt_generated
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+.kotlin/
+
+# --- OS Specific ---
 .DS_Store
 Thumbs.db
+*.tmp
+*.swp
+*~
+
+# --- Secrets & Config ---
+.env
+.env.*
+temp_key.txt
+/tokens/
+src/main/resources/credentials.json
+
+# --- Misc Useless ---
+*.md
+*.txt
+*.log
+*.bak
+*.orig
+*.rej
+*.patch
+README*
+CHANGELOG*
+LICENCE*
+LICENSE*

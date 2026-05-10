@@ -1,0 +1,95 @@
+/* src/main/resources/styles/dashboard.css */
+
+/* --- Menu Buttons --- */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #8892A4; /* Couleur texte inactif */
+    -fx-font-size: 13px;
+    -fx-background-radius: 9;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-padding: 10 14 10 14;
+}
+.menu-button:hover {
+    -fx-background-color: rgba(255,255,255,0.03); /* Léger fond au survol */
+    -fx-text-fill: #E8EDF5; /* Texte plus clair au survol */
+}
+.menu-button-active {
+    -fx-background-color: rgba(0,229,204,0.12); /* Fond actif */
+    -fx-text-fill: #00E5CC; /* Texte actif */
+    -fx-font-weight: bold;
+}
+
+/* --- Filter Buttons --- */
+.filter-button {
+    -fx-background-color: #161A2E; /* Fond des filtres inactifs */
+    -fx-text-fill: #8892A4;
+    -fx-border-color: rgba(255,255,255,0.06);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 9 15 9 15;
+}
+.filter-button:hover {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-text-fill: #E8EDF5;
+}
+.filter-button-active {
+    -fx-background-color: rgba(0,229,204,0.12); /* Fond actif */
+    -fx-text-fill: #00E5CC; /* Texte actif */
+    -fx-font-weight: bold;
+    -fx-border-color: rgba(0,229,204,0.3);
+}
+
+/* --- TableView --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.table-view .column-header-background {
+    -fx-background-color: rgba(255,255,255,0.015);
+}
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255,255,255,0.06);
+    -fx-border-width: 0 0 1 0;
+    -fx-size: 44px;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #8892A4;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 24 0 24;
+}
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255,255,255,0.04);
+    -fx-border-width: 0 0 1 0;
+}
+.table-row-cell:hover {
+    -fx-background-color: rgba(255,255,255,0.022);
+}
+.table-row-cell:selected {
+    -fx-background-color: rgba(0,229,204,0.07);
+}
+.table-cell {
+    -fx-text-fill: #E8EDF5;
+    -fx-font-size: 13px;
+    -fx-padding: 14 24 14 24;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: #1C2138;
+    -fx-background-radius: 10;
+}
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}

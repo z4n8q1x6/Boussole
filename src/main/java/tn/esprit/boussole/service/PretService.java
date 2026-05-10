@@ -27,18 +27,10 @@ public class PretService implements crud<Pret> {
         this.cnx = DBConnection.getConnection();
     }
 
-    // --- MÉTHODES POUR LE CONTROLEUR (RÉSOUT LES ERREURS CANNOT RESOLVE) ---
-
-    /**
-     * Récupère les mensualités d'un prêt via le MensualiteService
-     */
     public List<Mensualite> getMensualitesByPret(int pretId) throws SQLException {
         return mensualiteService.getMensualitesByPret(pretId);
     }
 
-    /**
-     * Marque une mensualité comme payée dans la DB
-     */
     public void marquerMensualiteCommePayee(Mensualite m) throws SQLException {
         m.setEstPaye(true);
         mensualiteService.updateone(m);
@@ -63,7 +55,7 @@ public class PretService implements crud<Pret> {
                 .setBold()
                 .setFontSize(18));
 
-        Table table = new Table(UnitValue.createPointArray(new float[]{100f, 80f, 60f, 60f, 80f}));
+        Table table = new Table(UnitValue.createPointArray(new float[] { 100f, 80f, 60f, 60f, 80f }));
         table.setWidth(UnitValue.createPercentValue(100));
 
         table.addHeaderCell(new Cell().add(new Paragraph("Motif")));
@@ -91,8 +83,11 @@ public class PretService implements crud<Pret> {
         try (PreparedStatement stmt = cnx.prepareStatement(sql)) {
             stmt.setString(1, statut.name());
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return rs.getDouble(1);
-        } catch (SQLException e) { e.printStackTrace(); }
+            if (rs.next())
+                return rs.getDouble(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0.0;
     }
 
@@ -101,8 +96,11 @@ public class PretService implements crud<Pret> {
         try (PreparedStatement stmt = cnx.prepareStatement(sql)) {
             stmt.setString(1, statut.name());
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return rs.getLong(1);
-        } catch (SQLException e) { e.printStackTrace(); }
+            if (rs.next())
+                return rs.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -114,19 +112,27 @@ public class PretService implements crud<Pret> {
 
     @Override
     public void insertone(Pret pret) throws SQLException {
-        String sql = "INSERT INTO pret (montant_demande, duree_mois, taux, statut, motif) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO pret (montant_demande, duree_mois, taux, statut, motif, date_demande, franchise_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setDouble(1, pret.getMontantDemande());
             stmt.setInt(2, pret.getDureeMois());
             stmt.setFloat(3, pret.getTaux());
             stmt.setString(4, (pret.getStatut() != null) ? pret.getStatut().name() : "EN_ATTENTE");
             stmt.setString(5, pret.getMotif());
+            stmt.setTimestamp(6, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+            if (pret.getFranchiseId() != null && pret.getFranchiseId() > 0) {
+                stmt.setInt(7, pret.getFranchiseId());
+            } else {
+                stmt.setInt(7, 1);
+            }
             stmt.executeUpdate();
             try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) pret.setId(rs.getInt(1));
+                if (rs.next())
+                    pret.setId(rs.getInt(1));
             }
         }
-        try { genererMensualites(pret); } catch (Exception e) { e.printStackTrace(); }
+        // ← genererMensualites supprimé ici — mensualités générées uniquement lors de
+        // l'accord
     }
 
     @Override
@@ -158,16 +164,23 @@ public class PretService implements crud<Pret> {
         List<Pret> list = new ArrayList<>();
         String sql = "SELECT * FROM pret";
         try (Statement stmt = cnx.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) { list.add(mapResultSetToPret(rs)); }
-        } catch (SQLException e) { e.printStackTrace(); }
+            while (rs.next()) {
+                list.add(mapResultSetToPret(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
     @Override
-    public List<Pret> selectAll(Pret t) throws SQLException { return selectAll(); }
+    public List<Pret> selectAll(Pret t) throws SQLException {
+        return selectAll();
+    }
 
     public void genererMensualites(Pret p) throws Exception {
-        if (p.getDureeMois() <= 0) return;
+        if (p.getDureeMois() <= 0)
+            return;
         double montantMensuel = p.getMontantDemande() / p.getDureeMois();
         for (int i = 1; i <= p.getDureeMois(); i++) {
             Mensualite m = new Mensualite();
@@ -185,7 +198,8 @@ public class PretService implements crud<Pret> {
         p.setDureeMois(rs.getInt("duree_mois"));
         p.setTaux(rs.getFloat("taux"));
         String st = rs.getString("statut");
-        if (st != null) p.setStatut(StatutPret.valueOf(st));
+        if (st != null)
+            p.setStatut(StatutPret.valueOf(st));
         p.setMotif(rs.getString("motif"));
         return p;
     }

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.ScatterChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.boussole.gui.DashboardSiegeController"
+            fx:id="contentPane"
+            stylesheets="@styles.css"
+            style="-fx-background-color: #07090F;">
+
+    <center>
+        <VBox spacing="20" style="-fx-background-color: #07090F;">
+            <padding><Insets top="24" right="44" bottom="24" left="44"/></padding>
+
+            <!-- ═══ HEADER ═══ -->
+            <HBox alignment="CENTER_LEFT">
+                <VBox HBox.hgrow="ALWAYS" spacing="4">
+                    <Label text="Pilotage Financier"
+                           style="-fx-font-size: 30px; -fx-font-weight: 900; -fx-text-fill: white;"/>
+                    <Label text="Suivi de la performance globale du réseau"
+                           style="-fx-font-size: 13px; -fx-text-fill: #64748B;"/>
+                </VBox>
+                <StackPane fx:id="paneNotificationBtn" style="-fx-cursor: hand;" onMouseClicked="#afficherNotifications"
+                           prefWidth="42" prefHeight="42">
+                    <!-- Modern glass container -->
+                    <StackPane style="-fx-background-color: rgba(255,255,255,0.06);
+                                      -fx-background-radius: 14;
+                                      -fx-border-color: rgba(255,255,255,0.1);
+                                      -fx-border-radius: 14; -fx-border-width: 1;
+                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);"
+                               prefWidth="42" prefHeight="42" alignment="CENTER">
+                        <Label text="🔔" style="-fx-font-size: 20px; -fx-text-fill: #94A3B8; -fx-effect: dropshadow(gaussian, rgba(0,229,204,0.3), 6, 0, 0, 0);"/>
+                    </StackPane>
+                    <!-- Animated badge -->
+                    <StackPane fx:id="badgeNotification" visible="false"
+                               style="-fx-background-color: linear-gradient(to bottom right, #FF4757, #FF6B81);
+                                      -fx-background-radius: 50%;
+                                      -fx-min-width: 20; -fx-min-height: 20;
+                                      -fx-max-width: 20; -fx-max-height: 20;
+                                      -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.7), 8, 0.4, 0, 0);"
+                               StackPane.alignment="TOP_RIGHT"
+                               translateX="4" translateY="-4">
+                        <Label fx:id="lblNotifCount" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: 900;"
+                               alignment="CENTER"/>
+                    </StackPane>
+                </StackPane>
+            </HBox>
+
+            <!-- ═══ KPI CARDS ═══ -->
+            <HBox spacing="16">
+
+                <!-- SOLDE TOTAL -->
+                <VBox HBox.hgrow="ALWAYS" spacing="8"
+                      style="-fx-background-color: #111827;
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(255,255,255,0.08);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-padding: 18 22 18 22;
+                             -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.6),18,0,0,5);">
+                    <Label text="SOLDE TOTAL"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 10px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                    <Label fx:id="lblSolde" text="-- TND"
+                           style="-fx-text-fill: #38BDF8; -fx-font-size: 22px; -fx-font-weight: 900;"/>
+                </VBox>
+
+                <!-- REVENUS -->
+                <VBox HBox.hgrow="ALWAYS" spacing="8"
+                      style="-fx-background-color: #111827;
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(255,255,255,0.08);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-padding: 18 22 18 22;
+                             -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.6),18,0,0,5);">
+                    <Label text="REVENUS"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 10px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                    <Label fx:id="lblRevenus" text="-- TND"
+                           style="-fx-text-fill: #22C55E; -fx-font-size: 22px; -fx-font-weight: 900;"/>
+                </VBox>
+
+                <!-- DÉPENSES -->
+                <VBox HBox.hgrow="ALWAYS" spacing="8"
+                      style="-fx-background-color: #111827;
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(255,255,255,0.08);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-padding: 18 22 18 22;
+                             -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.6),18,0,0,5);">
+                    <Label text="DÉPENSES"
+                           style="-fx-text-fill: #8892A4; -fx-font-size: 10px; -fx-font-weight: bold; -fx-letter-spacing: 1px;"/>
+                    <Label fx:id="lblDepenses" text="-- TND"
+                           style="-fx-text-fill: #EF4444; -fx-font-size: 22px; -fx-font-weight: 900;"/>
+                </VBox>
+
+            </HBox>
+
+            <!-- ═══ TABS ═══ -->
+            <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS"
+                     style="-fx-background-color: transparent; -fx-tab-min-height: 40px;">
+
+                <!-- TAB 1 : Statistiques Globales -->
+                <Tab text="Statistiques Globales">
+                    <content>
+                        <VBox spacing="14"
+                              style="-fx-background-color: #111827;
+                                     -fx-background-radius: 0 16 16 16;
+                                     -fx-border-color: rgba(255,255,255,0.07);
+                                     -fx-border-radius: 0 16 16 16;
+                                     -fx-border-width: 1;
+                                     -fx-padding: 28;
+                                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.6),18,0,0,5);">
+                            <Label text="Réel vs Budget – Réseau Global (3 derniers mois)"
+                                   style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #F1F5F9;"/>
+                            <Label text="Comparaison entre les montants réels (transactions) et les budgets prévisionnels de toutes les franchises"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748B; -fx-wrap-text: true;"/>
+                            <BarChart fx:id="barChartComparatif" VBox.vgrow="ALWAYS" prefHeight="380"
+                                      animated="false"
+                                      style="-fx-background-color: transparent;
+                                             -fx-plot-background-color: transparent;">
+                                <xAxis>
+                                    <CategoryAxis fx:id="xAxisComp"
+                                                  label="Période"
+                                                  tickLabelFill="#CBD5E1"
+                                                  style="-fx-tick-label-fill: #CBD5E1;
+                                                         -fx-label-fill: #94A3B8;"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis fx:id="yAxisComp"
+                                                label="Montant (TND)"
+                                                tickLabelFill="#CBD5E1"
+                                                style="-fx-tick-label-fill: #CBD5E1;
+                                                       -fx-label-fill: #94A3B8;"/>
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <!-- TAB 2 : Radar de Performance (IA) -->
+                <Tab text="Radar de Performance">
+                    <content>
+                        <VBox spacing="14"
+                              style="-fx-background-color: #111827;
+                                     -fx-background-radius: 0 16 16 16;
+                                     -fx-border-color: rgba(255,255,255,0.07);
+                                     -fx-border-radius: 0 16 16 16;
+                                     -fx-border-width: 1;
+                                     -fx-padding: 28;">
+                            <Label text="Radar de Performance IA – Clustering des Franchises"
+                                   style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #F1F5F9;"/>
+                            <Label text="Analyse par Intelligence Artificielle (K-Means)"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748B;"/>
+                            <ScatterChart fx:id="scatterChartIA" VBox.vgrow="ALWAYS" prefHeight="380"
+                                          style="-fx-background-color: transparent;">
+                                <xAxis>
+                                    <NumberAxis fx:id="xAxisIA" label="Total Recettes"
+                                                tickLabelFill="#94A3B8"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis fx:id="yAxisIA" label="Total Dépenses"
+                                                tickLabelFill="#94A3B8"/>
+                                </yAxis>
+                            </ScatterChart>
+                        </VBox>
+                    </content>
+                </Tab>
+
+            </TabPane>
+
+        </VBox>
+    </center>
+
+</BorderPane>
+
