@@ -25,7 +25,8 @@ public class AddReclamationController {
 
     // Auto-populate franchise ID from logged-in user
     int fetchedFranchiseId = UserManager.getCurrentUserFranchiseId();
-    System.out.println("AddReclamationController DEBUG: ID récupéré par UserManager = " + fetchedFranchiseId);
+    System.out.println(
+        "AddReclamationController DEBUG: ID récupéré par UserManager = " + fetchedFranchiseId);
 
     if (!UserManager.isValidFranchiseId(fetchedFranchiseId)) {
       System.err.println("AddReclamationController DEBUG: Franchise ID invalide (-1 ou 0)");
@@ -33,7 +34,9 @@ public class AddReclamationController {
     } else {
       this.franchiseId = fetchedFranchiseId;
       this.initializedByUserManager = true; // --- Marquer comme initialisé ---
-      System.out.println("AddReclamationController DEBUG: Variable classe franchiseId mise à jour avec: " + this.franchiseId);
+      System.out.println(
+          "AddReclamationController DEBUG: Variable classe franchiseId mise à jour avec: "
+              + this.franchiseId);
     }
   }
 
@@ -41,12 +44,18 @@ public class AddReclamationController {
   public void setFranchiseId(int franchiseId) {
     // --- Ignorer si UserManager a déjà fait le travail ---
     if (this.initializedByUserManager) {
-      System.out.println("AddReclamationController DEBUG: setFranchiseId(" + franchiseId + ") ignoré (déjà initialisé avec " + this.franchiseId + ")");
+      System.out.println(
+          "AddReclamationController DEBUG: setFranchiseId("
+              + franchiseId
+              + ") ignoré (déjà initialisé avec "
+              + this.franchiseId
+              + ")");
       return;
     }
     // -----------------------------------------------------
 
-    System.out.println("AddReclamationController DEBUG: setFranchiseId() appelée avec: " + franchiseId);
+    System.out.println(
+        "AddReclamationController DEBUG: setFranchiseId() appelée avec: " + franchiseId);
     this.franchiseId = franchiseId;
   }
 
@@ -55,7 +64,9 @@ public class AddReclamationController {
     if (!validate()) return;
 
     // --- LOG DE DÉBOGAGE ---
-    System.out.println("AddReclamationController DEBUG: Tentative d'ajout réclamation avec franchiseId = " + this.franchiseId);
+    System.out.println(
+        "AddReclamationController DEBUG: Tentative d'ajout réclamation avec franchiseId = "
+            + this.franchiseId);
     // -----------------------
 
     if (!UserManager.isValidFranchiseId(franchiseId)) {
@@ -102,6 +113,10 @@ public class AddReclamationController {
       showError("La description ne doit pas commencer par un chiffre.");
       return false;
     }
+    if (description.length() < 5) {
+      showError("La description doit contenir au moins 5 caractères.");
+      return false;
+    }
 
     hideError();
     return true;
@@ -123,3 +138,4 @@ public class AddReclamationController {
     stage.close();
   }
 }
+

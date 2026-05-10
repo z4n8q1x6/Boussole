@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -26,6 +28,8 @@ public class AdminReclamationController {
   @FXML private TableColumn<Reclamation, String> colStatut;
   @FXML private TableColumn<Reclamation, String> colDate;
   @FXML private TableColumn<Reclamation, String> colFranchise;
+
+  @FXML private TextField searchSujetField;
 
   public void initialize() {
     // connects the table columns to Reclamation model getters
@@ -81,7 +85,7 @@ public class AdminReclamationController {
           };
         });
 
-    display();
+    setupSearchFilter();
   }
 
   @FXML
@@ -94,7 +98,7 @@ public class AdminReclamationController {
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
-          display();
+          setupSearchFilter();
           System.out.println("Reclamation deleted successfully.");
         }
       }
@@ -104,8 +108,29 @@ public class AdminReclamationController {
     }
   }
 
-  public void display() {
-    table.setItems(service.getAll());
+  private void setupSearchFilter() {
+    var fullList = service.getAll();
+    FilteredList<Reclamation> filteredList = new FilteredList<>(fullList, p -> true);
+    SortedList<Reclamation> sortedList = new SortedList<>(filteredList);
+    sortedList.comparatorProperty().bind(table.comparatorProperty());
+    table.setItems(sortedList);
+
+    searchSujetField
+        .textProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              filteredList.setPredicate(
+                  reclamation -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                      return true;
+                    }
+                    String sujet = reclamation.getSujet();
+                    if (sujet == null) {
+                      return false;
+                    }
+                    return sujet.toLowerCase().contains(newValue.toLowerCase());
+                  });
+            });
   }
 
   @FXML
@@ -128,7 +153,7 @@ public class AdminReclamationController {
       System.err.println("Error loading FXML:");
       e.printStackTrace();
     }
-    display();
+    setupSearchFilter();
   }
 
   @FXML

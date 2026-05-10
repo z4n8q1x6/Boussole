@@ -301,17 +301,19 @@ public class afficherBackFournisseurController {
   }
 
   private void showAlert(String titre, String msg) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle(titre);
-    alert.setHeaderText(null);
-    alert.setContentText(msg);
+    javafx.application.Platform.runLater(() -> {
+      Alert alert = new Alert(Alert.AlertType.INFORMATION);
+      alert.setTitle(titre);
+      alert.setHeaderText(null);
+      alert.setContentText(msg);
 
-    DialogPane dialogPane = alert.getDialogPane();
-    String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
-    dialogPane.getStylesheets().add(css);
-    dialogPane.getStyleClass().add("dialog-pane");
+      DialogPane dialogPane = alert.getDialogPane();
+      String css = getClass().getResource("/styles/ChargesdepensesDash.css").toExternalForm();
+      dialogPane.getStylesheets().add(css);
+      dialogPane.getStyleClass().add("dialog-pane");
 
-    alert.showAndWait();
+      alert.showAndWait();
+    });
   }
 }
 

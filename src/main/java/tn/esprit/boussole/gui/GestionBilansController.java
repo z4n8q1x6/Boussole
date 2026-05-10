@@ -1,5 +1,6 @@
 package tn.esprit.boussole.gui;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Properties;
 import javafx.scene.control.SelectionMode;
 
-public class GestionBilansController implements Initializable {
+public class GestionBilansController implements Initializable, Searchable {
 
     // Éléments de navigation (Potentiellement null si supprimés du FXML)
     @FXML private Button btnDashboard;
@@ -532,6 +533,33 @@ public class GestionBilansController implements Initializable {
             });
 
             new Thread(task).start();
+        }
+    }
+
+    // --- Implémentation Searchable (recherche depuis le header global) ---
+    @Override
+    public void onSearch(String keyword) {
+        if (tableBilans == null) return;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            rafraichirTable();
+            return;
+        }
+        String lower = keyword.toLowerCase();
+        try {
+            List<bilan> all = serviceBilan.selectAll();
+            List<bilan> filtered = all.stream()
+                .filter(b -> {
+                    if (String.valueOf(b.getMois()).contains(lower)) return true;
+                    if (String.valueOf(b.getAnnee()).contains(lower)) return true;
+                    if (String.valueOf(b.getTotalRecettes()).contains(lower)) return true;
+                    if (String.valueOf(b.getTotalCharges()).contains(lower)) return true;
+                    if (String.valueOf(b.getResultatNet()).contains(lower)) return true;
+                    return false;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            tableBilans.setItems(FXCollections.observableArrayList(filtered));
+        } catch (Exception e) {
+            System.err.println("Erreur recherche bilans: " + e.getMessage());
         }
     }
 }

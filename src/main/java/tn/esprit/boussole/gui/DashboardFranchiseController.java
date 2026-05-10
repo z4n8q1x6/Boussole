@@ -21,9 +21,11 @@ import javafx.geometry.Pos;
 import tn.esprit.boussole.models.budget_previsionnel;
 import tn.esprit.boussole.models.budget_previsionnel.TypeBudget;
 import tn.esprit.boussole.models.transaction;
+import tn.esprit.boussole.models.Charge;
 import tn.esprit.boussole.service.ServiceBudgetPrevisionnel;
 import tn.esprit.boussole.service.ServiceDevise;
 import tn.esprit.boussole.service.ServiceTransaction;
+import tn.esprit.boussole.service.ChargeService;
 
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.net.URL;
 import java.util.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -45,7 +48,7 @@ import tn.esprit.boussole.utils.ThemeManagerS;
 import tn.esprit.boussole.utils.NotificationManager;
 import java.util.prefs.Preferences;
 
-public class DashboardFranchiseController implements Initializable {
+public class DashboardFranchiseController implements Initializable, Searchable {
 
     // FXML Components
     @FXML
@@ -110,6 +113,7 @@ public class DashboardFranchiseController implements Initializable {
     private ServiceTransaction serviceTransaction;
     private ServiceBudgetPrevisionnel serviceBudgetPrevisionnel;
     private ServiceDevise serviceDevise; // Added ServiceDevise
+    private ChargeService serviceCharge; // Pour les charges (dépenses)
 
     // Session
     private int franchiseId;
@@ -122,6 +126,7 @@ public class DashboardFranchiseController implements Initializable {
                 serviceTransaction = new ServiceTransaction();
                 serviceBudgetPrevisionnel = new ServiceBudgetPrevisionnel();
                 serviceDevise = new ServiceDevise(); // Initialize ServiceDevise
+                serviceCharge = new ChargeService(); // Initialize ChargeService
             } catch (Exception e) {
                 System.err.println("Error initializing services: " + e.getMessage());
                 afficherMessageErreur("Erreur de connexion à la base de données: " + e.getMessage());
@@ -244,6 +249,22 @@ public class DashboardFranchiseController implements Initializable {
                 btnValider.setOnAction(this::validerRecette);
             }
 
+            // ─── AUTO-REFRESH : recharger dès que la fenêtre reprend le focus ───
+            // Cela permet d'afficher les charges ajoutées depuis un autre écran (ex: Charges)
+            tableMovements.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null) {
+                    newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
+                        if (newWin != null) {
+                            newWin.focusedProperty().addListener((obs3, wasFocused, isFocused) -> {
+                                if (isFocused) {
+                                    chargerDonneesDashboard();
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
 
             // Cleaned up unused sorting/context menu code...
 
@@ -321,10 +342,17 @@ public class DashboardFranchiseController implements Initializable {
 
     /**
      * Load and display solde from database
+     * Solde = Recettes (transactions) - Dépenses (transactions) - Charges déclarées
      */
     private void chargerSolde() {
         try {
-            double solde = serviceTransaction.calculerSolde(franchiseId);
+            // Solde depuis les transactions (recettes - dépenses de la table transaction)
+            double soldeTransactions = serviceTransaction.calculerSolde(franchiseId);
+            // Total des charges déclarées pour cette franchise
+            double totalCharges = serviceCharge.getTotalChargesByFranchise(franchiseId);
+            // Solde final = solde transactions - charges
+            double solde = soldeTransactions - totalCharges;
+
             lblSolde.setText(String.format("%.2f TND", solde));
 
             // Conversion dynamique
@@ -334,11 +362,10 @@ public class DashboardFranchiseController implements Initializable {
                     devise = cbDevise.getValue();
                 }
 
-                double taux = serviceDevise.convertir(1.0, devise); // On récupère le taux pour 1 TND
+                double taux = serviceDevise.convertir(1.0, devise);
 
                 if (taux > 0) {
                     double soldeConverti = solde * taux;
-                    // Symboles de devises
                     String symbole = "";
                     switch(devise) {
                         case "EUR": symbole = "€"; break;
@@ -358,7 +385,7 @@ public class DashboardFranchiseController implements Initializable {
                 if (lblContreValeur != null) lblContreValeur.setText("(-)");
             }
 
-            // Change color based on solde (green if positive, red if negative)
+            // Change color based on solde
             if (solde >= 0) {
                 lblSolde.setStyle("-fx-text-fill: #22C55E; -fx-font-size: 34px; -fx-font-weight: 900;");
             } else {
@@ -371,21 +398,44 @@ public class DashboardFranchiseController implements Initializable {
     }
 
     /**
-     * Load LAST 5 transactions for this franchise
+     * Load LAST 5 mouvements (transactions + charges converties en DÉPENSE) for this franchise
      */
     private void chargerDerniersMouvements() {
         try {
+            // 1. Récupérer les transactions de la franchise
             List<transaction> transactions = serviceTransaction.getAllByFranchise(franchiseId);
 
-            // Limit to 5 most recent
-            List<transaction> denieresTransactions = transactions.stream()
+            // 2. Récupérer les charges et les convertir en pseudo-transactions DÉPENSE
+            List<Charge> charges = serviceCharge.getChargesByFranchise(franchiseId);
+            for (Charge charge : charges) {
+                transaction t = new transaction();
+                // Convertir LocalDate -> java.util.Date
+                t.setDate(java.sql.Date.valueOf(charge.getDateCharge()));
+                t.setMontant(charge.getMontant());
+                t.setType(transaction.Type.DEPENSE);
+                t.setDescription(charge.getTitre() != null ? charge.getTitre() : "Charge");
+                t.setFranchiseId(charge.getFranchiseId());
+                transactions.add(t);
+            }
+
+            // 3. Trier par date décroissante
+            transactions.sort((a, b) -> {
+                if (a.getDate() == null && b.getDate() == null) return 0;
+                if (a.getDate() == null) return 1;
+                if (b.getDate() == null) return -1;
+                return b.getDate().compareTo(a.getDate());
+            });
+
+            // 4. Limiter aux 5 derniers
+            List<transaction> dernieres = transactions.stream()
                 .limit(5)
                 .collect(Collectors.toList());
 
-            ObservableList<transaction> data = FXCollections.observableArrayList(denieresTransactions);
+            ObservableList<transaction> data = FXCollections.observableArrayList(dernieres);
             tableMovements.setItems(data);
         } catch (Exception e) {
-            System.err.println("Erreur lors du chargement des transactions : " + e.getMessage());
+            System.err.println("Erreur lors du chargement des mouvements : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -404,7 +454,6 @@ public class DashboardFranchiseController implements Initializable {
                 tableBudgets.setItems(FXCollections.observableArrayList(budgets));
             }
 
-            // Calculer les TOTAUX de tous les budgets déclarés par le siège pour le mois courant
             int currentMonth = LocalDate.now().getMonthValue();
             int currentYear = LocalDate.now().getYear();
 
@@ -412,7 +461,6 @@ public class DashboardFranchiseController implements Initializable {
             double totalObjectifRevenu = 0;
 
             for (budget_previsionnel b : budgets) {
-                // On prend uniquement le budget du mois et de l'année en cours
                 if (b.getMois() == currentMonth && b.getAnnee() == currentYear) {
                     if (b.getType_budget() == TypeBudget.LIMITE_DEPENSE) {
                         totalLimiteDepenses += b.getMontantCible();
@@ -422,7 +470,6 @@ public class DashboardFranchiseController implements Initializable {
                 }
             }
 
-            // Mise à jour des KPI Labels (afficher "0,00 TND" si non défini)
             if (lblLimiteDepenses != null) {
                 lblLimiteDepenses.setText(String.format("%.2f TND", totalLimiteDepenses));
             }
@@ -430,7 +477,6 @@ public class DashboardFranchiseController implements Initializable {
                 lblObjectifRevenu.setText(String.format("%.2f TND", totalObjectifRevenu));
             }
 
-            // Calculer les dépenses totales réelles
             if (lblDepensesMois != null) {
                 List<transaction> allTransactions = serviceTransaction.getAllByFranchise(franchiseId);
                 double totalDepenses = 0;
@@ -441,7 +487,6 @@ public class DashboardFranchiseController implements Initializable {
                 }
                 lblDepensesMois.setText(String.format("%.2f TND", totalDepenses));
 
-                // Rouge si dépassement du budget, orange sinon
                 if (totalLimiteDepenses > 0 && totalDepenses > totalLimiteDepenses) {
                     lblDepensesMois.setStyle("-fx-text-fill: #c62828; -fx-font-size:20px; -fx-font-weight:bold;");
                 } else {
@@ -590,5 +635,47 @@ public class DashboardFranchiseController implements Initializable {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // --- Implémentation Searchable ---
+    @Override
+    public void onSearch(String keyword) {
+        if (tableMovements == null) return;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            chargerDerniersMouvements();
+            return;
+        }
+        String lower = keyword.toLowerCase();
+        try {
+            List<transaction> transactions = serviceTransaction.getAllByFranchise(franchiseId);
+            List<Charge> charges = serviceCharge.getChargesByFranchise(franchiseId);
+            for (Charge charge : charges) {
+                transaction t = new transaction();
+                t.setDate(java.sql.Date.valueOf(charge.getDateCharge()));
+                t.setMontant(charge.getMontant());
+                t.setType(transaction.Type.DEPENSE);
+                t.setDescription(charge.getTitre() != null ? charge.getTitre() : "Charge");
+                t.setFranchiseId(charge.getFranchiseId());
+                transactions.add(t);
+            }
+            List<transaction> filtered = transactions.stream()
+                .filter(t -> {
+                    if (t.getDescription() != null && t.getDescription().toLowerCase().contains(lower)) return true;
+                    if (t.getType() != null && t.getType().name().toLowerCase().contains(lower)) return true;
+                    if (String.valueOf(t.getMontant()).contains(lower)) return true;
+                    return false;
+                })
+                .sorted((a, b) -> {
+                    if (a.getDate() == null && b.getDate() == null) return 0;
+                    if (a.getDate() == null) return 1;
+                    if (b.getDate() == null) return -1;
+                    return b.getDate().compareTo(a.getDate());
+                })
+                .limit(20)
+                .collect(Collectors.toList());
+            tableMovements.setItems(FXCollections.observableArrayList(filtered));
+        } catch (Exception e) {
+            System.err.println("Erreur recherche: " + e.getMessage());
+        }
     }
 }

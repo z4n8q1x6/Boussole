@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.prefs.Preferences;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -16,10 +15,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import tn.esprit.boussole.utils.ThemeManager;
 
 public class dashUserController {
 
@@ -40,7 +39,9 @@ public class dashUserController {
     @FXML private Button btnPret;
     @FXML private Button btnTransaction;
     @FXML private Button btnLogout;
-    @FXML private Button btnTheme;
+
+    // Barre de recherche globale
+    @FXML private TextField searchField;
 
     // NOUVEAUX BOUTONS POUR LES FONCTIONNALITÉS MARKETPLACE
     @FXML private Button btnCatalogue;
@@ -48,23 +49,17 @@ public class dashUserController {
     @FXML private Button btnMesCommandes;
 
     private List<Button> menuButtons;
+    private Object currentController; // Référence au contrôleur de la vue chargée
+    private VBox sidebarMenuBox; // Référence au conteneur des boutons sidebar
 
     @FXML
     public void initialize() {
-        // Appliquer le thème au démarrage
-        Platform.runLater(() -> {
-            if (btnTheme != null && btnTheme.getScene() != null) {
-                ThemeManager.applyTheme(btnTheme.getScene());
-                updateThemeButtonIcon();
-            }
-        });
-
         // Initialiser la liste des boutons de menu pour le style "Active"
         menuButtons = new ArrayList<>();
         if (btnDashboard != null && btnDashboard.getParent() instanceof VBox) {
-            VBox menuBox = (VBox) btnDashboard.getParent();
-            for (Node node : menuBox.getChildrenUnmodifiable()) {
-                if (node instanceof Button && node != btnLogout && node != btnTheme) {
+            sidebarMenuBox = (VBox) btnDashboard.getParent();
+            for (Node node : sidebarMenuBox.getChildrenUnmodifiable()) {
+                if (node instanceof Button && node != btnLogout) {
                     menuButtons.add((Button) node);
                 }
             }
@@ -77,11 +72,68 @@ public class dashUserController {
             lblUsername.setText(email);
         }
 
+        // Configuration de la recherche sur la sidebar
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                filterSidebar(newVal);
+            });
+        }
+
         // Configuration des actions des boutons
         setupMenuActions();
 
         // Vue par défaut : On charge le Dashboard réel
         handleMenuClick(btnDashboard, "Tableau de bord", "/DashboardFranchise.fxml");
+    }
+
+    /**
+     * Filtre les boutons de la sidebar en fonction du mot-clé saisi.
+     * Les boutons dont le texte ne correspond pas sont masqués.
+     * Les labels de section sont masqués si tous leurs boutons enfants sont masqués.
+     */
+    private void filterSidebar(String keyword) {
+        if (sidebarMenuBox == null) return;
+
+        String lower = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim().toLowerCase();
+
+        List<Node> children = sidebarMenuBox.getChildren();
+        Label currentSectionLabel = null;
+        List<Button> currentSectionButtons = new ArrayList<>();
+
+        for (Node node : children) {
+            if (node instanceof Label) {
+                // Traiter la section précédente
+                finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+                // Nouvelle section
+                currentSectionLabel = (Label) node;
+                currentSectionButtons = new ArrayList<>();
+            } else if (node instanceof Button && node != btnLogout) {
+                Button btn = (Button) node;
+                if (lower.isEmpty()) {
+                    btn.setVisible(true);
+                    btn.setManaged(true);
+                } else {
+                    // Extraire le texte sans les emojis pour une recherche plus souple
+                    String btnText = btn.getText().replaceAll("[^\\p{L}\\p{N}\\s]", "").trim().toLowerCase();
+                    boolean matches = btnText.contains(lower);
+                    btn.setVisible(matches);
+                    btn.setManaged(matches);
+                }
+                currentSectionButtons.add(btn);
+            }
+        }
+        // Traiter la dernière section
+        finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+    }
+
+    /**
+     * Masque le label de section si aucun de ses boutons n'est visible.
+     */
+    private void finalizeSectionVisibility(Label sectionLabel, List<Button> buttons) {
+        if (sectionLabel == null) return;
+        boolean anyVisible = buttons.stream().anyMatch(Button::isVisible);
+        sectionLabel.setVisible(anyVisible);
+        sectionLabel.setManaged(anyVisible);
     }
 
     private void setupMenuActions() {
@@ -121,23 +173,6 @@ public class dashUserController {
         btnLogout.setOnAction(e -> handleLogout());
     }
 
-    @FXML
-    private void handleThemeToggle() {
-        if (btnTheme.getScene() != null) {
-            ThemeManager.toggleTheme(btnTheme.getScene());
-            updateThemeButtonIcon();
-        }
-    }
-
-    private void updateThemeButtonIcon() {
-        if (btnTheme != null) {
-            if (ThemeManager.isDarkMode()) {
-                btnTheme.setText("☀️"); // Icône pour passer en mode clair
-            } else {
-                btnTheme.setText("🌙"); // Icône pour passer en mode sombre
-            }
-        }
-    }
 
     private void handleMenuClick(Button button, String title, String fxmlPath) {
         setActiveButton(button);
@@ -164,7 +199,13 @@ public class dashUserController {
             }
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
+            currentController = loader.getController();
             contentArea.getChildren().setAll(view);
+
+            // Réinitialiser le champ de recherche à chaque changement de page
+            if (searchField != null) {
+                searchField.clear();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger la vue : " + fxmlPath);

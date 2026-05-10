@@ -301,12 +301,22 @@ public class loginController {
 
     private boolean verifyPassword(String plain, String stored) {
         if (stored == null) return false;
+        
+        // Symfony/PHP uses $2y$ by default, but jbcrypt only understands $2a$.
+        // Since they are algorithmically identical, we can safely replace the prefix.
+        if (stored.startsWith("$2y$")) {
+            stored = "$2a$" + stored.substring(4);
+        }
+        
         if (stored.startsWith("$2")) {
             try {
                 Class<?> bc = Class.forName("org.mindrot.jbcrypt.BCrypt");
                 Method checkpw = bc.getMethod("checkpw", String.class, String.class);
                 return (Boolean) checkpw.invoke(null, plain, stored);
-            } catch (Exception ex) { return false; }
+            } catch (Exception ex) { 
+                ex.printStackTrace();
+                return false; 
+            }
         }
         return plain.equals(stored);
     }
