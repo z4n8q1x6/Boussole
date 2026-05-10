@@ -117,11 +117,6 @@ public class addChargeController {
 
             chargeService.insertone(nouvelleCharge);
 
-            // 🔥 NOUVEAU: Mettre à jour le solde_actuel de la franchise dynamiquement (Déduire la charge)
-            tn.esprit.boussole.service.franchiseService fService = new tn.esprit.boussole.service.franchiseService();
-            fService.updateSolde(franchiseId, -nouvelleCharge.getMontant());
-            System.out.println("✅ Solde dynamique mis à jour (- " + nouvelleCharge.getMontant() + ")");
-
             showAlert("Succès", "Dépense enregistrée avec succès !", Alert.AlertType.INFORMATION);
 
             // --- CHANGEMENT ICI : ON FERME LA FENÊTRE AU LIEU DE REDIRIGER ---

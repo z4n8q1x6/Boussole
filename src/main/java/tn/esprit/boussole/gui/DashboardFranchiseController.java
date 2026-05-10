@@ -341,26 +341,15 @@ public class DashboardFranchiseController implements Initializable, Searchable {
 
 
     /**
-     * Load and display solde directly from the franchises table in the database.
-     * Utilise la colonne solde_actuel de la table franchises comme source de vérité.
+     * Load and display solde directly computed from transactions.
+     * Calcule le solde de manière dynamique: SUM(RECETTES) - SUM(DEPENSES)
      */
     private void chargerSolde() {
         try {
-            double solde = 0.0;
+            // Calculer le solde dynamiquement via les transactions
+            double solde = serviceTransaction.calculerSolde(franchiseId);
 
-            // Lire directement depuis la table franchises
-            String sql = "SELECT solde_actuel FROM franchises WHERE id = ?";
-            try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
-                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, franchiseId);
-                try (java.sql.ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        solde = rs.getDouble("solde_actuel");
-                    }
-                }
-            }
-
-            System.out.println("💰 Solde franchise " + franchiseId + " (depuis franchises.solde_actuel) = " + solde);
+            System.out.println("💰 Solde franchise " + franchiseId + " (dynamique) = " + solde);
             lblSolde.setText(String.format("%.2f TND", solde));
 
             // Conversion dynamique
@@ -571,12 +560,6 @@ public class DashboardFranchiseController implements Initializable, Searchable {
         try {
             serviceTransaction.insertone(t);
             System.out.println("✅ Insertion réussie, id=" + t.getId());
-            
-            // 🔥 NOUVEAU: Mettre à jour le solde_actuel de la franchise dynamiquement
-            tn.esprit.boussole.service.franchiseService fService = new tn.esprit.boussole.service.franchiseService();
-            fService.updateSolde(fid, montant);
-            System.out.println("✅ Solde dynamique mis à jour (+ " + montant + ")");
-            
         } catch (java.sql.SQLException sqle) {
             System.err.println("❌ SQL : " + sqle.getMessage());
             sqle.printStackTrace();
