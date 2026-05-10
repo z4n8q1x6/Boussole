@@ -150,7 +150,10 @@ public class DashboardSiegeController implements Initializable {
                         String key = nomsMois[month] + " " + (year % 100);
 
                         double totalReel = 0.0;
-                        String sqlReel = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
+                        String sqlReel = "SELECT " +
+                                "COALESCE(SUM(CASE WHEN type='RECETTE' THEN montant ELSE 0 END), 0) - " +
+                                "COALESCE(SUM(CASE WHEN type='DEPENSE' THEN montant ELSE 0 END), 0) AS total " +
+                                "FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
                         try (PreparedStatement ps = cnx.prepareStatement(sqlReel)) {
                             ps.setInt(1, month);
                             ps.setInt(2, year);
@@ -160,7 +163,10 @@ public class DashboardSiegeController implements Initializable {
                         }
 
                         double totalBudget = 0.0;
-                        String sqlBudget = "SELECT COALESCE(SUM(montant_cible), 0.0) AS total FROM budget_previsionnel WHERE mois = ? AND annee = ?";
+                        String sqlBudget = "SELECT " +
+                                "COALESCE(SUM(CASE WHEN type_budget='OBJECTIF_REVENU' THEN montant_cible ELSE 0 END), 0) - " +
+                                "COALESCE(SUM(CASE WHEN type_budget='LIMITE_DEPENSE' THEN montant_cible ELSE 0 END), 0) AS total " +
+                                "FROM budget_previsionnel WHERE mois = ? AND annee = ?";
                         try (PreparedStatement ps = cnx.prepareStatement(sqlBudget)) {
                             ps.setInt(1, month);
                             ps.setInt(2, year);
@@ -179,18 +185,7 @@ public class DashboardSiegeController implements Initializable {
                     System.err.println("[DashboardSiege] Erreur données réelles: " + ex.getMessage());
                 }
 
-                // Fallback pour le Radar IA afin qu'il s'affiche même si la base de données est vide
-                if (clusters == null || clusters.isEmpty() || clusters.values().stream().mapToInt(List::size).sum() < 2) {
-                    clusters = new java.util.HashMap<>();
-                    List<FranchiseData> c1 = java.util.Arrays.asList(
-                        new FranchiseData(1, "Sousse", 60000, 8000),
-                        new FranchiseData(2, "Tunis", 50000, 12000));
-                    List<FranchiseData> c2 = java.util.Arrays.asList(
-                        new FranchiseData(3, "Sfax", 20000, 18000));
-                    List<FranchiseData> c3 = java.util.Arrays.asList(
-                        new FranchiseData(4, "Djerba", 10000, 22000));
-                    clusters.put(0, c1); clusters.put(1, c2); clusters.put(2, c3);
-                }
+                // Affichage exclusif des données réelles, pas de fallback fictif.
 
                 double finalSoldeTotal = soldeTotal;
                 double finalTotalRevenus = totalRevenus;
@@ -243,20 +238,52 @@ public class DashboardSiegeController implements Initializable {
         // IMPORTANT : ajouter séries dans cet ordre → série 0 = Réel (cyan CSS), série 1 = Budget (orange CSS)
         barChartComparatif.getData().addAll(seriesReel, seriesBudget);
 
-        // Tooltips sur chaque barre
+        // Formatter exactement comme la capture (ex: 66 600)
+        java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(0);
+
+        // Méthode pour installer le tooltip et le clic
+        java.util.function.BiConsumer<javafx.scene.Node, XYChart.Data<String, Number>> installReel = (n, d) -> {
+            String tipText = d.getXValue() + "\n🟦 Réel (Transactions): " + format.format(d.getYValue().doubleValue());
+            Tooltip tooltip = new Tooltip(tipText);
+            tooltip.setShowDelay(javafx.util.Duration.ZERO); // Affichage instantané !
+            tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #00E5CC; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");
+            Tooltip.install(n, tooltip);
+
+            n.setOnMouseClicked(e -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Détail Réel");
+                alert.setHeaderText("Période : " + d.getXValue());
+                alert.setContentText("Valeur exacte : " + d.getYValue().doubleValue());
+                alert.showAndWait();
+            });
+        };
+
+        java.util.function.BiConsumer<javafx.scene.Node, XYChart.Data<String, Number>> installBudget = (n, d) -> {
+            String tipText = d.getXValue() + "\n🟧 Budget Prévu: " + format.format(d.getYValue().doubleValue());
+            Tooltip tooltip = new Tooltip(tipText);
+            tooltip.setShowDelay(javafx.util.Duration.ZERO); // Affichage instantané !
+            tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #FFC107; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");
+            Tooltip.install(n, tooltip);
+
+            n.setOnMouseClicked(e -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Détail Budget");
+                alert.setHeaderText("Période : " + d.getXValue());
+                alert.setContentText("Valeur exacte : " + d.getYValue().doubleValue());
+                alert.showAndWait();
+            });
+        };
+
         for (XYChart.Data<String, Number> d : seriesReel.getData()) {
-            d.nodeProperty().addListener((obs, o, n) -> {
-                if (n != null) {
-                    Tooltip.install(n, new Tooltip("Réel : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
-                }
-            });
+            if (d.getNode() != null) installReel.accept(d.getNode(), d);
+            d.nodeProperty().addListener((obs, o, n) -> { if (n != null) installReel.accept(n, d); });
         }
+        
         for (XYChart.Data<String, Number> d : seriesBudget.getData()) {
-            d.nodeProperty().addListener((obs, o, n) -> {
-                if (n != null) {
-                    Tooltip.install(n, new Tooltip("Budget : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
-                }
-            });
+            if (d.getNode() != null) installBudget.accept(d.getNode(), d);
+            d.nodeProperty().addListener((obs, o, n) -> { if (n != null) installBudget.accept(n, d); });
         }
 
         // Labels axe X lisibles
@@ -268,41 +295,61 @@ public class DashboardSiegeController implements Initializable {
     private void updateScatterChart(Map<Integer, List<FranchiseData>> clusters) {
         scatterChartIA.getData().clear();
 
-        String[] nomsClusters = {"Performants", "Équilibrés", "À risque"};
-        String[] couleurs = {"-fx-background-color: #10B981;", "-fx-background-color: #F59E0B;", "-fx-background-color: #EF4444;"};
+        // Séries conformes au design demandé
+        XYChart.Series<Number, Number> sEquilibre = new XYChart.Series<>();
+        sEquilibre.setName("Équilibrés");
+        
+        XYChart.Series<Number, Number> sPerformant = new XYChart.Series<>();
+        sPerformant.setName("Performants");
+        
+        XYChart.Series<Number, Number> sRisque = new XYChart.Series<>();
+        sRisque.setName("À risque");
 
-        int index = 0;
-        for (Map.Entry<Integer, List<FranchiseData>> entry : clusters.entrySet()) {
-            final int clusterIndex = index; // rendre l'index effectively final pour le lambda
-            XYChart.Series<Number, Number> series = new XYChart.Series<>();
-            series.setName(nomsClusters[clusterIndex % nomsClusters.length]);
+        // 1. Trier les clusters selon la performance (Bénéfice moyen)
+        List<Map.Entry<Integer, List<FranchiseData>>> sortedClusters = new ArrayList<>(clusters.entrySet());
+        sortedClusters.sort((c1, c2) -> {
+            double profit1 = c1.getValue().stream().mapToDouble(f -> f.getRecettes() - f.getDepenses()).average().orElse(0);
+            double profit2 = c2.getValue().stream().mapToDouble(f -> f.getRecettes() - f.getDepenses()).average().orElse(0);
+            return Double.compare(profit2, profit1); // Ordre décroissant : le plus grand bénéfice d'abord
+        });
+
+        // Ajout des points dans leurs séries respectives selon leur rang
+        for (int i = 0; i < sortedClusters.size(); i++) {
+            Map.Entry<Integer, List<FranchiseData>> entry = sortedClusters.get(i);
+            
+            XYChart.Series<Number, Number> targetSeries;
+            if (i == 0) {
+                targetSeries = sPerformant; // Le meilleur groupe
+            } else if (i == 1) {
+                targetSeries = sEquilibre; // Le groupe moyen
+            } else {
+                targetSeries = sRisque; // Le moins bon groupe
+            }
 
             for (FranchiseData franchise : entry.getValue()) {
                 XYChart.Data<Number, Number> point = new XYChart.Data<>(franchise.getRecettes(), franchise.getDepenses());
-                series.getData().add(point);
+                targetSeries.getData().add(point);
 
                 point.nodeProperty().addListener((obs, oldNode, newNode) -> {
                     if (newNode != null) {
-                        newNode.setStyle(couleurs[clusterIndex % couleurs.length] + " -fx-background-radius: 6; -fx-padding: 6;");
                         java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
                         format.setMinimumFractionDigits(2);
                         format.setMaximumFractionDigits(2);
-                        String tipText = franchise.getLabel() +
-                                "\nRecettes: " + format.format(franchise.getRecettes()) + " TND" +
-                                "\nDépenses: " + format.format(franchise.getDepenses()) + " TND";
-                        Tooltip.install(newNode, new Tooltip(tipText));
+                        
+                        String tipText = "📍 Franchise: " + franchise.getLabel() +
+                                "\n💰 Recettes: " + format.format(franchise.getRecettes()) + " TND" +
+                                "\n📉 Dépenses: " + format.format(franchise.getDepenses()) + " TND";
+                                
+                        Tooltip tooltip = new Tooltip(tipText);
+                        tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #00E5CC; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");
+                        Tooltip.install(newNode, tooltip);
                     }
                 });
             }
-            scatterChartIA.getData().add(series);
-            index++;
         }
 
-        if (clusters.isEmpty()) {
-            XYChart.Series<Number, Number> emptySeries = new XYChart.Series<>();
-            emptySeries.setName("Pas de données");
-            scatterChartIA.getData().add(emptySeries);
-        }
+        // Ajout dans l'ordre strict pour garantir le respect de default-color0 (Orange), 1 (Cyan), 2 (Rouge) du CSS
+        scatterChartIA.getData().addAll(sEquilibre, sPerformant, sRisque);
     }
 
     private void afficherMessageErreur(String message) {

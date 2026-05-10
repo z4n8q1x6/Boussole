@@ -188,7 +188,11 @@ public class dashController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath);
+            Throwable rootCause = e;
+            while (rootCause.getCause() != null) {
+                rootCause = rootCause.getCause();
+            }
+            showAlert("Erreur de chargement", "Impossible d'ouvrir : " + fxmlPath + "\n\nCause détaillée :\n" + rootCause.getClass().getSimpleName() + ": " + rootCause.getMessage());
         }
     }
 

@@ -138,14 +138,18 @@ public class GestionBudgetsController implements Initializable, Searchable {
                 if (empty || franchiseId == null) {
                     setText(null);
                 } else {
-                    String nom = null;
-                    for (franchise f : franchisesDisponibles) {
-                        if (f.getId() != null && f.getId().equals(franchiseId)) {
-                            nom = f.getNom();
-                            break;
+                    if (franchiseId == 0) {
+                        setText("Tous le réseau");
+                    } else {
+                        String nom = null;
+                        for (franchise f : franchisesDisponibles) {
+                            if (f.getId() != null && f.getId().equals(franchiseId)) {
+                                nom = f.getNom();
+                                break;
+                            }
                         }
+                        setText(nom != null ? nom : "ID:" + franchiseId);
                     }
-                    setText(nom != null ? nom : "ID:" + franchiseId);
                 }
             }
         });
@@ -358,8 +362,25 @@ public class GestionBudgetsController implements Initializable, Searchable {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    private void afficherMessageSucces(String msg) { NotificationManager.showSuccess("Succès", msg); }
-    private void afficherMessageErreur(String msg) { NotificationManager.showError("Erreur", msg); }
+    private void afficherMessageSucces(String msg) { 
+        javafx.application.Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText(null);
+            alert.setContentText(msg);
+            alert.showAndWait();
+        });
+    }
+
+    private void afficherMessageErreur(String msg) { 
+        javafx.application.Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText(msg);
+            alert.showAndWait();
+        });
+    }
     private boolean confirmerAction(String msg) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.OK, ButtonType.CANCEL);
         return a.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;

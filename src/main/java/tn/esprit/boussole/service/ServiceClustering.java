@@ -23,12 +23,12 @@ public class ServiceClustering {
         List<FranchiseData> list = new ArrayList<>();
         Connection cnx = MyBdConnexion.getinstance().getCnx();
         
-        String sql = "SELECT t.franchise_id, f.nom_franchise, " +
+        String sql = "SELECT t.franchise_id, f.nom as nom_franchise, " +
                      "SUM(CASE WHEN t.type='RECETTE' THEN t.montant ELSE 0 END) as Recettes, " +
                      "SUM(CASE WHEN t.type='DEPENSE' THEN t.montant ELSE 0 END) as Depenses " +
                      "FROM transaction t " +
-                     "LEFT JOIN utilisateur f ON t.franchise_id = f.id_franchise " +
-                     "GROUP BY t.franchise_id, f.nom_franchise";
+                     "LEFT JOIN franchises f ON t.franchise_id = f.id " +
+                     "GROUP BY t.franchise_id, f.nom";
                      
         try (PreparedStatement ps = cnx.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
