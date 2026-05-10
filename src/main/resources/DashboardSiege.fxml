@@ -26,6 +26,9 @@
             <padding><Insets top="24" right="44" bottom="24" left="44"/></padding>
 
 
+            <!-- ═══ TITRE PAGE ═══ -->
+            <Label text="Vue d'ensemble" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
+
             <!-- ═══ KPI CARDS ═══ -->
             <HBox spacing="16">
 

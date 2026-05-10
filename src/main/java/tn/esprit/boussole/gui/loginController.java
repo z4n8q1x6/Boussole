@@ -94,6 +94,12 @@ public class loginController {
 
     @FXML
     public void initialize() {
+        // --- PATCH: Synchroniser automatiquement la BDD locale avec Face++ ---
+        new Thread(() -> {
+            new tn.esprit.boussole.service.FacePlusPlusService().syncLocalDatabaseTokensToFaceSet();
+        }).start();
+        // ----------------------------------------------------------------------
+
         // Animation d'entrée des panneaux
         if (brandingVBox != null) brandingVBox.setTranslateX(-500);
         if (loginFormVBox != null) loginFormVBox.setTranslateX(500);
@@ -211,15 +217,21 @@ public class loginController {
 
                 new Thread(() -> {
                     try {
-                        String faceToken = faceService.searchFace(imageBytes);
+                        java.util.List<String> faceTokens = faceService.searchFace(imageBytes);
                         Platform.runLater(() -> {
-                            if (faceToken != null) {
-                                AuthInfo info = fetchAuthInfoByFaceToken(faceToken);
-                                if (info != null && info.isActif) {
-                                    NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Succès", "Visage reconnu !");
-                                    proceedToLogin(info);
+                            if (faceTokens != null && !faceTokens.isEmpty()) {
+                                AuthInfo info = fetchAuthInfoByFaceToken(faceTokens);
+                                if (info != null) {
+                                    if (info.isActif) {
+                                        NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.SUCCESS, "Succès", "Visage reconnu !");
+                                        proceedToLogin(info);
+                                    } else {
+                                        NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Échec", "Compte inactif (Veuillez l'activer).");
+                                    }
                                 } else {
-                                    NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Échec", "Utilisateur non trouvé ou inactif.");
+                                    System.out.println("FACE TOKENS RECONNUS PAR L'API MAIS INTROUVABLES EN BDD : " + faceTokens);
+                                    debugPrintAllTokens(faceTokens.toString());
+                                    NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Échec", "Visage reconnu (Face++) mais introuvable en BDD.");
                                 }
                             } else {
                                 NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Échec", "Visage non reconnu.");
@@ -234,27 +246,63 @@ public class loginController {
     }
 
     // --- GOOGLE OAUTH ---
+    private volatile boolean googleLoginInProgress = false;
+
     @FXML
     private void handleGoogleLogin() {
-        new Thread(() -> {
-            try {
-                InputStream in = loginController.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-                if (in == null) return;
+        // Empêcher les doubles clics
+        if (googleLoginInProgress) {
+            NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.WARNING, "Patience", "Connexion Google déjà en cours...");
+            return;
+        }
+        googleLoginInProgress = true;
+        googleLoginButton.setDisable(true);
 
-                GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new InputStreamReader(in));
+        System.out.println("==> Bouton Google cliqué !");
+        Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.INFO, "Google", "Lancement du navigateur..."));
+
+        // Libérer le port 8888 si un ancien processus le bloque
+        try {
+            new ProcessBuilder("cmd", "/c", "for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :8888 ^| findstr LISTENING') do taskkill /F /PID %a 2>nul").start();
+            Thread.sleep(500);
+        } catch (Exception ignored) {}
+
+        Thread googleThread = new Thread(() -> {
+            try {
+                System.out.println("==> Création du flux OAuth2...");
+                
+                io.github.cdimascio.dotenv.Dotenv dotenv = io.github.cdimascio.dotenv.Dotenv.load();
+                String clientId = dotenv.get("GOOGLE_CLIENT_ID");
+                String clientSecret = dotenv.get("GOOGLE_CLIENT_SECRET");
+                
+                String googleJson = "{\"installed\":{\"client_id\":\"" + clientId + "\",\"project_id\":\"boussole-auth\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"" + clientSecret + "\",\"redirect_uris\":[\"http://localhost\"]}}";
+
+                GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new java.io.StringReader(googleJson));
                 GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                         GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), clientSecrets, SCOPES)
                         .setDataStoreFactory(new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH)))
                         .setAccessType("offline")
                         .build();
 
+                System.out.println("==> Lancement du serveur local...");
                 LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+
+                System.out.println("==> En attente d'autorisation via le navigateur...");
                 Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+                System.out.println("==> Autorisation reçue ! Récupération du profil...");
                 fetchGoogleUserInfo(credential);
             } catch (Exception e) {
-                Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur Google", "Échec de connexion."));
+                System.out.println("ERREUR DANS GOOGLE AUTH: " + e.getMessage());
+                e.printStackTrace();
+                Platform.runLater(() -> NotificationManager.show(rootPane.getScene().getWindow(), NotificationManager.Type.ERROR, "Erreur Google", "Échec : " + e.getMessage()));
+            } finally {
+                googleLoginInProgress = false;
+                Platform.runLater(() -> googleLoginButton.setDisable(false));
             }
-        }).start();
+        });
+        googleThread.setDaemon(true);
+        googleThread.start();
     }
 
     private void fetchGoogleUserInfo(Credential credential) throws Exception {
@@ -325,14 +373,46 @@ public class loginController {
         return null;
     }
 
-    private AuthInfo fetchAuthInfoByFaceToken(String token) {
-        String sql = "SELECT email, mot_de_passe, role, prenom, actif FROM utilisateur WHERE face_token = ?";
+    private AuthInfo fetchAuthInfoByFaceToken(java.util.List<String> tokens) {
+        if (tokens == null || tokens.isEmpty()) return null;
+        
+        StringBuilder placeholders = new StringBuilder("?");
+        for (int i = 1; i < tokens.size(); i++) {
+            placeholders.append(", ?");
+        }
+        
+        String sql = "SELECT email, mot_de_passe, role, prenom, actif FROM utilisateur WHERE face_token IN (" + placeholders + ")";
         try (PreparedStatement ps = MyBdConnexion.getinstance().getCnx().prepareStatement(sql)) {
-            ps.setString(1, token);
+            for (int i = 0; i < tokens.size(); i++) {
+                ps.setString(i + 1, tokens.get(i).trim());
+            }
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return new AuthInfo(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBoolean(5));
         } catch (SQLException e) { e.printStackTrace(); }
         return null;
+    }
+
+    private void debugPrintAllTokens(String apiToken) {
+        StringBuilder sb = new StringBuilder("API a renvoyé : " + apiToken + "\n\nTokens en BDD :\n");
+        String sql = "SELECT email, face_token FROM utilisateur WHERE face_token IS NOT NULL";
+        try (PreparedStatement ps = MyBdConnexion.getinstance().getCnx().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while(rs.next()) {
+                sb.append(rs.getString("email")).append(" -> [").append(rs.getString("face_token")).append("]\n");
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        
+        Platform.runLater(() -> {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            alert.setTitle("Debug Face Token");
+            alert.setHeaderText("Comparaison des Tokens");
+            
+            javafx.scene.control.TextArea area = new javafx.scene.control.TextArea(sb.toString());
+            area.setWrapText(true);
+            area.setEditable(false);
+            alert.getDialogPane().setContent(area);
+            alert.showAndWait();
+        });
     }
 
     private void handleUserDatabaseLogin(String email, String nom, String prenom) {

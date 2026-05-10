@@ -140,7 +140,6 @@ public class DashboardSiegeController implements Initializable {
                     totalDepenses = serviceTransaction.getTotalDepenses();
 
                     // Réel vs Budget (3 derniers mois)
-                    java.sql.Connection cnx = MyBdConnexion.getinstance().getCnx();
                     String[] nomsMois = {"", "Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"};
                     for (int i = 2; i >= 0; i--) {
                         java.util.Calendar c = (java.util.Calendar) java.util.Calendar.getInstance().clone();
@@ -150,6 +149,7 @@ public class DashboardSiegeController implements Initializable {
                         String key = nomsMois[month] + " " + (year % 100);
 
                         double totalReel = 0.0;
+                        java.sql.Connection cnx = MyBdConnexion.getinstance().getCnx();
                         String sqlReel = "SELECT " +
                                 "COALESCE(SUM(CASE WHEN type='RECETTE' THEN montant ELSE 0 END), 0) - " +
                                 "COALESCE(SUM(CASE WHEN type='DEPENSE' THEN montant ELSE 0 END), 0) AS total " +
@@ -225,7 +225,7 @@ public class DashboardSiegeController implements Initializable {
         barChartComparatif.setAnimated(false); // désactiver animation pour éviter conflits
 
         XYChart.Series<String, Number> seriesReel = new XYChart.Series<>();
-        seriesReel.setName("● Réel (Transactions)");
+        seriesReel.setName("● Réel (Bénéfice Net)");
 
         XYChart.Series<String, Number> seriesBudget = new XYChart.Series<>();
         seriesBudget.setName("● Budget Prévu");
@@ -245,7 +245,7 @@ public class DashboardSiegeController implements Initializable {
 
         // Méthode pour installer le tooltip et le clic
         java.util.function.BiConsumer<javafx.scene.Node, XYChart.Data<String, Number>> installReel = (n, d) -> {
-            String tipText = d.getXValue() + "\n🟦 Réel (Transactions): " + format.format(d.getYValue().doubleValue());
+            String tipText = d.getXValue() + "\n🟦 Réel (Bénéfice Net): " + format.format(d.getYValue().doubleValue());
             Tooltip tooltip = new Tooltip(tipText);
             tooltip.setShowDelay(javafx.util.Duration.ZERO); // Affichage instantané !
             tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #00E5CC; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");

@@ -17,12 +17,22 @@ import okhttp3.Response;
 
 public class CloudUploader {
 
-  private static final String CLOUDINARY_URL_ENV = System.getenv("CLOUDINARY_URL");
+  private static String CLOUDINARY_URL_ENV;
   private static String uploadUrl;
   private static String apiKey;
   private static String apiSecret;
 
   static {
+    CLOUDINARY_URL_ENV = System.getenv("CLOUDINARY_URL");
+    if (CLOUDINARY_URL_ENV == null || CLOUDINARY_URL_ENV.isEmpty()) {
+      try {
+        io.github.cdimascio.dotenv.Dotenv dotenv = io.github.cdimascio.dotenv.Dotenv.configure().ignoreIfMissing().load();
+        CLOUDINARY_URL_ENV = dotenv.get("CLOUDINARY_URL");
+      } catch (Exception e) {
+        System.err.println("Could not load .env file: " + e.getMessage());
+      }
+    }
+
     if (CLOUDINARY_URL_ENV != null && !CLOUDINARY_URL_ENV.isEmpty()) {
       parseCloudinaryUrl(CLOUDINARY_URL_ENV);
     } else {
