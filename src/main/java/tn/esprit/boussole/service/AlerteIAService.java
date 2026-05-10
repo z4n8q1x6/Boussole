@@ -18,14 +18,16 @@ public class AlerteIAService {
 
   public boolean add(AlerteIA alerteIA) {
     String sql =
-        "INSERT INTO alerteias (type_alerte, message, score_gravite, franchise_id) VALUES (?, ?, ?,"
-            + " ?)";
+        "INSERT INTO alerteias (type_alerte, message, score_gravite, franchise_id, date_detection)"
+            + " VALUES (?, ?, ?, ?, ?)";
     try {
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, alerteIA.getType_alerte());
       preparedStatement.setString(2, alerteIA.getMessage());
       preparedStatement.setFloat(3, alerteIA.getScore_gravite());
       preparedStatement.setInt(4, alerteIA.getFranchiseId());
+      java.sql.Timestamp currentTime = new java.sql.Timestamp(System.currentTimeMillis());
+      preparedStatement.setTimestamp(5, currentTime);
       preparedStatement.executeUpdate();
       return true;
     } catch (SQLException e) {

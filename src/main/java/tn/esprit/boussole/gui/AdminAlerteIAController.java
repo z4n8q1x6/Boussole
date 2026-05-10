@@ -1,17 +1,28 @@
 package tn.esprit.boussole.gui;
 
+import java.io.File;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.concurrent.Task;
+import tn.esprit.boussole.models.AlertReport;
 import tn.esprit.boussole.models.AlerteIA;
 import tn.esprit.boussole.service.AlerteIAService;
+import tn.esprit.boussole.service.AlertReportService;
 import tn.esprit.boussole.service.franchiseService;
 import tn.esprit.boussole.utils.AlertUtil;
+import tn.esprit.boussole.utils.CloudUploader;
 import tn.esprit.boussole.utils.Gemini;
 import tn.esprit.boussole.utils.PDFGenerator;
 
@@ -29,6 +40,8 @@ public class AdminAlerteIAController {
 
   @FXML private TextArea messageArea;
   @FXML private Button pdfButton;
+
+  @FXML private TextField searchTypeField;
 
   public void initialize() {
     colType.setCellValueFactory(new PropertyValueFactory<>("type_alerte"));
@@ -62,7 +75,45 @@ public class AdminAlerteIAController {
               }
             });
 
-    display();
+    setupSearchFilter();
+  }
+
+  private void setupSearchFilter() {
+    // Get the initial data
+    ObservableList<AlerteIA> fullList = service.getAll();
+
+    // Wrap in FilteredList
+    FilteredList<AlerteIA> filteredList = new FilteredList<>(fullList, p -> true);
+
+    // Wrap in SortedList to maintain sorting
+    SortedList<AlerteIA> sortedList = new SortedList<>(filteredList);
+    sortedList.comparatorProperty().bind(table.comparatorProperty());
+
+    // Bind filtered list to table
+    table.setItems(sortedList);
+
+    // Add listener to search TextField
+    searchTypeField
+        .textProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              filteredList.setPredicate(
+                  alerte -> {
+                    // If search field is empty, show all
+                    if (newValue == null || newValue.isEmpty()) {
+                      return true;
+                    }
+
+                    // Get the type_alerte and convert to lowercase for case-insensitive search
+                    String typeAlerte = alerte.getType_alerte();
+                    if (typeAlerte == null) {
+                      return false;
+                    }
+
+                    // Check if type_alerte contains the search text (case-insensitive)
+                    return typeAlerte.toLowerCase().contains(newValue.toLowerCase());
+                  });
+            });
   }
 
   @FXML
@@ -74,7 +125,7 @@ public class AdminAlerteIAController {
 
       if (result == ButtonType.YES) {
         if (service.delete(selected.getId())) {
-          display();
+          setupSearchFilter();
           System.out.println("Alerte deleted successfully.");
         }
       }
@@ -83,20 +134,68 @@ public class AdminAlerteIAController {
     }
   }
 
-  void display() {
-    table.setItems(service.getAll());
+  @FXML
+  public void pdf() {
+    Task<Void> pdfTask = new Task<Void>() {
+      @Override
+      protected Void call() {
+        try {
+          File pdfFile = PDFGenerator.generateAlertePDFToTemp();
+          if (pdfFile == null || !pdfFile.exists()) {
+            Platform.runLater(() -> AlertUtil.showError("PDF Generation Failed", "Could not generate PDF file."));
+            return null;
+          }
+
+          Platform.runLater(() -> updateMessage("Uploading to cloud..."));
+          String cloudUrl = CloudUploader.uploadToCloudinary(pdfFile);
+
+          if (cloudUrl == null || cloudUrl.isEmpty()) {
+            Platform.runLater(() -> AlertUtil.showError("Upload Failed", "Could not upload PDF to Cloudinary."));
+            pdfFile.delete();
+            return null;
+          }
+
+          AlerteIAService alertService = new AlerteIAService();
+          int alertCount = alertService.getAll().size();
+
+          AlertReport report = new AlertReport(cloudUrl, LocalDateTime.now(), alertCount);
+          AlertReportService reportService = new AlertReportService();
+          boolean saved = reportService.add(report);
+
+          pdfFile.delete();
+
+          if (saved) {
+            Platform.runLater(() -> {
+              AlertUtil.showInformation("Success", "PDF generated, uploaded, and archived successfully!");
+              System.out.println("PDF generated and uploaded: " + cloudUrl);
+            });
+          } else {
+            Platform.runLater(() -> AlertUtil.showError("Database Error", "PDF uploaded but failed to save metadata."));
+          }
+        } catch (Exception e) {
+          Platform.runLater(() -> AlertUtil.showError("Error", "PDF generation failed: " + e.getMessage()));
+          e.printStackTrace();
+        }
+        return null;
+      }
+    };
+
+    new Thread(pdfTask).start();
   }
 
   @FXML
-  public void pdf() {
-    Stage stage = (Stage) pdfButton.getScene().getWindow();
-    String result = PDFGenerator.generateAlertePDF(stage);
-    if (result.equals("generated")) {
-      AlertUtil.showInformation("Export Success", "PDF saved successfully!");
-      System.out.println("PDF generated.");
-    } else if (!result.isEmpty()) {
-      AlertUtil.showError("Export Failed", "Error: " + result);
-      System.out.println("PDF NOT generated.");
+  public void viewArchives() {
+    try {
+      Stage archivesStage = new Stage();
+      archivesStage.setTitle("Archives des Rapports");
+      
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/alertReports.fxml"));
+      Scene scene = new Scene(loader.load(), 1000, 600);
+      archivesStage.setScene(scene);
+      archivesStage.show();
+    } catch (Exception e) {
+      AlertUtil.showError("Error", "Could not open archives: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 

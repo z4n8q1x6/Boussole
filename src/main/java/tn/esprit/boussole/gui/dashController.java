@@ -1,16 +1,21 @@
 package tn.esprit.boussole.gui;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class dashController {
@@ -24,7 +29,12 @@ public class dashController {
     @FXML private Button btnGestionCatalogue, btnCommandesRecues, btnCarteFranchises;
 
     @FXML private Label lblUsername;
+    @FXML private Label lblPageTitle;
+    @FXML private TextField searchField;
     @FXML private StackPane contentArea;
+
+    private Object currentController; // Référence au contrôleur de la vue chargée
+    private VBox sidebarMenuBox; // Référence au conteneur des boutons sidebar
 
     private final String ACTIVE_STYLE =
             "-fx-background-color: rgba(0,229,204,0.12); -fx-text-fill: #00E5CC; -fx-border-color:"
@@ -38,55 +48,118 @@ public class dashController {
         Preferences prefs = Preferences.userRoot().node("tn.esprit.boussole.gui.loginController");
         lblUsername.setText(prefs.get("email", "Administrateur"));
 
+        // Stocker la référence au conteneur sidebar
+        if (btnDashboard != null && btnDashboard.getParent() instanceof VBox) {
+            sidebarMenuBox = (VBox) btnDashboard.getParent();
+        }
+
         // 2. Actions des boutons principaux
-        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "/DashboardSiege.fxml"));
-        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "/users.fxml"));
-        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "/entreprise.fxml"));
-        btnReports.setOnAction(e -> handleMenuClick(btnReports, "/GestionBilans.fxml"));
-        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "/GestionBudgets.fxml"));
+        btnDashboard.setOnAction(e -> handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml"));
+        btnUsers.setOnAction(e -> handleMenuClick(btnUsers, "Utilisateurs", "/users.fxml"));
+        btnEntreprises.setOnAction(e -> handleMenuClick(btnEntreprises, "Entreprises", "/entreprise.fxml"));
+        btnReports.setOnAction(e -> handleMenuClick(btnReports, "Bilans", "/GestionBilans.fxml"));
+        btnSettings.setOnAction(e -> handleMenuClick(btnSettings, "Budgets", "/GestionBudgets.fxml"));
 
         // 3. Modules de réclamation et alertes
-        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "/adminReclamation.fxml"));
-        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "/adminAlerteIA.fxml"));
+        btnReclamations.setOnAction(e -> handleMenuClick(btnReclamations, "Réclamations", "/adminReclamation.fxml"));
+        btnAlertesIA.setOnAction(e -> handleMenuClick(btnAlertesIA, "Alertes IA", "/adminAlerteIA.fxml"));
 
         // 4. Modules Charges et Fournisseurs
         if (btnCharges != null) {
-            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "/afficherBackCharge.fxml"));
+            btnCharges.setOnAction(e -> handleMenuClick(btnCharges, "Charges", "/afficherBackCharge.fxml"));
         }
         if (btnFournisseurs != null) {
-            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "/afficherBackFournisseur.fxml"));
+            btnFournisseurs.setOnAction(e -> handleMenuClick(btnFournisseurs, "Fournisseurs", "/afficherBackFournisseur.fxml"));
         }
 
         // 5. NOUVEAUX BOUTONS (Projet 1)
         if (btnGestionCatalogue != null) {
-            btnGestionCatalogue.setOnAction(e -> handleMenuClick(btnGestionCatalogue, "/GestionCatalogueView.fxml"));
-        } else {
-            System.err.println("⚠️ btnGestionCatalogue est null - vérifiez le fx:id dans dash.fxml");
+            btnGestionCatalogue.setOnAction(e -> handleMenuClick(btnGestionCatalogue, "Gestion catalogue", "/GestionCatalogueView.fxml"));
         }
 
         if (btnCommandesRecues != null) {
-            btnCommandesRecues.setOnAction(e -> handleMenuClick(btnCommandesRecues, "/CommandesRecuesView.fxml"));
-        } else {
-            System.err.println("⚠️ btnCommandesRecues est null - vérifiez le fx:id dans dash.fxml");
+            btnCommandesRecues.setOnAction(e -> handleMenuClick(btnCommandesRecues, "Commandes reçues", "/CommandesRecuesView.fxml"));
         }
 
         if (btnCarteFranchises != null) {
-            btnCarteFranchises.setOnAction(e -> handleMenuClick(btnCarteFranchises, "/CarteFranchisesView.fxml"));
-        } else {
-            System.err.println("⚠️ btnCarteFranchises est null - vérifiez le fx:id dans dash.fxml");
+            btnCarteFranchises.setOnAction(e -> handleMenuClick(btnCarteFranchises, "Carte franchises", "/CarteFranchisesView.fxml"));
         }
 
         btnLogout.setOnAction(e -> handleLogout());
 
-        // 6. Effets visuels au survol
+        // 6. Recherche sur la sidebar
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                filterSidebar(newVal);
+            });
+        }
+
+        // 7. Effets visuels au survol
         setupHoverEffects();
 
-        // 7. Page par défaut au chargement
-        handleMenuClick(btnUsers, "/users.fxml");
+        // 8. Page par défaut au chargement
+        handleMenuClick(btnDashboard, "Vue d'ensemble", "/DashboardSiege.fxml");
+    }
+
+    /**
+     * Filtre les boutons de la sidebar en fonction du mot-clé saisi.
+     * Les boutons dont le texte ne correspond pas sont masqués.
+     * Les labels de section sont masqués si tous leurs boutons enfants sont masqués.
+     */
+    private void filterSidebar(String keyword) {
+        if (sidebarMenuBox == null) return;
+
+        String lower = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim().toLowerCase();
+
+        List<Node> children = sidebarMenuBox.getChildren();
+        Label currentSectionLabel = null;
+        List<Button> currentSectionButtons = new ArrayList<>();
+
+        for (Node node : children) {
+            if (node instanceof Label) {
+                // Traiter la section précédente
+                finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+                // Nouvelle section
+                currentSectionLabel = (Label) node;
+                currentSectionButtons = new ArrayList<>();
+            } else if (node instanceof Button && node != btnLogout) {
+                Button btn = (Button) node;
+                if (lower.isEmpty()) {
+                    btn.setVisible(true);
+                    btn.setManaged(true);
+                } else {
+                    // Extraire le texte sans les emojis pour une recherche plus souple
+                    String btnText = btn.getText().replaceAll("[^\\p{L}\\p{N}\\s]", "").trim().toLowerCase();
+                    boolean matches = btnText.contains(lower);
+                    btn.setVisible(matches);
+                    btn.setManaged(matches);
+                }
+                currentSectionButtons.add(btn);
+            }
+        }
+        // Traiter la dernière section
+        finalizeSectionVisibility(currentSectionLabel, currentSectionButtons);
+    }
+
+    /**
+     * Masque le label de section si aucun de ses boutons n'est visible.
+     */
+    private void finalizeSectionVisibility(Label sectionLabel, List<Button> buttons) {
+        if (sectionLabel == null) return;
+        boolean anyVisible = buttons.stream().anyMatch(Button::isVisible);
+        sectionLabel.setVisible(anyVisible);
+        sectionLabel.setManaged(anyVisible);
     }
 
     private void handleMenuClick(Button button, String fxmlPath) {
+        handleMenuClick(button, null, fxmlPath);
+    }
+
+    private void handleMenuClick(Button button, String title, String fxmlPath) {
         updateButtonStyle(button);
+        if (lblPageTitle != null && title != null) {
+            lblPageTitle.setText(title);
+        }
         if (fxmlPath != null) {
             loadView(fxmlPath);
         } else {
@@ -105,7 +178,13 @@ public class dashController {
 
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
+            currentController = loader.getController();
             contentArea.getChildren().setAll(view);
+
+            // Réinitialiser le champ de recherche à chaque changement de page
+            if (searchField != null) {
+                searchField.clear();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

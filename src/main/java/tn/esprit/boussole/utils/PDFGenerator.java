@@ -3,6 +3,8 @@ package tn.esprit.boussole.utils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javafx.collections.ObservableList;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -19,6 +21,11 @@ import tn.esprit.boussole.service.AlerteIAService;
 
 public class PDFGenerator {
 
+  /**
+   * Generate PDF and save to user-selected location (original behavior).
+   * @param parentStage The parent stage for file chooser dialog
+   * @return "generated" on success, error message otherwise
+   */
   public static String generateAlertePDF(Stage parentStage) {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Save Alertes PDF");
@@ -27,7 +34,39 @@ public class PDFGenerator {
     File file = fileChooser.showSaveDialog(parentStage);
     if (file == null) return "";
 
-    String filename = file.getAbsolutePath();
+    return generatePDFContent(file.getAbsolutePath());
+  }
+
+  /**
+   * Generate PDF and save to a temporary file.
+   * This is used for cloud upload flow.
+   * @return File object if successful, null otherwise
+   */
+  public static File generateAlertePDFToTemp() {
+    try {
+      String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+      File tempFile = File.createTempFile("rapport_" + timestamp, ".pdf");
+      String result = generatePDFContent(tempFile.getAbsolutePath());
+      if (result.equals("generated")) {
+        return tempFile;
+      } else {
+        System.err.println("Failed to generate PDF: " + result);
+        tempFile.delete();
+        return null;
+      }
+    } catch (Exception e) {
+      System.err.println("Error creating temp file: " + e.getMessage());
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  /**
+   * Core PDF generation logic.
+   * @param filename The absolute path where the PDF will be saved
+   * @return "generated" on success, error message otherwise
+   */
+  private static String generatePDFContent(String filename) {
     Document document = new Document(PageSize.A2.rotate(), 30, 30, 40, 40);
 
     try {

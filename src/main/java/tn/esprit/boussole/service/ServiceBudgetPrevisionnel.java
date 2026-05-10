@@ -10,19 +10,19 @@ import java.util.List;
 
 public class ServiceBudgetPrevisionnel {
 
-    private final Connection cnx;
-
-    public ServiceBudgetPrevisionnel() {
-        this.cnx = MyBdConnexion.getinstance().getCnx();
+    private Connection getCnx() {
+        return MyBdConnexion.getinstance().getCnx();
     }
 
-    // add: insert or update montantCible if budget already exists for mois/annee/categorie/franchise
+    public ServiceBudgetPrevisionnel() {
+    }
+
     public void add(budget_previsionnel b) {
         try {
             budget_previsionnel existing = getBudgetActuel(b.getFranchiseId(), b.getMois(), b.getAnnee(), b.getCategorie());
             if (existing != null) {
-                // update montantCible of existing
                 existing.setMontantCible(b.getMontantCible());
+                existing.setType_budget(b.getType_budget());
                 updateone(existing);
             } else {
                 insertone(b);
@@ -34,14 +34,13 @@ public class ServiceBudgetPrevisionnel {
 
     public void insertone(budget_previsionnel b) {
         String sql = "INSERT INTO budget_previsionnel (mois, annee, montant_cible, type_budget, categorie, franchise_id) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, b.getMois());
             ps.setInt(2, b.getAnnee());
             ps.setDouble(3, b.getMontantCible());
             ps.setString(4, b.getType_budget() != null ? b.getType_budget().name() : null);
             ps.setString(5, b.getCategorie());
             ps.setInt(6, b.getFranchiseId());
-
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -55,7 +54,7 @@ public class ServiceBudgetPrevisionnel {
 
     public void updateone(budget_previsionnel b) {
         String sql = "UPDATE budget_previsionnel SET mois = ?, annee = ?, montant_cible = ?, type_budget = ?, categorie = ?, franchise_id = ? WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, b.getMois());
             ps.setInt(2, b.getAnnee());
             ps.setDouble(3, b.getMontantCible());
@@ -63,7 +62,6 @@ public class ServiceBudgetPrevisionnel {
             ps.setString(5, b.getCategorie());
             ps.setInt(6, b.getFranchiseId());
             ps.setInt(7, b.getId());
-
             ps.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -72,7 +70,7 @@ public class ServiceBudgetPrevisionnel {
 
     public void deleteone(budget_previsionnel b) {
         String sql = "DELETE FROM budget_previsionnel WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, b.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -83,7 +81,7 @@ public class ServiceBudgetPrevisionnel {
     public List<budget_previsionnel> getTousBudgets() {
         List<budget_previsionnel> list = new ArrayList<>();
         String sql = "SELECT * FROM budget_previsionnel";
-        try (PreparedStatement ps = cnx.prepareStatement(sql);
+        try (PreparedStatement ps = getCnx().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapRowToBudget(rs));
@@ -97,7 +95,7 @@ public class ServiceBudgetPrevisionnel {
     public List<budget_previsionnel> getAllByFranchise(int franchiseId) {
         List<budget_previsionnel> list = new ArrayList<>();
         String sql = "SELECT * FROM budget_previsionnel WHERE franchise_id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, franchiseId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -112,7 +110,7 @@ public class ServiceBudgetPrevisionnel {
 
     public budget_previsionnel getBudgetActuel(int franchiseId, int mois, int annee, String categorie) {
         String sql = "SELECT * FROM budget_previsionnel WHERE franchise_id = ? AND mois = ? AND annee = ? AND categorie = ? LIMIT 1";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, franchiseId);
             ps.setInt(2, mois);
             ps.setInt(3, annee);
@@ -144,7 +142,6 @@ public class ServiceBudgetPrevisionnel {
         }
         String categorie = rs.getString("categorie");
         int franchiseId = rs.getInt("franchise_id");
-
         return new budget_previsionnel(id, mois, annee, montant, type, categorie, franchiseId);
     }
 }
