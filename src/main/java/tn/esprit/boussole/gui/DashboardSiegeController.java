@@ -150,7 +150,10 @@ public class DashboardSiegeController implements Initializable {
                         String key = nomsMois[month] + " " + (year % 100);
 
                         double totalReel = 0.0;
-                        String sqlReel = "SELECT COALESCE(SUM(montant), 0.0) AS total FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
+                        String sqlReel = "SELECT " +
+                                "COALESCE(SUM(CASE WHEN type='RECETTE' THEN montant ELSE 0 END), 0) - " +
+                                "COALESCE(SUM(CASE WHEN type='DEPENSE' THEN montant ELSE 0 END), 0) AS total " +
+                                "FROM transaction WHERE MONTH(date) = ? AND YEAR(date) = ?";
                         try (PreparedStatement ps = cnx.prepareStatement(sqlReel)) {
                             ps.setInt(1, month);
                             ps.setInt(2, year);
@@ -160,7 +163,10 @@ public class DashboardSiegeController implements Initializable {
                         }
 
                         double totalBudget = 0.0;
-                        String sqlBudget = "SELECT COALESCE(SUM(montant_cible), 0.0) AS total FROM budget_previsionnel WHERE mois = ? AND annee = ?";
+                        String sqlBudget = "SELECT " +
+                                "COALESCE(SUM(CASE WHEN type_budget='OBJECTIF_REVENU' THEN montant_cible ELSE 0 END), 0) - " +
+                                "COALESCE(SUM(CASE WHEN type_budget='LIMITE_DEPENSE' THEN montant_cible ELSE 0 END), 0) AS total " +
+                                "FROM budget_previsionnel WHERE mois = ? AND annee = ?";
                         try (PreparedStatement ps = cnx.prepareStatement(sqlBudget)) {
                             ps.setInt(1, month);
                             ps.setInt(2, year);
@@ -232,20 +238,52 @@ public class DashboardSiegeController implements Initializable {
         // IMPORTANT : ajouter séries dans cet ordre → série 0 = Réel (cyan CSS), série 1 = Budget (orange CSS)
         barChartComparatif.getData().addAll(seriesReel, seriesBudget);
 
-        // Tooltips sur chaque barre
+        // Formatter exactement comme la capture (ex: 66 600)
+        java.text.NumberFormat format = java.text.NumberFormat.getNumberInstance(java.util.Locale.FRANCE);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(0);
+
+        // Méthode pour installer le tooltip et le clic
+        java.util.function.BiConsumer<javafx.scene.Node, XYChart.Data<String, Number>> installReel = (n, d) -> {
+            String tipText = d.getXValue() + "\n🟦 Réel (Transactions): " + format.format(d.getYValue().doubleValue());
+            Tooltip tooltip = new Tooltip(tipText);
+            tooltip.setShowDelay(javafx.util.Duration.ZERO); // Affichage instantané !
+            tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #00E5CC; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");
+            Tooltip.install(n, tooltip);
+
+            n.setOnMouseClicked(e -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Détail Réel");
+                alert.setHeaderText("Période : " + d.getXValue());
+                alert.setContentText("Valeur exacte : " + d.getYValue().doubleValue());
+                alert.showAndWait();
+            });
+        };
+
+        java.util.function.BiConsumer<javafx.scene.Node, XYChart.Data<String, Number>> installBudget = (n, d) -> {
+            String tipText = d.getXValue() + "\n🟧 Budget Prévu: " + format.format(d.getYValue().doubleValue());
+            Tooltip tooltip = new Tooltip(tipText);
+            tooltip.setShowDelay(javafx.util.Duration.ZERO); // Affichage instantané !
+            tooltip.setStyle("-fx-font-size: 13px; -fx-padding: 10; -fx-background-color: rgba(17, 24, 39, 0.95); -fx-border-color: #FFC107; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: white;");
+            Tooltip.install(n, tooltip);
+
+            n.setOnMouseClicked(e -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Détail Budget");
+                alert.setHeaderText("Période : " + d.getXValue());
+                alert.setContentText("Valeur exacte : " + d.getYValue().doubleValue());
+                alert.showAndWait();
+            });
+        };
+
         for (XYChart.Data<String, Number> d : seriesReel.getData()) {
-            d.nodeProperty().addListener((obs, o, n) -> {
-                if (n != null) {
-                    Tooltip.install(n, new Tooltip("Réel : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
-                }
-            });
+            if (d.getNode() != null) installReel.accept(d.getNode(), d);
+            d.nodeProperty().addListener((obs, o, n) -> { if (n != null) installReel.accept(n, d); });
         }
+        
         for (XYChart.Data<String, Number> d : seriesBudget.getData()) {
-            d.nodeProperty().addListener((obs, o, n) -> {
-                if (n != null) {
-                    Tooltip.install(n, new Tooltip("Budget : " + String.format("%.2f TND", d.getYValue().doubleValue()) + "\n" + d.getXValue()));
-                }
-            });
+            if (d.getNode() != null) installBudget.accept(d.getNode(), d);
+            d.nodeProperty().addListener((obs, o, n) -> { if (n != null) installBudget.accept(n, d); });
         }
 
         // Labels axe X lisibles
