@@ -341,18 +341,15 @@ public class DashboardFranchiseController implements Initializable, Searchable {
 
 
     /**
-     * Load and display solde from database
-     * Solde = Recettes (transactions) - Dépenses (transactions) - Charges déclarées
+     * Load and display solde directly computed from transactions.
+     * Calcule le solde de manière dynamique: SUM(RECETTES) - SUM(DEPENSES)
      */
     private void chargerSolde() {
         try {
-            // Solde depuis les transactions (recettes - dépenses de la table transaction)
-            double soldeTransactions = serviceTransaction.calculerSolde(franchiseId);
-            // Total des charges déclarées pour cette franchise
-            double totalCharges = serviceCharge.getTotalChargesByFranchise(franchiseId);
-            // Solde final = solde transactions - charges
-            double solde = soldeTransactions - totalCharges;
+            // Calculer le solde dynamiquement via les transactions
+            double solde = serviceTransaction.calculerSolde(franchiseId);
 
+            System.out.println("💰 Solde franchise " + franchiseId + " (dynamique) = " + solde);
             lblSolde.setText(String.format("%.2f TND", solde));
 
             // Conversion dynamique
@@ -378,7 +375,7 @@ public class DashboardFranchiseController implements Initializable, Searchable {
                         lblContreValeur.setText(String.format("(soit ≈ %.2f %s)", soldeConverti, symbole));
                     }
                 } else if (lblContreValeur != null) {
-                     lblContreValeur.setText("(Service indisponible)");
+                    lblContreValeur.setText("ID Franchise utilisé: " + franchiseId);
                 }
             } catch (Exception ex) {
                 System.err.println("Erreur conversion devise: " + ex.getMessage());
@@ -445,31 +442,42 @@ public class DashboardFranchiseController implements Initializable, Searchable {
     }
 
     /**
-     * Load budgets declared by Siege for this franchise and update KPIs
+     * Load budgets declared by Siege for this franchise and update KPIs.
+     * Récupère les budgets de toute l'année en cours pour la franchise connectée
+     * ET les budgets globaux (franchise_id IS NULL).
      */
     private void chargerBudgets() {
         try {
-            List<budget_previsionnel> budgets = serviceBudgetPrevisionnel.getAllByFranchise(franchiseId);
-            if (tableBudgets != null) {
-                tableBudgets.setItems(FXCollections.observableArrayList(budgets));
-            }
-
-            int currentMonth = LocalDate.now().getMonthValue();
             int currentYear = LocalDate.now().getYear();
 
             double totalLimiteDepenses = 0;
             double totalObjectifRevenu = 0;
 
-            for (budget_previsionnel b : budgets) {
-                if (b.getMois() == currentMonth && b.getAnnee() == currentYear) {
-                    if (b.getType_budget() == TypeBudget.LIMITE_DEPENSE) {
-                        totalLimiteDepenses += b.getMontantCible();
-                    } else if (b.getType_budget() == TypeBudget.OBJECTIF_REVENU) {
-                        totalObjectifRevenu += b.getMontantCible();
+            // Requête SQL : uniquement les budgets de cette franchise
+            String sql = "SELECT " +
+                         "COALESCE(SUM(CASE WHEN type_budget='LIMITE_DEPENSE' THEN montant_cible ELSE 0 END), 0) as limite_totale, " +
+                         "COALESCE(SUM(CASE WHEN type_budget='OBJECTIF_REVENU' THEN montant_cible ELSE 0 END), 0) as objectif_total " +
+                         "FROM budget_previsionnel " +
+                         "WHERE franchise_id = ? AND annee = ?";
+
+            try (java.sql.Connection conn = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx();
+                 java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, franchiseId);
+                ps.setInt(2, currentYear);
+                
+                try (java.sql.ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        totalLimiteDepenses = rs.getDouble("limite_totale");
+                        totalObjectifRevenu = rs.getDouble("objectif_total");
                     }
                 }
+            } catch (Exception e) {
+                System.err.println("Erreur SQL Budgets: " + e.getMessage());
             }
 
+            System.out.println("📊 Budget franchise " + franchiseId + " (année " + currentYear + ") → Limite: " + totalLimiteDepenses + " | Objectif: " + totalObjectifRevenu);
+
+            // Mettre à jour les labels
             if (lblLimiteDepenses != null) {
                 lblLimiteDepenses.setText(String.format("%.2f TND", totalLimiteDepenses));
             }
@@ -478,6 +486,7 @@ public class DashboardFranchiseController implements Initializable, Searchable {
             }
 
             if (lblDepensesMois != null) {
+                // Total des dépenses réelles (transactions + charges)
                 List<transaction> allTransactions = serviceTransaction.getAllByFranchise(franchiseId);
                 double totalDepenses = 0;
                 for (transaction t : allTransactions) {
@@ -485,6 +494,8 @@ public class DashboardFranchiseController implements Initializable, Searchable {
                         totalDepenses += t.getMontant();
                     }
                 }
+                double totalCharges = serviceCharge.getTotalChargesByFranchise(franchiseId);
+                totalDepenses += totalCharges;
                 lblDepensesMois.setText(String.format("%.2f TND", totalDepenses));
 
                 if (totalLimiteDepenses > 0 && totalDepenses > totalLimiteDepenses) {

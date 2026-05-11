@@ -11,9 +11,9 @@ import java.util.Base64;
 public class FacePlusPlusService {
 
     private static final Dotenv dotenv = Dotenv.load();
-    private static final String API_KEY = dotenv.get("FACEPP_API_KEY");
-    private static final String API_SECRET = dotenv.get("FACEPP_API_SECRET");
-    private static final String FACESET_TOKEN = "boussole_users_faceset";
+    private static final String API_KEY = "5hG5su943EpQmUSJY_hH2qhtFjACjf7K";
+    private static final String API_SECRET = "NsmAiKTb8JDKlUMbMWg1DFSo0Fef3QK8";
+    private static final String FACESET_TOKEN = "boussole_faceset"; // Modifié pour correspondre au .env de Symfony
 
     private final OkHttpClient client = new OkHttpClient();
 
@@ -137,7 +137,81 @@ public class FacePlusPlusService {
         }
     }
 
-    public String searchFace(byte[] imageBytes) throws IOException {
+    public void clearFaceSet() {
+        RequestBody formBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("api_key", API_KEY)
+                .addFormDataPart("api_secret", API_SECRET)
+                .addFormDataPart("outer_id", FACESET_TOKEN)
+                .addFormDataPart("face_tokens", "RemoveAllFaceTokens")
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://api-us.faceplusplus.com/facepp/v3/faceset/removeface")
+                .post(formBody)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                System.out.println("FaceSet complètement vidé (nettoyage réussi).");
+            } else {
+                System.err.println("Erreur vidage FaceSet : " + response.body().string());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncLocalDatabaseTokensToFaceSet() {
+        ensureFaceSetExists();
+        
+        java.util.List<String> tokensToSync = new java.util.ArrayList<>();
+        String sql = "SELECT face_token FROM utilisateur WHERE face_token IS NOT NULL AND face_token != ''";
+        try (java.sql.PreparedStatement ps = tn.esprit.boussole.utils.MyBdConnexion.getinstance().getCnx().prepareStatement(sql);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                tokensToSync.add(rs.getString("face_token").trim());
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (tokensToSync.isEmpty()) {
+            System.out.println("Aucun token en BDD à synchroniser.");
+            return;
+        }
+
+        System.out.println("Synchronisation de " + tokensToSync.size() + " tokens vers Face++...");
+        
+        for (String token : tokensToSync) {
+            try {
+                RequestBody formBody = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("api_key", API_KEY)
+                        .addFormDataPart("api_secret", API_SECRET)
+                        .addFormDataPart("outer_id", FACESET_TOKEN)
+                        .addFormDataPart("face_tokens", token)
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url("https://api-us.faceplusplus.com/facepp/v3/faceset/addface")
+                        .post(formBody)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    System.out.println("Sync token " + token + " -> " + response.isSuccessful());
+                }
+                
+                // Pause pour la limite API Gratuite (1 requête/seconde)
+                Thread.sleep(1100);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Synchronisation Java terminée !");
+    }
+
+    public java.util.List<String> searchFace(byte[] imageBytes) throws IOException {
         // Pour la recherche, on suppose que le FaceSet existe déjà pour gagner du temps.
         // Si la recherche échoue avec "INVALID_OUTER_ID", alors on essaiera de le créer.
         
@@ -149,6 +223,7 @@ public class FacePlusPlusService {
                 .addFormDataPart("api_secret", API_SECRET)
                 .addFormDataPart("image_base64", base64Image)
                 .addFormDataPart("outer_id", FACESET_TOKEN)
+                .addFormDataPart("return_result_count", "5")
                 .build();
 
         Request request = new Request.Builder()
@@ -177,11 +252,15 @@ public class FacePlusPlusService {
             JSONArray results = jsonObject.optJSONArray("results");
 
             if (results != null && results.length() > 0) {
-                JSONObject bestMatch = results.getJSONObject(0);
-                double confidence = bestMatch.getDouble("confidence");
-                
-                if (confidence > 80.0) {
-                    return bestMatch.getString("face_token");
+                java.util.List<String> matchedTokens = new java.util.ArrayList<>();
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject match = results.getJSONObject(i);
+                    if (match.getDouble("confidence") > 80.0) {
+                        matchedTokens.add(match.getString("face_token"));
+                    }
+                }
+                if (!matchedTokens.isEmpty()) {
+                    return matchedTokens;
                 }
             }
             return null;

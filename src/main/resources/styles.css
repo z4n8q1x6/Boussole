@@ -492,45 +492,44 @@
 
 /* ═══════════════════════════════════════════════
    SCATTERCHART — Couleurs clusters (Radar de Performance)
-   Cluster 0 : Performants → Vert
-   Cluster 1 : Équilibrés  → Orange
+   Cluster 0 : Équilibrés  → Jaune/Orange
+   Cluster 1 : Performants → Cyan
    Cluster 2 : Risqués     → Rouge
    ═══════════════════════════════════════════════ */
 .default-color0.chart-symbol {
-    -fx-background-color: #22C55E;
+    -fx-background-color: #FFC107;
     -fx-background-radius: 8px;
     -fx-padding: 6px;
 }
 
 .default-color1.chart-symbol {
-    -fx-background-color: #F59E0B;
+    -fx-background-color: #00E5CC;
     -fx-background-radius: 8px;
     -fx-padding: 6px;
 }
 
 .default-color2.chart-symbol {
-    -fx-background-color: #EF4444;
+    -fx-background-color: #FF4D4D;
     -fx-background-radius: 8px;
     -fx-padding: 6px;
 }
 
-/* Légende ScatterChart - FIX : FORCER les formes rondes et couleurs pleines */
+/* Légende ScatterChart - Rectangles EXACTEMENT comme sur la maquette */
+.chart-legend-item-symbol.chart-symbol {
+    -fx-background-radius: 2px !important;
+    -fx-padding: 4px 14px 4px 14px !important;
+}
+
 .chart-legend-item-symbol.chart-symbol.default-color0 {
-    -fx-background-color: #22C55E;
-    -fx-background-radius: 8px;
-    -fx-padding: 6px;
+    -fx-background-color: #FFC107;
 }
 
 .chart-legend-item-symbol.chart-symbol.default-color1 {
-    -fx-background-color: #F59E0B;
-    -fx-background-radius: 8px;
-    -fx-padding: 6px;
+    -fx-background-color: #00E5CC;
 }
 
 .chart-legend-item-symbol.chart-symbol.default-color2 {
-    -fx-background-color: #EF4444;
-    -fx-background-radius: 8px;
-    -fx-padding: 6px;
+    -fx-background-color: #FF4D4D;
 }
 
 /* ═══════════════════════════════════════════════

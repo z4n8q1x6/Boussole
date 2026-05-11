@@ -17,16 +17,27 @@ public class FournisseurService implements crud<Fournisseur> {
 
     @Override
     public void insertone(Fournisseur fournisseur) throws SQLException {
-        String req = "INSERT INTO `fournisseur` (`nom`, `matricule_fiscal`, `telephone`, `franchise_id`) VALUES (?, ?, ?, ?)";
+        // Générer l'ID manuellement (contournement si AUTO_INCREMENT manquant)
+        int nextId = 1;
+        String maxSql = "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `fournisseur`";
+        try (PreparedStatement psMax = cnx.prepareStatement(maxSql);
+             ResultSet rs = psMax.executeQuery()) {
+            if (rs.next()) {
+                nextId = rs.getInt("next_id");
+            }
+        }
 
+        String req = "INSERT INTO `fournisseur` (`id`, `nom`, `matricule_fiscal`, `telephone`, `franchise_id`) VALUES (?, ?, ?, ?, ?)";
         PreparedStatement ps = cnx.prepareStatement(req);
-        ps.setString(1, fournisseur.getNom());
-        ps.setString(2, fournisseur.getMatriculeFiscal());
-        ps.setString(3, fournisseur.getTelephone());
-        ps.setInt(4, fournisseur.getFranchiseId());
+        ps.setLong(1, nextId);
+        ps.setString(2, fournisseur.getNom());
+        ps.setString(3, fournisseur.getMatriculeFiscal());
+        ps.setString(4, fournisseur.getTelephone());
+        ps.setInt(5, fournisseur.getFranchiseId());
 
         ps.executeUpdate();
-        System.out.println("Fournisseur ajouté avec succès !");
+        fournisseur.setId((long) nextId);
+        System.out.println("Fournisseur ajouté avec succès ! ID=" + nextId);
     }
 
     @Override

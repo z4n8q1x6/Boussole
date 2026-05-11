@@ -22,18 +22,30 @@ public class ChargeService implements crud<Charge> {
 
     @Override
     public void insertone(Charge charge) throws SQLException {
-        String req = "INSERT INTO `charge` (`titre`, `montant`, `date_charge`, `type`, `preuve_image`, `status_validation`, `franchise_id`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Générer l'ID manuellement (contournement si AUTO_INCREMENT manquant)
+        int nextId = 1;
+        String maxSql = "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `charge`";
+        try (PreparedStatement psMax = getConn().prepareStatement(maxSql);
+             ResultSet rs = psMax.executeQuery()) {
+            if (rs.next()) {
+                nextId = rs.getInt("next_id");
+            }
+        }
+
+        String req = "INSERT INTO `charge` (`id`, `titre`, `montant`, `date_charge`, `type`, `preuve_image`, `status_validation`, `franchise_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = getConn().prepareStatement(req);
-        ps.setString(1, charge.getTitre());
-        ps.setDouble(2, charge.getMontant());
-        ps.setDate(3, Date.valueOf(charge.getDateCharge()));
-        ps.setString(4, charge.getType().name());
-        ps.setString(5, charge.getPreuveImage());
-        ps.setString(6, charge.getStatusValidation().name());
-        ps.setInt(7, charge.getFranchiseId());
+        ps.setInt(1, nextId);
+        ps.setString(2, charge.getTitre());
+        ps.setDouble(3, charge.getMontant());
+        ps.setDate(4, Date.valueOf(charge.getDateCharge()));
+        ps.setString(5, charge.getType().name());
+        ps.setString(6, charge.getPreuveImage());
+        ps.setString(7, charge.getStatusValidation().name());
+        ps.setInt(8, charge.getFranchiseId());
 
         ps.executeUpdate();
-        System.out.println("Charge ajoutée avec succès !");
+        charge.setId(nextId);
+        System.out.println("Charge ajoutée avec succès ! ID=" + nextId);
     }
 
     @Override
@@ -64,6 +76,26 @@ public class ChargeService implements crud<Charge> {
     /**
      * Récupère toutes les charges avec les détails de la franchise associée.
      */
+    private Charge.TypeCharge parseType(String typeStr) {
+        if (typeStr == null) return Charge.TypeCharge.CHARGES_EXPLOITATIONS;
+        String t = typeStr.toUpperCase();
+        if (t.contains("EXPLOITATION")) return Charge.TypeCharge.CHARGES_EXPLOITATIONS;
+        if (t.contains("FINANCIER")) return Charge.TypeCharge.CHARGES_FINANCIERES;
+        if (t.contains("EXCEPTIONNEL")) return Charge.TypeCharge.CHARGES_EXCEPTIONNELLES;
+        try { return Charge.TypeCharge.valueOf(t); } 
+        catch (IllegalArgumentException e) { return Charge.TypeCharge.CHARGES_EXPLOITATIONS; }
+    }
+
+    private Charge.StatusValidation parseStatus(String statusStr) {
+        if (statusStr == null) return Charge.StatusValidation.EN_ATTENTE;
+        String s = statusStr.toUpperCase().replace("É", "E").replace("È", "E");
+        if (s.contains("VALIDE") || s.contains("VALIDÉ")) return Charge.StatusValidation.VALIDE;
+        if (s.contains("ATTENTE")) return Charge.StatusValidation.EN_ATTENTE;
+        if (s.contains("REJET")) return Charge.StatusValidation.REJETTE;
+        try { return Charge.StatusValidation.valueOf(s); } 
+        catch (IllegalArgumentException e) { return Charge.StatusValidation.EN_ATTENTE; }
+    }
+
     @Override
     public List<Charge> selectAll(Charge c) throws SQLException {
         List<Charge> charges = new ArrayList<>();
@@ -77,8 +109,8 @@ public class ChargeService implements crud<Charge> {
                 charge.setTitre(rs.getString("titre"));
                 charge.setMontant(rs.getDouble("montant"));
                 charge.setDateCharge(rs.getDate("date_charge").toLocalDate());
-                charge.setType(Charge.TypeCharge.valueOf(rs.getString("type")));
-                charge.setStatusValidation(Charge.StatusValidation.valueOf(rs.getString("status_validation")));
+                charge.setType(parseType(rs.getString("type")));
+                charge.setStatusValidation(parseStatus(rs.getString("status_validation")));
                 charge.setPreuveImage(rs.getString("preuve_image"));
                 charge.setFranchiseId(rs.getInt("franchise_id"));
                 charge.setFranchiseName(rs.getString("franchise_nom"));
@@ -133,8 +165,8 @@ public class ChargeService implements crud<Charge> {
                     charge.setTitre(rs.getString("titre"));
                     charge.setMontant(rs.getDouble("montant"));
                     charge.setDateCharge(rs.getDate("date_charge").toLocalDate());
-                    charge.setType(Charge.TypeCharge.valueOf(rs.getString("type")));
-                    charge.setStatusValidation(Charge.StatusValidation.valueOf(rs.getString("status_validation")));
+                    charge.setType(parseType(rs.getString("type")));
+                    charge.setStatusValidation(parseStatus(rs.getString("status_validation")));
                     charge.setPreuveImage(rs.getString("preuve_image"));
                     charge.setFranchiseId(rs.getInt("franchise_id"));
                     charges.add(charge);
