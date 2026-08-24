@@ -1,10 +1,10 @@
-# 🧭 Boussole — Plateforme de Gestion de Franchise
+# Boussole — Plateforme de Gestion de Franchise
 
 > Application desktop JavaFX pour la gestion centralisée d'un réseau de franchises. Développée dans le cadre d'un projet académique à **ESPRIT** (École Supérieure Privée d'Ingénierie et de Technologies).
 
 ---
 
-## 📋 Table des matières
+## Table des matières
 
 1. [Présentation du projet](#-présentation-du-projet)
 2. [Architecture technique](#-architecture-technique)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🎯 Présentation du projet
+## Présentation du projet
 
 **Boussole** est une application de gestion complète dédiée aux réseaux de franchises. Elle permet au **Siège** (administration centrale) de superviser l'ensemble du réseau, et à chaque **Franchise** (entreprise locale) de gérer ses propres opérations financières, commerciales et logistiques.
 
@@ -33,7 +33,7 @@
 
 ---
 
-## 🏗 Architecture technique
+## Architecture technique
 
 ```
 ┌────────────────────────────────────────────────────┐
@@ -122,7 +122,7 @@ EMAIL_PASSWORD=votre_app_password
 
 ---
 
-## 📁 Structure du projet
+## Structure du projet
 
 ```
 Boussole/
@@ -264,9 +264,9 @@ Boussole/
 
 ---
 
-## 🧩 Modules fonctionnels
+## Modules fonctionnels
 
-### 1. 🔐 Authentification & Sécurité
+### 1. Authentification & Sécurité
 
 | Fonctionnalité | Description |
 |----------------|-------------|
@@ -276,7 +276,7 @@ Boussole/
 | Mot de passe oublié | Réinitialisation par email SMTP |
 | Gestion des sessions | Stockage via `java.util.prefs.Preferences` |
 
-### 2. 📊 Dashboard Siège — Vue d'ensemble
+### 2. Dashboard Siège — Vue d'ensemble
 
 > Fichier : `DashboardSiegeController.java` → `DashboardSiege.fxml`
 
@@ -286,7 +286,7 @@ Boussole/
 - **Classement Financier** : Ranking des franchises par performance
 - **Assistant IA** : Chat intégré avec Google Gemini
 
-### 3. 📈 Dashboard Franchise — Tableau de bord
+### 3. Dashboard Franchise — Tableau de bord
 
 > Fichier : `DashboardFranchiseController.java` → `DashboardFranchise.fxml`
 
@@ -297,7 +297,7 @@ Boussole/
 - **Nouvelle Transaction** : Saisie rapide de recettes
 - **Derniers Mouvements** : 5 dernières transactions + charges
 
-### 4. 💰 Gestion Financière
+### 4. Gestion Financière
 
 | Module | Table SQL | Fonctionnalités |
 |--------|-----------|-----------------|
@@ -307,7 +307,7 @@ Boussole/
 | Budgets | `budget_previsionnel` | Objectifs revenus & limites dépenses par franchise/mois |
 | Historique | `transaction` + `charge` | Journal filtrable, stats agrégées |
 
-### 5. 🏢 Gestion des Entités
+### 5. Gestion des Entités
 
 | Module | Description |
 |--------|-------------|
@@ -315,7 +315,7 @@ Boussole/
 | Franchises | CRUD, suivi du solde, points de fidélité, géolocalisation sur carte |
 | Fournisseurs | CRUD, envoi d'emails directs, affichage back-office et front-office |
 
-### 6. 🛒 Marketplace (E-commerce interne)
+### 6. Marketplace (E-commerce interne)
 
 | Côté Siège | Côté Franchise |
 |------------|---------------|
@@ -324,7 +324,7 @@ Boussole/
 | Gestion des commandes reçues | Suivi de mes commandes |
 | Traitement & expédition | Historique des achats |
 
-### 7. 📢 Réclamations & Alertes
+### 7. Réclamations & Alertes
 
 - **Réclamations** : Création, suivi, traitement (statuts : EN_ATTENTE, EN_COURS, RESOLUE)
 - **Alertes IA** : Détection automatique d'anomalies financières via Gemini
@@ -332,7 +332,7 @@ Boussole/
 
 ---
 
-## 🗄 Base de données
+## Base de données
 
 ### Schéma `boussole` — Tables principales
 
@@ -392,7 +392,7 @@ String password = "";
 
 ---
 
-## 🔒 Sécurité
+## Sécurité
 
 - **Hashage des mots de passe** : BCrypt (via `AuthService.java`)
 - **Secrets externalisés** : Variables sensibles dans `.env` (non versionné via `.gitignore`)
@@ -403,7 +403,7 @@ String password = "";
 
 ---
 
-## 🚀 Lancement
+## Lancement
 
 ### Depuis l'IDE (IntelliJ IDEA)
 
@@ -426,7 +426,7 @@ mvn clean javafx:run
 
 ---
 
-## 📸 Captures d'écran
+## Captures d'écran
 
 ### Page de connexion
 - Login par email/mot de passe
@@ -444,21 +444,3 @@ mvn clean javafx:run
 - Conversion devises en temps réel
 - Formulaire nouvelle transaction
 - Tableau des derniers mouvements
-
----
-
-## 👥 Équipe
-
-| Membre | Rôle |
-|--------|------|
-| **Siwar Raouafi** | Développeuse Full-Stack (JavaFX + Symfony) |
-
----
-
-## 📄 Licence
-
-Projet académique — **ESPRIT** — Année universitaire 2025/2026
-
----
-
-> *Dernière mise à jour : 10 Mai 2026*
